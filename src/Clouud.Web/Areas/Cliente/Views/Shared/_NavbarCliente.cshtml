@@ -1,0 +1,35 @@
+@* Barra de navegação da área do cliente (nome e foto levam para "Minha conta") *@
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-area="Cliente" asp-controller="Home" asp-action="Index">CLOUUD </a>
+        <style>
+            .navbar-brand {
+                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+                font-size: 30px; /* Tamanho da fonte */
+                font-weight: bold; /* Peso da fonte (negrito) */
+                /* Outros estilos que você desejar */
+            }
+
+            a {
+                margin-left: 15px;
+            }
+        </style>
+        <div class="d-flex align-items-center gap-2" style="margin-right: 10px;">
+            <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta" class="text-white text-decoration-none">
+                <h5 class="mb-0">@Context.User.Identity?.Name</h5>
+            </a>
+            <style>
+                span {
+                    color: white;
+                    font-size: 15px;
+                    font-weight: 600;
+                    line-height: 20px;
+                }
+            </style>
+            <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta">
+                <img src="~/img/perfil.jpg" class="card-img-top rounded-circle" alt="Minha conta" style="width:40px;height:40px">
+            </a>
+            <a asp-area="" asp-controller="Conta" asp-action="Logout" class="btn btn-secondary btn-sm">Sair</a>
+        </div>
+    </div>
+</nav>

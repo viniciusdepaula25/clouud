@@ -15,11 +15,13 @@ namespace Clouud.Web.Controllers
     {
         private readonly BancoDados bancoDados;
         private readonly SenhaService senhas;
+        private readonly AutenticacaoService autenticacao;
 
-        public ContaController(BancoDados bancoDados, SenhaService senhas)
+        public ContaController(BancoDados bancoDados, SenhaService senhas, AutenticacaoService autenticacao)
         {
             this.bancoDados = bancoDados;
             this.senhas = senhas;
+            this.autenticacao = autenticacao;
         }
 
         public IActionResult Index()
@@ -153,44 +155,8 @@ namespace Clouud.Web.Controllers
         {
             if (usuario != null)
             {
-                string nome = string.Empty;
-                switch (usuario.Perfil)
-                {
-                    case PerfilUsuario.Cliente:
-                        var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-                        // usuário cliente sem registro na tabela Clientes: usa o nome do usuário
-                        nome = cliente?.Nome ?? usuario.Name;
-                        break;
-                    case PerfilUsuario.Admin:
-                        nome = "Administrador";
-                        break;
-                }
-
-                //credencial do usuario
-                var credencial = new List<Claim>();
-                credencial.Add(new Claim(ClaimTypes.Name, nome));
-                credencial.Add(new Claim(ClaimTypes.Email, usuario.Email));
-                credencial.Add(new Claim(ClaimTypes.NameIdentifier, usuario.ID.ToString()));
-                credencial.Add(new Claim(ClaimTypes.Role, usuario.Perfil.ToString()));
-
-                //configura a identidade de acesso
-                var identidade = new ClaimsIdentity(credencial,
-                    CookieAuthenticationDefaults.AuthenticationScheme);
-
-                //configura a autenticacao no servidor
-                var autenticacaoCookie = new AuthenticationProperties
-                {
-                    AllowRefresh = true,
-                    IssuedUtc = DateTime.UtcNow, //inicio do tempo 
-                    ExpiresUtc = DateTime.UtcNow.AddMinutes(30), //termino do tempo
-                    //RedirectUri = @"~/"
-                };
-
-                //autentica o usuario no servidor por Cookies
-                var autenticacaoUsuario = new ClaimsPrincipal(identidade);
-                await HttpContext.SignInAsync(autenticacaoUsuario, autenticacaoCookie);
-
-                //redireciona para o painel administrativo
+                // grava o cookie de login (nome, e-mail, id e perfil do usuário)
+                await autenticacao.EntrarAsync(usuario);
                 return true;
             }
 

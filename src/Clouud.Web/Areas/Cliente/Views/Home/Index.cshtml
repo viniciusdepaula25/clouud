@@ -28,35 +28,7 @@
     ViewData["Title"] = "Produtos";
 }
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container-fluid">
-        <a class="navbar-brand" asp-area="Cliente" asp-controller="Home" asp-action="Index">CLOUUD </a>
-        <style>
-            .navbar-brand {
-                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-                font-size: 30px; /* Tamanho da fonte */
-                font-weight: bold; /* Peso da fonte (negrito) */
-                /* Outros estilos que você desejar */
-            }
-
-            a {
-                margin-left: 15px;
-            }
-        </style>
-        <div class="d-flex align-items-center gap-2" style="margin-right: 10px;">
-            <h5>@Context.User.Identity?.Name</h5>
-            <style>
-                span {
-                    color: white;
-                    font-size: 15px;
-                    font-weight: 600;
-                    line-height: 20px;
-                }
-            </style>
-            <img src="~/img/perfil.jpg" class="card-img-top rounded-circle" alt="..." style="width:40px;height:40px">
-        </div>
-    </div>
-</nav>
+<partial name="_NavbarCliente" />
 
 <div class="text-center">
     <div class="container">

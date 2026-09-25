@@ -20,6 +20,8 @@ builder.Services.AddDbContext<BancoDados>(options =>
 // Hash das senhas dos usuários
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddScoped<SenhaService>();
+builder.Services.AddScoped<AutenticacaoService>();
+builder.Services.AddHttpContextAccessor();
 
 
 // Adiciona o servico de autenticacao de usuarios por cookies

@@ -1,0 +1,59 @@
+@model Clouud.Web.ViewModels.MinhaContaViewModel
+
+@{
+    ViewData["Title"] = "Minha conta";
+}
+
+<partial name="_NavbarCliente" />
+
+<div class="row mt-4">
+    <div class="offset-md-4 col-md-4">
+        <h2>Minha conta</h2>
+        <hr />
+        @if (TempData["Mensagem"] is string mensagem)
+        {
+            <div class="alert alert-success">@mensagem</div>
+        }
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Nome" class="control-label"></label>
+                <input asp-for="Nome" class="form-control" />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="control-label"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <h5 class="mt-4">Trocar senha <small class="text-muted">(opcional)</small></h5>
+            <div class="form-group">
+                <label asp-for="NovaSenha" class="control-label"></label>
+                <input asp-for="NovaSenha" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="NovaSenha" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ConfirmarNovaSenha" class="control-label"></label>
+                <input asp-for="ConfirmarNovaSenha" class="form-control" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmarNovaSenha" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mt-4">
+                <label asp-for="SenhaAtual" class="control-label"></label>
+                <input asp-for="SenhaAtual" class="form-control" autocomplete="current-password" />
+                <small class="form-text">Obrigatória só para trocar o e-mail ou a senha.</small>
+                <span asp-validation-for="SenhaAtual" class="text-danger d-block"></span>
+            </div>
+
+            <div class="form-group text-center p-4">
+                <input type="submit" value="Salvar" class="btn btn-primary" />
+                <a asp-area="Cliente" asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
