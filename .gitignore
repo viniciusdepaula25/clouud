@@ -13,3 +13,7 @@ obj/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Imagens enviadas pelo painel admin (conteúdo gerado em runtime)
+src/Clouud.Web/wwwroot/uploads/*
+!src/Clouud.Web/wwwroot/uploads/.gitkeep

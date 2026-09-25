@@ -1,0 +1,135 @@
+@* @model IEnumerable<Clouud.Web.Models.Jogo>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="~/uploads/@item.Foto" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Nome</h5>
+                    <p class="card-text">@item.Categoria</p>
+                    <p class="card-text">@item.Desenvolvedora</p>
+                    <p class="card-text">@item.Plataforma</p>
+                    <p class="card-text">R$ @item.Valorj</p>
+                    <a href="#" class="btn btn-danger">Comprar</a>
+                </div>
+            </div>
+        </div>
+    }
+</div> *@
+@model IEnumerable<Clouud.Web.Models.Jogo>
+
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">CLOUUD </a>
+        <style>
+            .navbar-brand {
+                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+                font-size: 30px; /* Tamanho da fonte */
+                font-weight: bold; /* Peso da fonte (negrito) */
+                /* Outros estilos que você desejar */
+            }
+
+            a {
+                margin-left: 15px;
+            }
+        </style>
+        <form class="d-flex" role="search">
+            <a asp-controller="Conta" asp-action="Login" class="btn btn-secondary">Entrar</a>
+            <a asp-controller="Conta" asp-action="Cadastro" class="btn btn-secondary">Cadastrar</a>
+        </form>
+    </div>
+</nav>
+
+<div class="text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 align-content-center">
+                <img style="width:250px" src="~/img/nuuvem.png" />
+            </div>
+        </div>
+
+        <div>
+            <form class="d-flex gap-2" asp-action="Index">
+                <div>
+                    <input class="form-control me-sm-2" type="search" id="txtBusca" name="busca" placeholder="Ex: Tekken 8">
+                </div>
+                <input type="submit" value="Buscar" class="btn btn-secondary my-2 my-sm-0" />
+            </form>
+        </div>
+
+
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-3 align-content-center">
+                    <div class="container-fluid">
+                        <div class="card mb-3">
+                            <h6 class="card-header">@item.Nome</h6>
+                            <div class="card-body">
+                                <h8 class="card-title">@item.Plataforma</h8>
+                                <h7 class="card-subtitle text-muted">@item.Categoria</h7>
+                            </div>
+                            <img src="~/uploads/@item.Foto" class="card-img-top" alt="..." style="width:275px;height:240px">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">@item.Desenvolvedora</li>
+                                <li class="list-group-item">R$ @item.Valorj</li>
+                            </ul>
+                            <div class="card-body">
+                                <a asp-controller="Conta" asp-action="Login" class="button-24 btn btn-outline-danger" type="button" role="button">
+                                    Ativar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="compraModal" tabindex="-1" aria-labelledby="compraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="compraModalLabel">Compra Finalizada</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Sua compra foi finalizada com sucesso!</p>
+                <p>Chave de ativação: <span id="chaveAtivacao"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function gerarChaveAtivacao() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let chave = '';
+        for (let i = 0; i < 16; i++) {
+            chave += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return chave;
+    }
+
+    function finalizarCompra() {
+        const chaveAtivacao = gerarChaveAtivacao();
+        document.getElementById('chaveAtivacao').textContent = chaveAtivacao;
+        const compraModal = new bootstrap.Modal(document.getElementById('compraModal'));
+        compraModal.show();
+    }
+</script>
