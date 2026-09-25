@@ -8,7 +8,7 @@ namespace Clouud.Web.Models
     /// Item de um pedido (o Pedido_Jogo do diagrama, agora apontando para o produto).
     /// Guarda o preço da hora da compra: se o preço do produto mudar depois, o pedido continua certo.
     /// </summary>
-    [Table("PedidoItens")]
+    [Table("pedido_itens")]
     [Index(nameof(PedidoId), nameof(ProdutoId), IsUnique = true)]
     public class PedidoItem
     {

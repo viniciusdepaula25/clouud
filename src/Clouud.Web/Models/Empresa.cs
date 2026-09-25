@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Clouud.Web.Models
 {
     /// <summary>Desenvolvedora ou publicadora de jogos.</summary>
-    [Table("Empresas")]
+    [Table("empresas")]
     [Index(nameof(Slug), IsUnique = true)]
     public class Empresa
     {

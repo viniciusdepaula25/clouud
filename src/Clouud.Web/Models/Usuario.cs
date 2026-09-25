@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Clouud.Web.Models
 {
-    [Table("Usuarios")]
+    [Table("usuarios")]
     [Index(nameof(Email), IsUnique = true)] // não permite dois usuários com o mesmo e-mail
     public class Usuario
     {

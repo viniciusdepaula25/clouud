@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Clouud.Web.Models
 {
     /// <summary>Onde a chave é ativada: Steam, Epic Games, Ubisoft Connect, Battle.net...</summary>
-    [Table("Plataformas")]
+    [Table("plataformas")]
     [Index(nameof(Slug), IsUnique = true)]
     public class Plataforma
     {

@@ -33,7 +33,7 @@ namespace Clouud.Web.Data
             {
                 relacionamento.DeleteBehavior = DeleteBehavior.Restrict;
             }
-            // Jogo x Categoria (N:N) pela tabela JogoCategorias; apagar um lado apaga só o vínculo
+            // Jogo x Categoria (N:N) pela tabela jogo_categorias; apagar um lado apaga só o vínculo
             modelBuilder.Entity<Jogo>()
                 .HasMany(j => j.Categorias)
                 .WithMany(c => c.Jogos)
@@ -50,9 +50,9 @@ namespace Clouud.Web.Data
             // Preço promocional sempre menor que o preço normal
             modelBuilder.Entity<Produto>().ToTable(t =>
             {
-                t.HasCheckConstraint("CK_Produtos_Preco", "\"Preco\" >= 0");
-                t.HasCheckConstraint("CK_Produtos_PrecoPromocional",
-                    "\"PrecoPromocional\" IS NULL OR (\"PrecoPromocional\" >= 0 AND \"PrecoPromocional\" < \"Preco\")");
+                t.HasCheckConstraint("ck_produtos_preco", "preco >= 0");
+                t.HasCheckConstraint("ck_produtos_preco_promocional",
+                    "preco_promocional IS NULL OR (preco_promocional >= 0 AND preco_promocional < preco)");
             });
 
             // Status da chave gravado como texto, para o banco ficar legível
@@ -61,11 +61,11 @@ namespace Clouud.Web.Data
                 chave.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
                 chave.ToTable(t =>
                 {
-                    t.HasCheckConstraint("CK_Chaves_Status",
-                        "\"Status\" IN ('Disponivel', 'Reservada', 'Vendida', 'Inativa')");
+                    t.HasCheckConstraint("ck_chaves_status",
+                        "status IN ('Disponivel', 'Reservada', 'Vendida', 'Inativa')");
                     // Reservada/vendida sempre tem pedido; disponível nunca tem
-                    t.HasCheckConstraint("CK_Chaves_Pedido",
-                        "(\"Status\" IN ('Reservada', 'Vendida') AND \"PedidoItemId\" IS NOT NULL) OR (\"Status\" = 'Disponivel' AND \"PedidoItemId\" IS NULL) OR \"Status\" = 'Inativa'");
+                    t.HasCheckConstraint("ck_chaves_pedido",
+                        "(status IN ('Reservada', 'Vendida') AND pedido_item_id IS NOT NULL) OR (status = 'Disponivel' AND pedido_item_id IS NULL) OR status = 'Inativa'");
                 });
             });
 
@@ -74,17 +74,17 @@ namespace Clouud.Web.Data
                 pedido.Property(p => p.Status).HasConversion<string>().HasMaxLength(30);
                 pedido.ToTable(t =>
                 {
-                    t.HasCheckConstraint("CK_Pedidos_Status",
-                        "\"Status\" IN ('AguardandoPagamento', 'Pago', 'Cancelado', 'Reembolsado')");
-                    t.HasCheckConstraint("CK_Pedidos_Total", "\"Total\" >= 0");
+                    t.HasCheckConstraint("ck_pedidos_status",
+                        "status IN ('AguardandoPagamento', 'Pago', 'Cancelado', 'Reembolsado')");
+                    t.HasCheckConstraint("ck_pedidos_total", "total >= 0");
                 });
                 pedido.HasIndex(p => new { p.Status, p.PagarAte });
             });
 
             modelBuilder.Entity<PedidoItem>().ToTable(t =>
             {
-                t.HasCheckConstraint("CK_PedidoItens_Quantidade", "\"Quantidade\" > 0");
-                t.HasCheckConstraint("CK_PedidoItens_Valores", "\"PrecoUnitario\" >= 0 AND \"Subtotal\" >= 0");
+                t.HasCheckConstraint("ck_pedido_itens_quantidade", "quantidade > 0");
+                t.HasCheckConstraint("ck_pedido_itens_valores", "preco_unitario >= 0 AND subtotal >= 0");
             });
 
             modelBuilder.Entity<Pagamento>(pagamento =>
@@ -93,8 +93,8 @@ namespace Clouud.Web.Data
                 pagamento.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
                 pagamento.ToTable(t =>
                 {
-                    t.HasCheckConstraint("CK_Pagamentos_Metodo", "\"Metodo\" IN ('Pix', 'Cartao', 'Boleto')");
-                    t.HasCheckConstraint("CK_Pagamentos_Status", "\"Status\" IN ('Pendente', 'Aprovado', 'Recusado')");
+                    t.HasCheckConstraint("ck_pagamentos_metodo", "metodo IN ('Pix', 'Cartao', 'Boleto')");
+                    t.HasCheckConstraint("ck_pagamentos_status", "status IN ('Pendente', 'Aprovado', 'Recusado')");
                 });
             });
 
@@ -103,12 +103,15 @@ namespace Clouud.Web.Data
             {
                 item.HasOne(i => i.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
                 item.HasOne(i => i.Produto).WithMany().OnDelete(DeleteBehavior.Cascade);
-                item.ToTable(t => t.HasCheckConstraint("CK_CarrinhoItens_Quantidade",
-                    $"\"Quantidade\" BETWEEN 1 AND {CarrinhoItem.QuantidadeMaxima}"));
+                item.ToTable(t => t.HasCheckConstraint("ck_carrinho_itens_quantidade",
+                    $"quantidade BETWEEN 1 AND {CarrinhoItem.QuantidadeMaxima}"));
             });
 
             base.OnModelCreating(modelBuilder);
-            //modelBuilder.ApplyConfigurationsFromAssembly(typeof(BancoDados).Assembly);
+
+            // Por último: nomes de tabelas, colunas, chaves e índices em minúsculo snake_case.
+            // Os check constraints acima já são escritos com esses nomes.
+            NomesSnakeCase.Aplicar(modelBuilder);
         }
 
     }

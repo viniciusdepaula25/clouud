@@ -8,7 +8,7 @@ namespace Clouud.Web.Models
     /// O que a loja vende: um jogo, em uma plataforma, em uma edição.
     /// Ex.: "Elden Ring — Steam — Standard". Tem preço próprio e estoque de chaves.
     /// </summary>
-    [Table("Produtos")]
+    [Table("produtos")]
     [Index(nameof(JogoId), nameof(PlataformaId), nameof(Edicao), IsUnique = true)]
     public class Produto
     {

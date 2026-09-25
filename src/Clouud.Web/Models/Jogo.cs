@@ -8,7 +8,7 @@ namespace Clouud.Web.Models
     /// Informações do jogo (título, descrição, capa). O que é vendido é o <see cref="Produto"/>:
     /// o mesmo jogo pode ser vendido em várias plataformas e edições, cada uma com seu preço.
     /// </summary>
-    [Table("Jogos")]
+    [Table("jogos")]
     [Index(nameof(Slug), IsUnique = true)]
     public class Jogo
     {

@@ -34,7 +34,7 @@ namespace Clouud.Web.Models
     /// Uma chave de ativação do estoque de um <see cref="Produto"/>. Cada chave é vendida uma única vez,
     /// por isso o código é único em toda a loja (a mesma chave não entra em dois produtos).
     /// </summary>
-    [Table("Chaves")]
+    [Table("chaves")]
     [Index(nameof(Codigo), IsUnique = true)]
     [Index(nameof(ProdutoId), nameof(Status))]
     public class Chave

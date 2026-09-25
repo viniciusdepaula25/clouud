@@ -90,6 +90,14 @@ Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam a
 
 ## Banco de dados
 
+Tabelas e colunas ficam em minúsculo snake_case, então o SQL escrito à mão não precisa de aspas:
+
+```sql
+SELECT j.titulo, p.edicao, p.preco FROM produtos p JOIN jogos j ON j.id = p.jogo_id;
+```
+
+No C# as classes continuam em PascalCase (`PedidoItem.PrecoUnitario` vira a coluna `pedido_itens.preco_unitario`); a conversão é feita em `Data/NomesSnakeCase.cs`. Check constraints e SQL escrito à mão (`migrationBuilder.Sql`, `FromSql`) devem usar os nomes em snake_case.
+
 Depois de alterar alguma classe em `Models/`, gere uma nova migration e aplique:
 
 ```bash

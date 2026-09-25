@@ -32,7 +32,7 @@ namespace Clouud.Web.Models
     /// Uma tentativa de pagamento do pedido. Por enquanto o pagamento é simulado: não há integração
     /// com operadora, e o código da transação é gerado pela própria loja.
     /// </summary>
-    [Table("Pagamentos")]
+    [Table("pagamentos")]
     public class Pagamento
     {
         [Key]

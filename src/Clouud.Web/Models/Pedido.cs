@@ -37,7 +37,7 @@ namespace Clouud.Web.Models
         };
     }
 
-    [Table("Pedidos")]
+    [Table("pedidos")]
     public class Pedido
     {
         [Key]

@@ -76,11 +76,11 @@ namespace Clouud.Web.Services
             foreach (var item in pedido.Itens)
             {
                 var reservadas = bancoDados.Database.ExecuteSqlInterpolated($"""
-                    UPDATE "Chaves" SET "Status" = 'Reservada', "PedidoItemId" = {item.Id}
-                    WHERE "Id" IN (SELECT "Id" FROM "Chaves"
-                                   WHERE "ProdutoId" = {item.ProdutoId} AND "Status" = 'Disponivel'
-                                   ORDER BY "Id" LIMIT {item.Quantidade}
-                                   FOR UPDATE SKIP LOCKED)
+                    UPDATE chaves SET status = 'Reservada', pedido_item_id = {item.Id}
+                    WHERE id IN (SELECT id FROM chaves
+                                 WHERE produto_id = {item.ProdutoId} AND status = 'Disponivel'
+                                 ORDER BY id LIMIT {item.Quantidade}
+                                 FOR UPDATE SKIP LOCKED)
                     """);
                 if (reservadas < item.Quantidade)
                 {
@@ -225,7 +225,7 @@ namespace Clouud.Web.Services
         private Pedido? TravarPedido(int pedidoId)
         {
             return bancoDados.Pedidos
-                .FromSqlInterpolated($"""SELECT * FROM "Pedidos" WHERE "Id" = {pedidoId} FOR UPDATE""")
+                .FromSqlInterpolated($"SELECT * FROM pedidos WHERE id = {pedidoId} FOR UPDATE")
                 .AsEnumerable()
                 .FirstOrDefault();
         }

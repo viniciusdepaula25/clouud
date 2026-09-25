@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Clouud.Web.Models
 {
     /// <summary>Gênero do jogo (Ação, RPG, Luta...). Um jogo pode ter várias categorias.</summary>
-    [Table("Categorias")]
+    [Table("categorias")]
     [Index(nameof(Slug), IsUnique = true)]
     public class Categoria
     {

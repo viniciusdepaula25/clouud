@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Clouud.Web.Models
 {
     /// <summary>Produto que o cliente separou antes de pagar. O mesmo produto aparece uma vez; a quantidade aumenta.</summary>
-    [Table("CarrinhoItens")]
+    [Table("carrinho_itens")]
     [Index(nameof(UsuarioId), nameof(ProdutoId), IsUnique = true)]
     public class CarrinhoItem
     {
