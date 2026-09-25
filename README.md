@@ -58,6 +58,10 @@ No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam,
 
 Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam ao estoque. No admin, **Pedidos** mostra todos os pedidos e permite cancelar os que aguardam pagamento e reembolsar os pagos (as chaves reembolsadas ficam inativas).
 
+## Lista de desejos
+
+Na vitrine, o **♡** de cada card põe o jogo na lista de desejos do cliente (vale para todas as plataformas em que o jogo é vendido). A página **Lista de desejos** mostra o preço de agora em cada plataforma, as promoções, o que está esgotado e um botão para comprar. No admin, a tela de **Estoque** mostra quantos clientes querem cada jogo, o que ajuda a decidir o que repor.
+
 ## Estrutura
 
 ```
@@ -72,12 +76,13 @@ Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam a
         ├── Controllers/        # controllers da área pública (Home, Conta)
         ├── Areas/
         │   ├── Admin/          # painel administrativo (jogos, produtos, estoque, pedidos, plataformas, categorias, usuários)
-        │   └── Cliente/        # área do cliente logado (loja, carrinho, pedidos, minhas chaves, minha conta)
+        │   └── Cliente/        # área do cliente logado (loja, carrinho, pedidos, minhas chaves, lista de desejos, minha conta)
         ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Chave, Pedido, Pagamento, CarrinhoItem...)
         ├── ViewModels/         # modelos das telas (vitrine, formulários, login, cadastro)
-        ├── Services/           # regras reutilizáveis (login, vitrine, estoque, carrinho, pedidos, slugs)
+        ├── Services/           # regras reutilizáveis (login, vitrine, estoque, carrinho, pedidos, lista de desejos, slugs)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework
+        │   ├── NomesSnakeCase.cs # nomes do banco em minúsculo snake_case
         │   ├── AdminInicial.cs # cria o primeiro administrador
         │   └── Migrations/     # histórico de alterações do banco
         ├── Views/              # páginas Razor da área pública

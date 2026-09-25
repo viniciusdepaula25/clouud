@@ -77,7 +77,7 @@
                             <strong>@item.PrecoAtual.ToString("C")</strong>
                         </li>
                     </ul>
-                    <div class="card-body flex-grow-0 mt-auto">
+                    <div class="card-body flex-grow-0 mt-auto d-flex justify-content-center align-items-center gap-2">
                         @if (item.Esgotado)
                         {
                             <button class="button-24 btn btn-outline-secondary" type="button" disabled>Esgotado</button>
@@ -94,6 +94,25 @@
                         {
                             <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="/Cliente/Home"
                                class="button-24 btn btn-outline-danger" role="button">Comprar</a>
+                        }
+                        @* Coração: põe ou tira o jogo da lista de desejos *@
+                        @if (modoCarrinho)
+                        {
+                            var desejado = Model.JogosDesejados.Contains(item.JogoId);
+                            <form asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Alternar" method="post" class="m-0">
+                                <input type="hidden" name="jogoId" value="@item.JogoId" />
+                                <input type="hidden" name="voltarPara" value="@paginaAtual" />
+                                <button type="submit" class="btn btn-link text-danger fs-4 p-0 text-decoration-none desejo"
+                                        title="@(desejado ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
+                                        aria-label="@(desejado ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
+                                        aria-pressed="@(desejado ? "true" : "false")">@(desejado ? "♥" : "♡")</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="/Cliente/Home"
+                               class="text-danger fs-4 text-decoration-none" style="margin-left: 0"
+                               title="Entre para usar a lista de desejos" aria-label="Entre para usar a lista de desejos">♡</a>
                         }
                     </div>
                 </div>

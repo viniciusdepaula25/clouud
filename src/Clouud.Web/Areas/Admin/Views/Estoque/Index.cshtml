@@ -26,13 +26,14 @@
             <th scope="col" class="text-end">Reservadas</th>
             <th scope="col" class="text-end">Vendidas</th>
             <th scope="col" class="text-end">Inativas</th>
+            <th scope="col" class="text-end" title="Clientes com o jogo na lista de desejos">Desejos</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="8">Nenhum produto encontrado. <a asp-controller="Produto" asp-action="Inclui">Cadastre um produto</a> para adicionar chaves.</td></tr>
+            <tr><td colspan="9">Nenhum produto encontrado. <a asp-controller="Produto" asp-action="Inclui">Cadastre um produto</a> para adicionar chaves.</td></tr>
         }
         @foreach (var item in Model)
         {
@@ -63,6 +64,7 @@
                 <td class="text-end">@item.Reservadas</td>
                 <td class="text-end">@item.Vendidas</td>
                 <td class="text-end">@item.Inativas</td>
+                <td class="text-end">@(item.Desejos > 0 ? $"♥ {item.Desejos}" : "0")</td>
                 <td>
                     <a asp-action="Importar" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Importar chaves</a> |
                     <a asp-action="Chaves" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Ver chaves</a>

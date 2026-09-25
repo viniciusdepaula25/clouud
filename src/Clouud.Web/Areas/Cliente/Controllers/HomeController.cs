@@ -11,10 +11,13 @@ namespace Clouud.Web.Areas.Cliente.Controllers
     public class HomeController : ClienteLoginController
     {
         private readonly CatalogoService catalogo;
+        private readonly ListaDesejosService desejos;
 
-        public HomeController(IWebHostEnvironment webHostEnvironment, CatalogoService catalogo) : base(webHostEnvironment)
+        public HomeController(IWebHostEnvironment webHostEnvironment, CatalogoService catalogo, ListaDesejosService desejos)
+            : base(webHostEnvironment)
         {
             this.catalogo = catalogo;
+            this.desejos = desejos;
         }
 
 
@@ -22,6 +25,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         {
             // produtos à venda, com os filtros de busca, plataforma, categoria e promoção
             var vitrine = catalogo.MontarVitrine(busca, plataforma, categoria, promocoes);
+            vitrine.JogosDesejados = desejos.JogosDoUsuario(UsuarioId);
             return View(vitrine);
         }
 

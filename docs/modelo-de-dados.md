@@ -2,7 +2,7 @@
 
 Este documento compara o modelo do curso com o que uma loja de chaves precisa e descreve o modelo proposto para o CLOUUD, junto com o plano para chegar nele.
 
-**Situação:** etapas 1 (catálogo), 2 (estoque de chaves) e 3 (compra) concluídas. Veja o [plano](#4-plano-de-implementação).
+**Situação:** as quatro etapas do plano estão concluídas (catálogo, estoque de chaves, compra e lista de desejos). Veja o [plano](#4-plano-de-implementação).
 
 ## 1. Modelo do curso (ponto de partida)
 
@@ -238,6 +238,6 @@ Cada etapa é um commit, com as telas funcionando no final:
 1. ✅ **Catálogo** (migration `Catalogo`): `plataformas`, `categorias`, `empresas`, `jogos` reformulado e `produtos`. Telas do admin para jogos e produtos (com preço promocional) e vitrine mostrando plataforma, preço e desconto.
 2. ✅ **Estoque de chaves** (migration `Estoque`): tabela `chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
 3. ✅ **Compra** (migration `Compra`): `carrinho_itens`, `pedidos` com status, `pedido_itens` e `pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
-4. **Lista de desejos.**
+4. ✅ **Lista de desejos** (migration `ListaDesejos`): tabela `lista_desejos`, coração na vitrine, página "Lista de desejos" com preço, promoção e estoque de cada plataforma, e a procura de cada jogo no estoque do admin.
 
-Depois da etapa 3, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.
+Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.

@@ -174,7 +174,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             return RedirectToAction("Chaves", new { id = chave.ProdutoId, status = filtro });
         }
 
-        private static IQueryable<EstoqueProdutoViewModel> ResumoDosProdutos(IQueryable<Produto> produtos)
+        private IQueryable<EstoqueProdutoViewModel> ResumoDosProdutos(IQueryable<Produto> produtos)
         {
             return produtos.Select(p => new EstoqueProdutoViewModel
             {
@@ -186,7 +186,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 Disponiveis = p.Chaves.Count(c => c.Status == StatusChave.Disponivel),
                 Reservadas = p.Chaves.Count(c => c.Status == StatusChave.Reservada),
                 Vendidas = p.Chaves.Count(c => c.Status == StatusChave.Vendida),
-                Inativas = p.Chaves.Count(c => c.Status == StatusChave.Inativa)
+                Inativas = p.Chaves.Count(c => c.Status == StatusChave.Inativa),
+                Desejos = bancoDados.ListaDesejos.Count(d => d.JogoId == p.JogoId)
             });
         }
 

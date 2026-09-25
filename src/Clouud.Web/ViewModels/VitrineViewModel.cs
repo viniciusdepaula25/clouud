@@ -13,6 +13,9 @@ namespace Clouud.Web.ViewModels
         public List<ProdutoVitrineViewModel> Produtos { get; set; } = new();
         public List<Plataforma> Plataformas { get; set; } = new();
         public List<Categoria> Categorias { get; set; } = new();
+
+        /// <summary>Jogos na lista de desejos do cliente logado (vazio para visitantes).</summary>
+        public HashSet<int> JogosDesejados { get; set; } = new();
     }
 
     /// <summary>Um card da vitrine (um produto: jogo + plataforma + edição).</summary>

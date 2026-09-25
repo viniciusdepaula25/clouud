@@ -18,6 +18,9 @@ namespace Clouud.Web.ViewModels
         public int Reservadas { get; set; }
         public int Vendidas { get; set; }
         public int Inativas { get; set; }
+
+        /// <summary>Clientes com o jogo na lista de desejos (procura por esse jogo).</summary>
+        public int Desejos { get; set; }
     }
 
     /// <summary>Chaves de um produto, com filtro por situação.</summary>

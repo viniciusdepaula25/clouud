@@ -1,10 +1,11 @@
 @* Barra de navegação da área do cliente (nome e foto levam para "Minha conta") *@
 @using System.Security.Claims
 @inject Clouud.Web.Services.CarrinhoService Carrinho
+@inject Clouud.Web.Services.ListaDesejosService Desejos
 @{
-    var unidadesNoCarrinho = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId)
-        ? Carrinho.ContarUnidades(usuarioId)
-        : 0;
+    var logado = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId);
+    var unidadesNoCarrinho = logado ? Carrinho.ContarUnidades(usuarioId) : 0;
+    var jogosDesejados = logado ? Desejos.Contar(usuarioId) : 0;
 }
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
     <div class="container-fluid">
@@ -27,6 +28,11 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" asp-area="Cliente" asp-controller="MinhasChaves" asp-action="Index">Minhas chaves</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Index">
+                    Lista de desejos@(jogosDesejados > 0 ? $" ({jogosDesejados})" : "")
+                </a>
             </li>
         </ul>
         <div class="d-flex align-items-center gap-2" style="margin-right: 10px;">

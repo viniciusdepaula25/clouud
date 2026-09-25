@@ -13,6 +13,7 @@ namespace Clouud.Web.Data
         public DbSet<PedidoItem> PedidoItens { get; set; }
         public DbSet<Pagamento> Pagamentos { get; set; }
         public DbSet<CarrinhoItem> CarrinhoItens { get; set; }
+        public DbSet<ListaDesejo> ListaDesejos { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
@@ -105,6 +106,13 @@ namespace Clouud.Web.Data
                 item.HasOne(i => i.Produto).WithMany().OnDelete(DeleteBehavior.Cascade);
                 item.ToTable(t => t.HasCheckConstraint("ck_carrinho_itens_quantidade",
                     $"quantidade BETWEEN 1 AND {CarrinhoItem.QuantidadeMaxima}"));
+            });
+
+            // Lista de desejos: apagar o usuário ou o jogo remove o jogo das listas
+            modelBuilder.Entity<ListaDesejo>(desejo =>
+            {
+                desejo.HasOne(d => d.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
+                desejo.HasOne(d => d.Jogo).WithMany().OnDelete(DeleteBehavior.Cascade);
             });
 
             base.OnModelCreating(modelBuilder);
