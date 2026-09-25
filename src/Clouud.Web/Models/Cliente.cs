@@ -9,12 +9,12 @@ namespace Clouud.Web.Models
         [ForeignKey("Usuario")]
         [Display(Name ="Usuário")]
         public int Id { get; set; }
-        public virtual Usuario Usuario { get; set; }
+        public virtual Usuario Usuario { get; set; } = null!;
 
         [StringLength(30)]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
-        public ICollection<PedidoJ> pedidoJs { get; set; }
+        public ICollection<PedidoJ> pedidoJs { get; set; } = new List<PedidoJ>();
     
     
     

@@ -1,10 +1,16 @@
+using Clouud.Web.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers
+builder.Services.AddDbContext<BancoDados>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("LojaJogos")));
 
 
 // Adiciona o servico de autenticacao de usuarios por cookies
@@ -34,30 +40,19 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
-//ativa o serviço de autenticacao de usuarios no servidor
-app.UseAuthentication();
-
 app.UseStaticFiles();
 
 app.UseRouting();
 
-
+//ativa o serviço de autenticacao de usuarios no servidor
+app.UseAuthentication();
 app.UseAuthorization();
 
-
-//app.MapControllerRoute(
-//name: "default",
-//pattern: "{controller=Home}/{action=Index}/{id?}");
-
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllerRoute(
-        name: "areas",
-        pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-    endpoints.MapControllerRoute(
-        name: "default",
-        pattern: "{controller=Home}/{action=Index}/{id?}");
-});
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-

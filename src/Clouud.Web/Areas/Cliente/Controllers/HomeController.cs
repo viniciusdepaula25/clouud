@@ -10,16 +10,16 @@ namespace Clouud.Web.Areas.Cliente.Controllers
     //[Authorize(Roles = "Administrador,Cliente")]
     public class HomeController : ClienteLoginController
     {
-        public HomeController(IWebHostEnvironment webHostEnvironment) : base(webHostEnvironment)
-        {
-        }
+        private readonly BancoDados bancoDados;
 
-        BancoDados bancoDados;
+        public HomeController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        {
+            this.bancoDados = bancoDados;
+        }
 
 
         public IActionResult Index()
         {
-            bancoDados = new BancoDados();
             //lista todos os usuarios
             var jogos = bancoDados.Jogos.ToList();
             //envia a lista de usuarios para a view

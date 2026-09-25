@@ -14,12 +14,12 @@ namespace Clouud.Web.Models
 
         [Required(ErrorMessage = "Nome obrigatório")]
         [StringLength(60)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email obrigatório")]
         [StringLength(100)]
         [DataType(DataType.EmailAddress, ErrorMessage = "Informe um e-mail válido")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         [Display(Name = "Perfil do Usuário")]
         public PerfilUsuario Perfil { get; set; }
@@ -28,13 +28,13 @@ namespace Clouud.Web.Models
         [Required(ErrorMessage = "Senha obrigatória")]
         [StringLength(100)]
         [DataType(DataType.Password, ErrorMessage = "Informe uma senha válido")]
-        public string Senha { get; set; }
+        public string Senha { get; set; } = string.Empty;
 
         [DataType(DataType.ImageUrl)]
         public string? Foto { get; set; }
 
         [ValidateNever]
-        public virtual Cliente Cliente { get; set; }
+        public virtual Cliente Cliente { get; set; } = null!;
 
     }
     public enum PerfilUsuario 

@@ -11,8 +11,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
     [Authorize(Roles = "Admin,Cliente")]
     public class ClientesController : AdminController
     {
-        BancoDados bancoDados;
-        
         public ClientesController(IWebHostEnvironment webHostEnvironment) : base(webHostEnvironment) 
         {
         }

@@ -11,7 +11,13 @@ namespace Clouud.Web.Controllers
 {
     public class ContaController : Controller
     {
-        BancoDados bancoDados;
+        private readonly BancoDados bancoDados;
+
+        public ContaController(BancoDados bancoDados)
+        {
+            this.bancoDados = bancoDados;
+        }
+
         public IActionResult Index()
         {
             return View();
@@ -36,8 +42,6 @@ namespace Clouud.Web.Controllers
                 usuario.Email = conta.Email;
                 usuario.Senha = conta.Senha;
                 usuario.Perfil = conta.PerfilUsuario;
-                //Cadastra Usuário no Banco de Dados
-                bancoDados = new BancoDados();
                 bancoDados.Usuarios.Add(usuario); //comando insert
                 bancoDados.SaveChanges();
                 
@@ -71,7 +75,6 @@ namespace Clouud.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                bancoDados = new BancoDados();
                 var usuario = bancoDados.Usuarios
                     .FirstOrDefault(e => e.Email == login.Email && e.Senha == login.Senha);
 
@@ -112,7 +115,6 @@ namespace Clouud.Web.Controllers
         {
             if (usuario != null)
             {
-                bancoDados = new BancoDados();
                 string nome = string.Empty;
                 switch (usuario.Perfil)
                 {

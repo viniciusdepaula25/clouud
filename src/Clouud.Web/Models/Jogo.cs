@@ -11,16 +11,16 @@ namespace Clouud.Web.Models
         public int Id { get; set; }
 
         [StringLength(50)]
-        public string Nome { get; set; }
+        public string Nome { get; set; } = string.Empty;
 
         [StringLength(50)]
-        public string Desenvolvedora { get; set; }
+        public string Desenvolvedora { get; set; } = string.Empty;
 
         [StringLength(50)]
-        public string Plataforma { get; set; }
+        public string Plataforma { get; set; } = string.Empty;
 
         [StringLength(20)]
-        public string Categoria { get; set; }
+        public string Categoria { get; set; } = string.Empty;
 
         [DataType(DataType.Currency)]
         public double Valorj {  get; set; }

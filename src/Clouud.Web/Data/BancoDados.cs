@@ -15,23 +15,9 @@ namespace Clouud.Web.Data
 
 
 
-        public BancoDados()
+        // A conexão é configurada no Program.cs (AddDbContext) com a connection string "LojaJogos"
+        public BancoDados(DbContextOptions<BancoDados> options) : base(options)
         {
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            //configuração do banco de dados
-            // lê a connection string "LojaJogos" do appsettings.json
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true)
-                .AddJsonFile("appsettings.Development.json", optional: true)
-                .AddEnvironmentVariables()
-                .Build();
-
-            optionsBuilder.UseNpgsql(config.GetConnectionString("LojaJogos"));
-            base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

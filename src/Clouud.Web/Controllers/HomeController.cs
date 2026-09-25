@@ -10,16 +10,16 @@ namespace Clouud.Web.Controllers
     {
         private readonly ILogger<HomeController> _logger; 
         
-        BancoDados bancoDados;
+        private readonly BancoDados bancoDados;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, BancoDados bancoDados)
         {
             _logger = logger;
+            this.bancoDados = bancoDados;
         }
 
         public IActionResult Index()
         {
-            bancoDados = new BancoDados();
             //lista todos os usuarios
             var jogos = bancoDados.Jogos.ToList();
             //envia a lista de usuarios para a view

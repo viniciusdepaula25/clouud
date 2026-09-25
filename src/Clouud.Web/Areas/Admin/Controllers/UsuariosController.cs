@@ -9,17 +9,17 @@ namespace Clouud.Web.Areas.Admin.Controllers
     [Authorize(Roles = "Administrador")]
     public class UsuariosController : AdminController
     {
-        BancoDados bancoDados;
+        private readonly BancoDados bancoDados;
 
-        public UsuariosController(IWebHostEnvironment webHostEnvironment) : base(webHostEnvironment)
-        { 
+
+        public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        {
+            this.bancoDados = bancoDados; 
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            //Inicializa o banco de dados
-            bancoDados = new BancoDados();
             //lista todos os usuarios
             var usuarios = bancoDados.Usuarios.ToList();
             //envia a lista de usuarios para a view
@@ -30,8 +30,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Index(string busca)
         {
-            //inicializa o banco de dados
-            bancoDados = new BancoDados();
             //lista os usuarios realizando a busca
             var usuarios = new List<Usuario>();
             if (string.IsNullOrEmpty(busca))
@@ -56,8 +54,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             { 
-                //inclui o usuario no banco de dados
-                bancoDados = new BancoDados();
                 bancoDados.Usuarios.Add(usuario);//Incluir
                 bancoDados.SaveChanges();//Salva
                 //voltar para index
@@ -69,8 +65,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Altera(int id)
         {
-            //obtem o usuario no banco de dados
-            bancoDados = new BancoDados();
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
             if(usuario == null)
             {
@@ -85,7 +79,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
-                bancoDados = new BancoDados();
                 bancoDados.Usuarios.Update(usuario);
                 bancoDados.SaveChanges();
                 return RedirectToAction("Index");
@@ -96,7 +89,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Exibe(int id)
         {
-            bancoDados = new BancoDados();
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
             if (usuario == null)
             {
@@ -108,7 +100,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Exclui(int id)
         {
-            bancoDados = new BancoDados();
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
             if(usuario == null)
             {
@@ -123,7 +114,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if(usuario.ID > 0)
             {
-                bancoDados = new BancoDados();
                 bancoDados.Usuarios.Remove(usuario);
                 bancoDados.SaveChanges();
                 return RedirectToAction("Index");

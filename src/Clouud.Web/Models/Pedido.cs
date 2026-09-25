@@ -17,7 +17,7 @@ namespace Clouud.Web.Models
         [DataType(DataType.Currency)]
         public double Valor {  get; set; }
         
-        public ICollection<PedidoJ> PedidoJs { get; set; }
+        public ICollection<PedidoJ> PedidoJs { get; set; } = new List<PedidoJ>();
 
         public Pedido()
         { 

@@ -12,15 +12,15 @@ namespace Clouud.Web.Models
         public int IdPedido { get; set; }
         //Relacionamento FK
         [ForeignKey("IdPedido")]
-        public Pedido Servico { get; set; }
+        public Pedido Servico { get; set; } = null!;
 
         public int IdUsuario { get; set; }
         [ForeignKey("IdUsuario")]
-        public Usuario usuario { get; set; }
+        public Usuario usuario { get; set; } = null!;
 
         public int IdJogo { get; set; }
         [ForeignKey("IdJogo")]
-        public Jogo jogo { get; set; }
+        public Jogo jogo { get; set; } = null!;
 
         public int  Quantidade { get; set; }
 
@@ -30,7 +30,7 @@ namespace Clouud.Web.Models
         [Display(Name = "Valor Total")]
         public double ValorTotal { get; set; }
 
-        public ICollection<Jogo> jogos { get; set; }
+        public ICollection<Jogo> jogos { get; set; } = new List<Jogo>();
 
         public PedidoJ() 
         { 

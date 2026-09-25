@@ -10,16 +10,16 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
     public class JogoController : AdminController
     {
-        BancoDados bancoDados;
-        public JogoController(IWebHostEnvironment webHostEnvironment) : base(webHostEnvironment)
-        {  
+        private readonly BancoDados bancoDados;
+
+        public JogoController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        {
+            this.bancoDados = bancoDados;  
         }
 
         [HttpGet]
         public IActionResult Index()
         {
-            //inicializa o banco de dados
-            bancoDados = new BancoDados();
             //lista todos os usuarios
             var jogos = bancoDados.Jogos.ToList();
             //envia a lista de usuarios para a view
@@ -30,8 +30,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Index(string busca)
         {
-            //inicializa o banco de dados
-            bancoDados = new BancoDados();
             //lista os usuarios realizando a busca
             var jogos = new List<Jogo>();
             if (string.IsNullOrWhiteSpace(busca))
@@ -65,7 +63,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
                     jogo.Foto = nomeArquivo;
                 }
 
-                bancoDados = new BancoDados();
                 bancoDados.Jogos.Add(jogo);
                 bancoDados.SaveChanges();
                 return RedirectToAction("Index");
@@ -76,8 +73,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Altera(int id)
         {
-            //obtem usuario do banco de dados
-            bancoDados = new BancoDados();
             var jogo = bancoDados.Jogos.FirstOrDefault(e => e.Id == id);
             if (jogo == null)
             {
@@ -101,8 +96,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
                     var nomeArquivo = SalvaArquivo(arquivo);
                     jogo.Foto = nomeArquivo;
                 }
-                //altera o usuario no banco de dados
-                bancoDados = new BancoDados();
                 bancoDados.Jogos.Update(jogo);
                 bancoDados.SaveChanges();
                 //volta para index
@@ -114,8 +107,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Exibe(int id)
         {
-            //obtem usuario do banco de dados
-            bancoDados = new BancoDados();
             var jogo = bancoDados.Jogos.FirstOrDefault(e => e.Id == id);
             if (jogo == null)
             {
@@ -126,8 +117,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [HttpGet]
         public IActionResult Exclui(int id)
         {
-            //obtem usuario do banco de dados
-            bancoDados = new BancoDados();
             var jogo = bancoDados.Jogos.FirstOrDefault(e => e.Id == id);
             if (jogo == null)
             {
@@ -142,8 +131,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if (jogo.Id > 0)
             {
-                //exclui usuario do banco de dados
-                bancoDados = new BancoDados();
                 bancoDados.Jogos.Remove(jogo);
                 bancoDados.SaveChanges();
                 //volta para index
