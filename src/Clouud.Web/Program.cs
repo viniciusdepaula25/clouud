@@ -21,6 +21,7 @@ builder.Services.AddDbContext<BancoDados>(options =>
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 builder.Services.AddScoped<SenhaService>();
 builder.Services.AddScoped<AutenticacaoService>();
+builder.Services.AddScoped<CatalogoService>();
 builder.Services.AddHttpContextAccessor();
 
 

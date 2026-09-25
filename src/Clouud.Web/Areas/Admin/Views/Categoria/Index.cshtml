@@ -1,0 +1,55 @@
+@model IEnumerable<Clouud.Web.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Categorias";
+}
+
+<h1>Categorias</h1>
+<p>Gêneros dos jogos. Um jogo pode ter várias categorias; elas aparecem como filtro na vitrine.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+<form asp-action="Inclui" method="post" class="d-flex gap-2 mb-3" style="max-width: 480px">
+    <input type="text" name="nome" maxlength="60" placeholder="Nova categoria" class="form-control" required />
+    <input type="submit" value="Adicionar" class="btn btn-secondary" />
+</form>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Nome</th>
+            <th scope="col">Jogos</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="3">Nenhuma categoria cadastrada.</td></tr>
+        }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <form asp-action="Altera" asp-route-id="@item.Id" method="post" class="d-flex gap-2">
+                        <input type="text" name="nome" value="@item.Nome" maxlength="60" class="form-control form-control-sm" required
+                               aria-label="Nome da categoria" />
+                        <input type="submit" value="Renomear" class="btn btn-secondary btn-sm" />
+                    </form>
+                </td>
+                <td>@item.Jogos.Count</td>
+                <td>
+                    <form asp-action="Exclui" asp-route-id="@item.Id" method="post" data-nome="@item.Nome"
+                          onsubmit="return confirm('Excluir a categoria ' + this.dataset.nome + '? Os jogos continuam cadastrados.')">
+                        <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,32 @@
+@model Clouud.Web.ViewModels.ProdutoFormViewModel
+
+@{
+    ViewData["Title"] = "Altera";
+}
+
+<h1>Altera</h1>
+
+<h4>Produto</h4>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Altera">
+            <partial name="_Form" model="Model" />
+            <div class="form-group mt-3">
+                <input type="submit" value="Salvar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" asp-route-jogoId="@Model.JogoId">Voltar</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

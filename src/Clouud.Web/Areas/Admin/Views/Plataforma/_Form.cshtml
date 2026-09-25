@@ -1,0 +1,19 @@
+@model Clouud.Web.Models.Plataforma
+@* Campos do formulário de plataforma, usados em Inclui e Altera *@
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="form-group">
+    <label asp-for="Nome" class="control-label"></label>
+    <input asp-for="Nome" class="form-control" />
+    <span asp-validation-for="Nome" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="InstrucoesAtivacao" class="control-label"></label>
+    <textarea asp-for="InstrucoesAtivacao" class="form-control" rows="5"></textarea>
+    <span asp-validation-for="InstrucoesAtivacao" class="text-danger"></span>
+</div>
+<div class="form-check mt-3">
+    <input asp-for="Ativa" class="form-check-input" />
+    <label asp-for="Ativa" class="form-check-label">Ativa (aparece na loja)</label>
+</div>

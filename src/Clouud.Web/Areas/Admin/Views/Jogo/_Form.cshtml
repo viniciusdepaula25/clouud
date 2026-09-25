@@ -1,0 +1,92 @@
+@model Clouud.Web.ViewModels.JogoFormViewModel
+@using Clouud.Web.Models
+@* Campos do formulário de jogo, usados em Inclui e Altera *@
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row">
+    <div class="col-md-8">
+        <div class="form-group">
+            <label asp-for="Titulo" class="control-label"></label>
+            <input asp-for="Titulo" class="form-control" />
+            <span asp-validation-for="Titulo" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Descricao" class="control-label"></label>
+            <textarea asp-for="Descricao" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Descricao" class="text-danger"></span>
+        </div>
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label asp-for="DataLancamento" class="control-label"></label>
+                <input asp-for="DataLancamento" class="form-control" />
+                <span asp-validation-for="DataLancamento" class="text-danger"></span>
+            </div>
+            <div class="form-group col-sm-6">
+                <label asp-for="ClassificacaoIndicativa" class="control-label"></label>
+                <select asp-for="ClassificacaoIndicativa" class="form-select">
+                    <option value="">Não informada</option>
+                    @foreach (var classificacao in Jogo.Classificacoes)
+                    {
+                        <option value="@classificacao">@(classificacao == "L" ? "Livre" : classificacao + " anos")</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-sm-6">
+                <label asp-for="Desenvolvedora" class="control-label"></label>
+                <input asp-for="Desenvolvedora" class="form-control" list="empresas" autocomplete="off" />
+                <span asp-validation-for="Desenvolvedora" class="text-danger"></span>
+            </div>
+            <div class="form-group col-sm-6">
+                <label asp-for="Publicadora" class="control-label"></label>
+                <input asp-for="Publicadora" class="form-control" list="empresas" autocomplete="off" />
+                <span asp-validation-for="Publicadora" class="text-danger"></span>
+            </div>
+            <datalist id="empresas">
+                @foreach (var empresa in Model.OpcoesEmpresas)
+                {
+                    <option value="@empresa"></option>
+                }
+            </datalist>
+            <small class="form-text">Escolha da lista ou digite um nome novo; a empresa é cadastrada ao salvar.</small>
+        </div>
+        <div class="form-group mt-3">
+            <label class="control-label">Categorias</label>
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var categoria in Model.OpcoesCategorias)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="CategoriaIds" value="@categoria.Id"
+                               id="categoria-@categoria.Id" checked="@Model.CategoriaIds.Contains(categoria.Id)" />
+                        <label class="form-check-label" for="categoria-@categoria.Id">@categoria.Nome</label>
+                    </div>
+                }
+            </div>
+            @if (Model.OpcoesCategorias.Count == 0)
+            {
+                <small class="form-text">Nenhuma categoria cadastrada. <a asp-controller="Categoria" asp-action="Index">Cadastrar categorias</a></small>
+            }
+        </div>
+        <div class="form-check mt-3">
+            <input asp-for="Destaque" class="form-check-input" />
+            <label asp-for="Destaque" class="form-check-label"></label>
+        </div>
+        <div class="form-check">
+            <input asp-for="Ativo" class="form-check-input" />
+            <label asp-for="Ativo" class="form-check-label"></label>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label for="txtArquivo" class="control-label">Capa</label>
+            @if (Model.CapaAtual != null)
+            {
+                <img src="~/uploads/@Model.CapaAtual" alt="Capa atual" class="img-fluid d-block mb-2" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+                <small class="form-text">Escolha um arquivo só se quiser trocar a capa.</small>
+            }
+            <input type="file" name="arquivo" id="txtArquivo" class="form-control" accept="image/*" />
+        </div>
+    </div>
+</div>

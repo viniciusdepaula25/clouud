@@ -1,0 +1,69 @@
+@model Clouud.Web.ViewModels.ProdutoFormViewModel
+@* Campos do formulário de produto, usados em Inclui e Altera *@
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="form-group">
+    <label asp-for="JogoId" class="control-label"></label>
+    <select asp-for="JogoId" asp-items="Model.OpcoesJogos" class="form-select">
+        <option value="">Escolha o jogo</option>
+    </select>
+    <span asp-validation-for="JogoId" class="text-danger"></span>
+</div>
+<div class="form-group">
+    <label asp-for="PlataformaId" class="control-label"></label>
+    <select asp-for="PlataformaId" asp-items="Model.OpcoesPlataformas" class="form-select">
+        <option value="">Escolha a plataforma</option>
+    </select>
+    <span asp-validation-for="PlataformaId" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="form-group col-sm-6">
+        <label asp-for="Edicao" class="control-label"></label>
+        <input asp-for="Edicao" class="form-control" list="edicoes" />
+        <datalist id="edicoes">
+            <option value="Standard"></option>
+            <option value="Deluxe"></option>
+            <option value="Gold"></option>
+            <option value="Ultimate"></option>
+            <option value="Complete"></option>
+        </datalist>
+        <span asp-validation-for="Edicao" class="text-danger"></span>
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="Regiao" class="control-label"></label>
+        <input asp-for="Regiao" class="form-control" list="regioes" />
+        <datalist id="regioes">
+            <option value="Global"></option>
+            <option value="Brasil"></option>
+            <option value="América Latina"></option>
+        </datalist>
+        <span asp-validation-for="Regiao" class="text-danger"></span>
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="Preco" class="control-label"></label>
+    <input asp-for="Preco" class="form-control" placeholder="Ex: 59.90" inputmode="decimal" />
+    <span asp-validation-for="Preco" class="text-danger"></span>
+</div>
+<fieldset class="border rounded p-2 mt-3">
+    <legend class="fs-6 w-auto px-1">Promoção (opcional)</legend>
+    <div class="row">
+        <div class="form-group col-sm-6">
+            <label asp-for="PrecoPromocional" class="control-label"></label>
+            <input asp-for="PrecoPromocional" class="form-control" placeholder="Ex: 29.90" inputmode="decimal" />
+            <span asp-validation-for="PrecoPromocional" class="text-danger"></span>
+        </div>
+        <div class="form-group col-sm-6">
+            <label asp-for="PromocaoAte" class="control-label"></label>
+            <input asp-for="PromocaoAte" class="form-control" />
+            <span asp-validation-for="PromocaoAte" class="text-danger"></span>
+        </div>
+    </div>
+    <small class="form-text">Deixe o preço promocional em branco para vender pelo preço normal. Sem data, a promoção vale até ser removida.</small>
+</fieldset>
+<div class="form-check mt-3">
+    <input asp-for="Ativo" class="form-check-input" />
+    <label asp-for="Ativo" class="form-check-label"></label>
+</div>
+<small class="form-text">Use ponto como separador decimal nos preços (ex.: 59.90).</small>

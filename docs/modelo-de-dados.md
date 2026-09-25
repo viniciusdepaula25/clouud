@@ -2,7 +2,9 @@
 
 Este documento compara o modelo do curso com o que uma loja de chaves precisa e descreve o modelo proposto para o CLOUUD, junto com o plano para chegar nele.
 
-## 1. Modelo atual (igual ao diagrama do curso)
+**Situação:** etapa 1 (catálogo) concluída. Veja o [plano](#4-plano-de-implementação).
+
+## 1. Modelo do curso (ponto de partida)
 
 ```mermaid
 erDiagram
@@ -113,7 +115,7 @@ erDiagram
         string Descricao
         date DataLancamento
         string ClassificacaoIndicativa
-        string CapaUrl
+        string Capa "arquivo em uploads"
         int DesenvolvedoraId FK
         int PublicadoraId FK
         bool Destaque
@@ -214,11 +216,12 @@ A migration de cada etapa converte os dados que já existem:
 
 | Hoje | Vai para |
 |---|---|
-| `Jogos.Plataforma` (texto) | Linha em `Plataformas` + um `Produto` para o jogo nessa plataforma |
+| `Jogos.Plataforma` (texto) | Linha em `Plataformas` + um `Produto` para o jogo nessa plataforma (nomes comuns como "Epic", "Uplay" ou "obsofit" apontam para a plataforma já cadastrada) |
 | `Jogos.Valor` | `Produtos.Preco` |
-| `Jogos.Categoria` (texto) | Linha em `Categorias` + vínculo em `JogoCategorias` |
+| `Jogos.Categoria` (texto) | Linha em `Categorias` + vínculo em `JogoCategorias` ("Ação, Aventura" vira duas categorias) |
 | `Jogos.Desenvolvedora` (texto) | Linha em `Empresas` + `Jogos.DesenvolvedoraId` |
-| `Jogos.Foto` | `Jogos.CapaUrl` |
+| `Jogos.Nome` | `Jogos.Titulo` (e `Slug` gerado a partir dele) |
+| `Jogos.Foto` | `Jogos.Capa` |
 | `Pedidos` | `Pedidos` + `Status`, `CriadoEm`, `PagoEm` |
 | `PedidoJogos` | `PedidoItens` (apontando para o produto do jogo) |
 
@@ -226,7 +229,7 @@ A migration de cada etapa converte os dados que já existem:
 
 Cada etapa é um commit, com as telas funcionando no final:
 
-1. **Catálogo:** `Plataformas`, `Categorias`, `Empresas`, `Jogos` reformulado e `Produtos`. Telas do admin para jogos e produtos (com preço promocional) e vitrine mostrando plataforma, preço e desconto.
+1. ✅ **Catálogo** (migration `Catalogo`): `Plataformas`, `Categorias`, `Empresas`, `Jogos` reformulado e `Produtos`. Telas do admin para jogos e produtos (com preço promocional) e vitrine mostrando plataforma, preço e desconto.
 2. **Estoque de chaves:** tabela `Chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
 3. **Compra:** `CarrinhoItens`, `Pedidos` com status, `PedidoItens` e `Pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
 4. **Lista de desejos.**

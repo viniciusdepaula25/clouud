@@ -40,6 +40,14 @@ O cadastro pelo site cria apenas contas de **cliente**. Ao iniciar em modo de de
 
 As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com a senha salva em texto puro, continuam funcionando: no primeiro login a senha é convertida para hash automaticamente.
 
+## Catálogo
+
+- **Jogo:** informações do jogo (título, descrição, capa, lançamento, classificação, desenvolvedora, publicadora e categorias).
+- **Produto:** o que a loja vende, ou seja, um jogo em uma plataforma e edição, com preço e preço promocional opcional (com data de término). O jogo só aparece na vitrine depois de ter um produto ativo.
+- **Plataformas** e **categorias** são cadastradas no admin e viram os filtros da vitrine.
+
+No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço. Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
+
 ## Estrutura
 
 ```
@@ -53,11 +61,11 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com 
         ├── Program.cs          # configuração da aplicação (serviços e pipeline)
         ├── Controllers/        # controllers da área pública (Home, Conta)
         ├── Areas/
-        │   ├── Admin/          # painel administrativo (jogos, usuários)
+        │   ├── Admin/          # painel administrativo (jogos, produtos, plataformas, categorias, usuários)
         │   └── Cliente/        # área do cliente logado
-        ├── Models/             # entidades do banco (Usuario, Jogo, Pedido, PedidoJogo)
-        ├── ViewModels/         # modelos das telas (login, cadastro, erro)
-        ├── Services/           # regras reutilizáveis (ex.: hash de senha)
+        ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Plataforma, Categoria, Empresa, Pedido...)
+        ├── ViewModels/         # modelos das telas (vitrine, formulários, login, cadastro)
+        ├── Services/           # regras reutilizáveis (hash de senha, login, vitrine, slugs)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework
         │   ├── AdminInicial.cs # cria o primeiro administrador

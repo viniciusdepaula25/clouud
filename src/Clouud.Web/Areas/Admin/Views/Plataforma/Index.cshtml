@@ -1,0 +1,40 @@
+@model IEnumerable<Clouud.Web.Models.Plataforma>
+
+@{
+    ViewData["Title"] = "Plataformas";
+}
+
+<h1>Plataformas</h1>
+<p>Onde as chaves são ativadas. As instruções aparecem para o cliente junto da chave comprada.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+<div class="mb-2">
+    <a class="btn btn-secondary" asp-action="Inclui">Cadastre uma Plataforma</a>
+</div>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Nome</th>
+            <th scope="col">Produtos</th>
+            <th scope="col">Situação</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Nome</td>
+                <td>@item.Produtos.Count</td>
+                <td>@(item.Ativa ? "Ativa" : "Inativa")</td>
+                <td>
+                    <a asp-action="Altera" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Alterar</a> |
+                    <a asp-action="Exclui" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Excluir</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

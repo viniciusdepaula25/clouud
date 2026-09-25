@@ -10,7 +10,11 @@ namespace Clouud.Web.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Jogo> Jogos { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<PedidoJogo> PedidoJogos { get; set; }    
+        public DbSet<PedidoJogo> PedidoJogos { get; set; }
+        public DbSet<Plataforma> Plataformas { get; set; }
+        public DbSet<Categoria> Categorias { get; set; }
+        public DbSet<Empresa> Empresas { get; set; }
+        public DbSet<Produto> Produtos { get; set; }
 
 
 
@@ -26,6 +30,28 @@ namespace Clouud.Web.Data
             {
                 relacionamento.DeleteBehavior = DeleteBehavior.Restrict;
             }
+            // Jogo x Categoria (N:N) pela tabela JogoCategorias; apagar um lado apaga só o vínculo
+            modelBuilder.Entity<Jogo>()
+                .HasMany(j => j.Categorias)
+                .WithMany(c => c.Jogos)
+                .UsingEntity<Dictionary<string, object>>(
+                    "JogoCategorias",
+                    r => r.HasOne<Categoria>().WithMany().HasForeignKey("CategoriaId").OnDelete(DeleteBehavior.Cascade),
+                    l => l.HasOne<Jogo>().WithMany().HasForeignKey("JogoId").OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasKey("JogoId", "CategoriaId"));
+
+            // Empresa removida: o jogo fica sem desenvolvedora/publicadora
+            modelBuilder.Entity<Jogo>().HasOne(j => j.Desenvolvedora).WithMany().OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<Jogo>().HasOne(j => j.Publicadora).WithMany().OnDelete(DeleteBehavior.SetNull);
+
+            // Preço promocional sempre menor que o preço normal
+            modelBuilder.Entity<Produto>().ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_Produtos_Preco", "\"Preco\" >= 0");
+                t.HasCheckConstraint("CK_Produtos_PrecoPromocional",
+                    "\"PrecoPromocional\" IS NULL OR (\"PrecoPromocional\" >= 0 AND \"PrecoPromocional\" < \"Preco\")");
+            });
+
             base.OnModelCreating(modelBuilder);
             //modelBuilder.ApplyConfigurationsFromAssembly(typeof(BancoDados).Assembly);
         }

@@ -1,0 +1,89 @@
+@model Clouud.Web.ViewModels.VitrineViewModel
+@*
+    Filtros + cards de produtos. Usado na página inicial e na área do cliente.
+    ViewData["BotaoAtivar"]: "login" (visitante vai para o login) ou "modal" (cliente logado).
+*@
+@{
+    var botaoModal = ViewData["BotaoAtivar"] as string == "modal";
+}
+
+<form class="row g-2 justify-content-center align-items-center my-3" method="get" asp-action="Index">
+    <div class="col-md-3">
+        <input class="form-control" type="search" id="txtBusca" name="busca" value="@Model.Busca" placeholder="Ex: Tekken 8">
+    </div>
+    <div class="col-md-auto">
+        <select class="form-select" name="plataforma" aria-label="Plataforma">
+            <option value="">Todas as plataformas</option>
+            @foreach (var p in Model.Plataformas)
+            {
+                <option value="@p.Slug" selected="@(p.Slug == Model.Plataforma)">@p.Nome</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-auto">
+        <select class="form-select" name="categoria" aria-label="Categoria">
+            <option value="">Todas as categorias</option>
+            @foreach (var c in Model.Categorias)
+            {
+                <option value="@c.Slug" selected="@(c.Slug == Model.Categoria)">@c.Nome</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto form-check ms-2">
+        <input class="form-check-input" type="checkbox" id="promocoes" name="promocoes" value="true" checked="@Model.SomentePromocoes">
+        <label class="form-check-label" for="promocoes">Só promoções</label>
+    </div>
+    <div class="col-auto">
+        <input type="submit" value="Buscar" class="btn btn-secondary" />
+    </div>
+</form>
+
+@if (Model.Produtos.Count == 0)
+{
+    <p class="text-muted my-5">Nenhum jogo encontrado.</p>
+}
+
+<div class="row">
+    @foreach (var item in Model.Produtos)
+    {
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+            <div class="container-fluid h-100">
+                <div class="card h-100">
+                    <h5 class="card-header text-truncate" title="@item.Titulo">@item.Titulo</h5>
+                    <div class="card-body flex-grow-0">
+                        <h6 class="card-title mb-1">@item.Plataforma @(item.Edicao != "Standard" ? $"· {item.Edicao}" : "")</h6>
+                        <small class="card-subtitle text-muted">@string.Join(", ", item.Categorias)</small>
+                    </div>
+                    <div class="position-relative">
+                        <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content($"~/uploads/{item.Capa}"))"
+                             class="card-img-top" alt="@item.Titulo" style="height:200px;object-fit:cover" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'">
+                        @if (item.EmPromocao)
+                        {
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2 fs-6">-@item.PercentualDesconto%</span>
+                        }
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">@(item.Desenvolvedora ?? "—")</li>
+                        <li class="list-group-item">
+                            @if (item.EmPromocao)
+                            {
+                                <s class="text-muted me-1">@item.Preco.ToString("C")</s>
+                            }
+                            <strong>@item.PrecoAtual.ToString("C")</strong>
+                        </li>
+                    </ul>
+                    <div class="card-body flex-grow-0 mt-auto">
+                        @if (botaoModal)
+                        {
+                            <button class="button-24 btn btn-outline-danger" type="button" role="button" onclick="finalizarCompra()">Ativar</button>
+                        }
+                        else
+                        {
+                            <a asp-area="" asp-controller="Conta" asp-action="Login" class="button-24 btn btn-outline-danger" role="button">Ativar</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

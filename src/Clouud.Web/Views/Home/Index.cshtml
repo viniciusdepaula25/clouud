@@ -1,31 +1,8 @@
-@* @model IEnumerable<Clouud.Web.Models.Jogo>
-
-@{
-    ViewData["Title"] = "Index";
-}
-
-<div class="row">
-    @foreach (var item in Model)
-    {
-        <div class="col-md-4 mb-4">
-            <div class="card">
-                <img src="~/uploads/@item.Foto" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">@item.Nome</h5>
-                    <p class="card-text">@item.Categoria</p>
-                    <p class="card-text">@item.Desenvolvedora</p>
-                    <p class="card-text">@item.Plataforma</p>
-                    <p class="card-text">R$ @item.Valor</p>
-                    <a href="#" class="btn btn-danger">Comprar</a>
-                </div>
-            </div>
-        </div>
-    }
-</div> *@
-@model IEnumerable<Clouud.Web.Models.Jogo>
+@model Clouud.Web.ViewModels.VitrineViewModel
 
 @{
     ViewData["Title"] = "Produtos";
+    ViewData["BotaoAtivar"] = "login";
 }
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
@@ -58,42 +35,7 @@
             </div>
         </div>
 
-        <div>
-            <form class="d-flex gap-2" asp-action="Index">
-                <div>
-                    <input class="form-control me-sm-2" type="search" id="txtBusca" name="busca" placeholder="Ex: Tekken 8">
-                </div>
-                <input type="submit" value="Buscar" class="btn btn-secondary my-2 my-sm-0" />
-            </form>
-        </div>
-
-
-        <div class="row">
-            @foreach (var item in Model)
-            {
-                <div class="col-3 align-content-center">
-                    <div class="container-fluid">
-                        <div class="card mb-3">
-                            <h6 class="card-header">@item.Nome</h6>
-                            <div class="card-body">
-                                <h8 class="card-title">@item.Plataforma</h8>
-                                <h7 class="card-subtitle text-muted">@item.Categoria</h7>
-                            </div>
-                            <img src="~/uploads/@item.Foto" class="card-img-top" alt="..." style="width:275px;height:240px">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">@item.Desenvolvedora</li>
-                                <li class="list-group-item">R$ @item.Valor</li>
-                            </ul>
-                            <div class="card-body">
-                                <a asp-controller="Conta" asp-action="Login" class="button-24 btn btn-outline-danger" type="button" role="button">
-                                    Ativar
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
+        <partial name="_Vitrine" model="Model" view-data="ViewData" />
     </div>
 </div>
 

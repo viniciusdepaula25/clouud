@@ -1,0 +1,77 @@
+@model IEnumerable<Clouud.Web.Models.Produto>
+
+@{
+    ViewData["Title"] = "Produtos";
+    var jogoId = ViewData["JogoId"] as int?;
+    var jogoTitulo = ViewData["JogoTitulo"] as string;
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+}
+
+<h1>@(jogoTitulo is null ? "Produtos Cadastrados" : $"Produtos de {jogoTitulo}")</h1>
+<p>Cada produto é um jogo vendido em uma plataforma e edição, com preço próprio.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+<div class="d-flex justify-content-between mb-2">
+    <div>
+        <a class="btn btn-secondary" asp-action="Inclui" asp-route-jogoId="@jogoId">Cadastre um Produto</a>
+    </div>
+    @if (jogoId.HasValue)
+    {
+        <div>
+            <a asp-controller="Jogo" asp-action="Altera" asp-route-id="@jogoId">Voltar ao jogo</a> |
+            <a asp-action="Index" asp-route-jogoId="">Ver todos os produtos</a>
+        </div>
+    }
+</div>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Jogo</th>
+            <th scope="col">Plataforma</th>
+            <th scope="col">Edição</th>
+            <th scope="col">Região</th>
+            <th scope="col">Preço</th>
+            <th scope="col">Promoção</th>
+            <th scope="col">Situação</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8">Nenhum produto cadastrado.</td></tr>
+        }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Jogo.Titulo</td>
+                <td>@item.Plataforma.Nome</td>
+                <td>@item.Edicao</td>
+                <td>@item.Regiao</td>
+                <td>@item.Preco.ToString("C")</td>
+                <td>
+                    @if (item.PrecoPromocional.HasValue)
+                    {
+                        @item.PrecoPromocional.Value.ToString("C")
+                        if (item.PromocaoAte.HasValue)
+                        {
+                            <small>até @item.PromocaoAte.Value.ToString("dd/MM/yyyy")</small>
+                        }
+                        if (!item.EmPromocao(hoje))
+                        {
+                            <span class="badge bg-secondary">encerrada</span>
+                        }
+                    }
+                </td>
+                <td>@(item.Ativo ? "À venda" : "Inativo")</td>
+                <td>
+                    <a asp-action="Altera" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Alterar</a> |
+                    <a asp-action="Exclui" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Excluir</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

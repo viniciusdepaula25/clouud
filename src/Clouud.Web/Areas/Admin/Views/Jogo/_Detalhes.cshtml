@@ -1,0 +1,70 @@
+@model Clouud.Web.Models.Jogo
+@* Dados do jogo e seus produtos, usados em Exibe e Exclui *@
+@{
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+}
+<div class="row">
+    <div class="col-md-3">
+        <img src="@(string.IsNullOrEmpty(Model.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + Model.Capa))"
+             alt="Capa" class="img-fluid mb-3" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+    </div>
+    <div class="col-md-9">
+        <dl class="row">
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Titulo)</dt>
+            <dd class="col-sm-9">@Model.Titulo</dd>
+            <dt class="col-sm-3">Endereço</dt>
+            <dd class="col-sm-9">@Model.Slug</dd>
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Descricao)</dt>
+            <dd class="col-sm-9" style="white-space: pre-line">@Model.Descricao</dd>
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.DataLancamento)</dt>
+            <dd class="col-sm-9">@Model.DataLancamento?.ToString("dd/MM/yyyy")</dd>
+            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ClassificacaoIndicativa)</dt>
+            <dd class="col-sm-9">@(Model.ClassificacaoIndicativa == "L" ? "Livre" : Model.ClassificacaoIndicativa)</dd>
+            <dt class="col-sm-3">Desenvolvedora</dt>
+            <dd class="col-sm-9">@Model.Desenvolvedora?.Nome</dd>
+            <dt class="col-sm-3">Publicadora</dt>
+            <dd class="col-sm-9">@Model.Publicadora?.Nome</dd>
+            <dt class="col-sm-3">Categorias</dt>
+            <dd class="col-sm-9">@string.Join(", ", Model.Categorias.OrderBy(c => c.Nome).Select(c => c.Nome))</dd>
+            <dt class="col-sm-3">Situação</dt>
+            <dd class="col-sm-9">@(Model.Ativo ? "Ativo" : "Inativo")@(Model.Destaque ? ", em destaque" : "")</dd>
+        </dl>
+    </div>
+</div>
+
+<h4>Produtos</h4>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Plataforma</th>
+            <th>Edição</th>
+            <th>Região</th>
+            <th>Preço</th>
+            <th>Preço atual</th>
+            <th>Situação</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Produtos.Count == 0)
+        {
+            <tr><td colspan="6">Nenhum produto. O jogo só aparece na loja depois de ter um produto ativo.</td></tr>
+        }
+        @foreach (var produto in Model.Produtos.OrderBy(p => p.Plataforma.Nome).ThenBy(p => p.Edicao))
+        {
+            <tr>
+                <td>@produto.Plataforma.Nome</td>
+                <td>@produto.Edicao</td>
+                <td>@produto.Regiao</td>
+                <td>@produto.Preco.ToString("C")</td>
+                <td>
+                    @produto.PrecoAtual(hoje).ToString("C")
+                    @if (produto.EmPromocao(hoje))
+                    {
+                        <span class="badge bg-success">promoção</span>
+                    }
+                </td>
+                <td>@(produto.Ativo ? "À venda" : "Inativo")</td>
+            </tr>
+        }
+    </tbody>
+</table>
