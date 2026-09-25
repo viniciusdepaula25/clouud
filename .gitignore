@@ -1,0 +1,15 @@
+# Build
+bin/
+obj/
+
+# IDEs
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.DotSettings.user
+
+# Sistema
+.DS_Store
+Thumbs.db

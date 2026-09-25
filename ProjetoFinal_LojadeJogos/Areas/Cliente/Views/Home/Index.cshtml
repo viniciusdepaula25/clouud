@@ -1,0 +1,147 @@
+﻿@* @model IEnumerable<ProjetoFinal_LojadeJogos.Data.Jogo>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="~/arquivos/@item.Foto" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Nome</h5>
+                    <p class="card-text">@item.Categoria</p>
+                    <p class="card-text">@item.Desenvolvedora</p>
+                    <p class="card-text">@item.Plataforma</p>
+                    <p class="card-text">R$ @item.Valorj</p>
+                    <a href="#" class="btn btn-danger">Comprar</a>
+                </div>
+            </div>
+        </div>
+    }
+</div> *@
+@model IEnumerable<ProjetoFinal_LojadeJogos.Data.Jogo>
+
+@{
+    ViewData["Title"] = "Produtos";
+}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container-fluid">
+        <a class="navbar-brand" asp-area="Cliente" asp-controller="Home" asp-action="Index">CLOUUD </a>
+        <style>
+            .navbar-brand {
+                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+                font-size: 30px; /* Tamanho da fonte */
+                font-weight: bold; /* Peso da fonte (negrito) */
+                /* Outros estilos que você desejar */
+            }
+
+            a {
+                margin-left: 15px;
+            }
+        </style>
+        <div class="d-flex align-items-center gap-2" style="margin-right: 10px;">
+            <h5>@Context.User.Identity.Name</h5>
+            <style>
+                span {
+                    color: white;
+                    font-size: 15px;
+                    font-weight: 600;
+                    line-height: 20px;
+                }
+            </style>
+            <img src="~/arquivos/perfil.jpg" class="card-img-top rounded-circle" alt="..." style="width:40px;height:40px">
+        </div>
+    </div>
+</nav>
+
+<div class="text-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 align-content-center">
+                <img style="width:250px" src="~/arquivos/nuuvem.png" />
+            </div>
+        </div>
+
+        <div>
+            <form class="d-flex" asp-action="Index">
+                <div>
+                    <input class="form-control me-sm-2" type="search" id="txtBusca" name="busca" placeholder="Ex: Tekken 8">
+                </div>
+                <input type="submit" value="Buscar" class="btn btn-secondary my-2 my-sm-0" />
+            </form>
+        </div>
+
+
+        <div class="row">
+            @foreach (var item in Model)
+            {
+                <div class="col-3 align-content-center">
+                    <div class="container-fluid">
+                        <div class="card mb-3">
+                            <h4 class="card-header">@item.Nome</h4>
+                            <div class="card-body">
+                                <h5 class="card-title">@item.Plataforma</h5>
+                                <h6 class="card-subtitle text-muted">@item.Categoria</h6>
+                            </div>
+                            <img src="~/arquivos/@item.Foto" class="card-img-top" alt="..." style="width:260px;height:240px">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">@item.Desenvolvedora</li>
+                                <li class="list-group-item">R$ @item.Valorj</li>
+                            </ul>
+                            <div class="card-body">
+                                <button class="button-24 btn btn-outline-danger" type="button" role="button" onclick="finalizarCompra()">
+                                    Ativar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="compraModal" tabindex="-1" aria-labelledby="compraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="compraModalLabel">SUCESSO</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Sua chave foi ativada!</p>
+                <p>Chave de ativação: <span id="chaveAtivacao"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function gerarChaveAtivacao() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let chave = '';
+        for (let i = 0; i < 16; i++) {
+            chave += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return chave;
+    }
+
+    function finalizarCompra() {
+        const chaveAtivacao = gerarChaveAtivacao();
+        document.getElementById('chaveAtivacao').textContent = chaveAtivacao;
+        const compraModal = new bootstrap.Modal(document.getElementById('compraModal'));
+        compraModal.show();
+    }
+</script>
+
+
+
+
