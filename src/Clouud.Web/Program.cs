@@ -1,5 +1,8 @@
 using System.Globalization;
 using Clouud.Web.Data;
+using Clouud.Web.Models;
+using Clouud.Web.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +16,10 @@ builder.Services.AddControllersWithViews();
 // Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers
 builder.Services.AddDbContext<BancoDados>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("LojaJogos")));
+
+// Hash das senhas dos usuários
+builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+builder.Services.AddScoped<SenhaService>();
 
 
 // Adiciona o servico de autenticacao de usuarios por cookies
@@ -67,5 +74,8 @@ app.MapControllerRoute(
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Cria o primeiro administrador, se ainda não existir (seção "AdminInicial" do appsettings)
+await AdminInicial.CriarAsync(app.Services);
 
 app.Run();

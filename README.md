@@ -30,6 +30,16 @@ Projeto de uma loja de chaves de ativação de jogos (Steam, Epic Games, Ubisoft
    ```
 4. Abra http://localhost:5093
 
+### Primeiro acesso
+
+O cadastro pelo site cria apenas contas de **cliente**. Ao iniciar em modo de desenvolvimento, a aplicação cria um **administrador** se ainda não existir nenhum, usando a seção `AdminInicial` do `src/Clouud.Web/appsettings.Development.json`:
+
+| E-mail | Senha |
+|---|---|
+| `admin@clouud.com` | `Admin@123` |
+
+As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com a senha salva em texto puro, continuam funcionando: no primeiro login a senha é convertida para hash automaticamente.
+
 ## Estrutura
 
 ```
@@ -47,8 +57,10 @@ Projeto de uma loja de chaves de ativação de jogos (Steam, Epic Games, Ubisoft
         │   └── Cliente/        # área do cliente logado
         ├── Models/             # entidades do banco (Usuario, Cliente, Jogo, Pedido, PedidoJ)
         ├── ViewModels/         # modelos das telas (login, cadastro, erro)
+        ├── Services/           # regras reutilizáveis (ex.: hash de senha)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework
+        │   ├── AdminInicial.cs # cria o primeiro administrador
         │   └── Migrations/     # histórico de alterações do banco
         ├── Views/              # páginas Razor da área pública
         └── wwwroot/

@@ -1,7 +1,9 @@
 using Clouud.Web.Data;
 using Clouud.Web.Models;
+using Clouud.Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Clouud.Web.Areas.Admin.Controllers
@@ -10,11 +12,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
     public class UsuariosController : AdminController
     {
         private readonly BancoDados bancoDados;
+        private readonly SenhaService senhas;
 
 
-        public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, SenhaService senhas) : base(webHostEnvironment)
         {
-            this.bancoDados = bancoDados; 
+            this.bancoDados = bancoDados;
+            this.senhas = senhas; 
         }
 
         [HttpGet]
@@ -54,6 +58,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             { 
+                usuario.Email = usuario.Email.Trim().ToLowerInvariant();
+                usuario.Senha = senhas.GerarHash(usuario, usuario.Senha); // salva só o hash
                 bancoDados.Usuarios.Add(usuario);//Incluir
                 bancoDados.SaveChanges();//Salva
                 //voltar para index
@@ -79,6 +85,14 @@ namespace Clouud.Web.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Se a senha do formulário for diferente do hash salvo, é uma senha nova: gera o hash
+                var senhaAtual = bancoDados.Usuarios.AsNoTracking()
+                    .Where(e => e.ID == usuario.ID).Select(e => e.Senha).FirstOrDefault();
+                if (usuario.Senha != senhaAtual)
+                {
+                    usuario.Senha = senhas.GerarHash(usuario, usuario.Senha);
+                }
+                usuario.Email = usuario.Email.Trim().ToLowerInvariant();
                 bancoDados.Usuarios.Update(usuario);
                 bancoDados.SaveChanges();
                 return RedirectToAction("Index");

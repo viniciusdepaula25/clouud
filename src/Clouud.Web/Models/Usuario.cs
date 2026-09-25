@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -5,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Clouud.Web.Models
 {
     [Table("Usuarios")]
+    [Index(nameof(Email), IsUnique = true)] // não permite dois usuários com o mesmo e-mail
     public class Usuario
     {
         [Key]

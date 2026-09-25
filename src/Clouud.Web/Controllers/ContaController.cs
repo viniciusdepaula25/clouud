@@ -1,10 +1,12 @@
 using Clouud.Web.Data;
 using Clouud.Web.Models;
+using Clouud.Web.Services;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace Clouud.Web.Controllers
@@ -12,10 +14,12 @@ namespace Clouud.Web.Controllers
     public class ContaController : Controller
     {
         private readonly BancoDados bancoDados;
+        private readonly SenhaService senhas;
 
-        public ContaController(BancoDados bancoDados)
+        public ContaController(BancoDados bancoDados, SenhaService senhas)
         {
             this.bancoDados = bancoDados;
+            this.senhas = senhas;
         }
 
         public IActionResult Index()
@@ -34,27 +38,44 @@ namespace Clouud.Web.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Cadastro(ContaViewModel conta)
         {
+            // e-mail sempre em minúsculas e sem espaços, para não existirem duas contas iguais
+            var email = conta.Email.Trim().ToLowerInvariant();
+
+            if (ModelState.IsValid && bancoDados.Usuarios.Any(e => e.Email == email))
+            {
+                ModelState.AddModelError(nameof(conta.Email), "Já existe uma conta com este e-mail");
+            }
+
             //Se os Dados são validos
             if (ModelState.IsValid)
             {
+                // Todo cadastro pelo site é de cliente. O primeiro admin é criado ao iniciar a
+                // aplicação (seção "AdminInicial" do appsettings).
                 Usuario usuario = new Usuario();
                 usuario.Name = conta.Nome;
-                usuario.Email = conta.Email;
-                usuario.Senha = conta.Senha;
-                usuario.Perfil = conta.PerfilUsuario;
+                usuario.Email = email;
+                usuario.Perfil = PerfilUsuario.Cliente;
+                usuario.Senha = senhas.GerarHash(usuario, conta.Senha); // salva só o hash, nunca a senha
                 bancoDados.Usuarios.Add(usuario); //comando insert
-                bancoDados.SaveChanges();
-                
-                if(conta.PerfilUsuario  == PerfilUsuario.Cliente)
-                {  
-                    //Cadastra o Cliente 
-                    Cliente cliente = new Cliente();
-                    cliente.Id = usuario.ID;
-                    cliente.Nome = conta.Nome;
-                    bancoDados.Clientes.Add(cliente);
+
+                try
+                {
                     bancoDados.SaveChanges();
                 }
-     
+                catch (DbUpdateException)
+                {
+                    // dois cadastros com o mesmo e-mail ao mesmo tempo: o índice único do banco barra o segundo
+                    ModelState.AddModelError(nameof(conta.Email), "Já existe uma conta com este e-mail");
+                    return View(conta);
+                }
+
+                //Cadastra o Cliente
+                Cliente cliente = new Cliente();
+                cliente.Id = usuario.ID;
+                cliente.Nome = conta.Nome;
+                bancoDados.Clientes.Add(cliente);
+                bancoDados.SaveChanges();
+
 
                 return RedirectToAction("Index", "Home");
             }
@@ -75,10 +96,21 @@ namespace Clouud.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var usuario = bancoDados.Usuarios
-                    .FirstOrDefault(e => e.Email == login.Email && e.Senha == login.Senha);
+                var email = login.Email.Trim().ToLowerInvariant();
+                var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.Email.ToLower() == email);
 
-                if (usuario != null && await AutenticaUsuario(usuario))
+                var (senhaValida, atualizarHash) = usuario != null
+                    ? senhas.Verificar(usuario, login.Senha)
+                    : (false, false);
+
+                if (usuario != null && senhaValida && atualizarHash)
+                {
+                    // conta antiga com senha em texto puro: grava o hash no lugar
+                    usuario.Senha = senhas.GerarHash(usuario, login.Senha);
+                    bancoDados.SaveChanges();
+                }
+
+                if (usuario != null && senhaValida && await AutenticaUsuario(usuario))
                 {
                     if (usuario.Perfil == PerfilUsuario.Cliente)
                     {
