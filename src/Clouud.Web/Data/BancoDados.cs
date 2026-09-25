@@ -10,7 +10,9 @@ namespace Clouud.Web.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Jogo> Jogos { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<PedidoJogo> PedidoJogos { get; set; }
+        public DbSet<PedidoItem> PedidoItens { get; set; }
+        public DbSet<Pagamento> Pagamentos { get; set; }
+        public DbSet<CarrinhoItem> CarrinhoItens { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
@@ -57,8 +59,52 @@ namespace Clouud.Web.Data
             modelBuilder.Entity<Chave>(chave =>
             {
                 chave.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
-                chave.ToTable(t => t.HasCheckConstraint("CK_Chaves_Status",
-                    "\"Status\" IN ('Disponivel', 'Reservada', 'Vendida', 'Inativa')"));
+                chave.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Chaves_Status",
+                        "\"Status\" IN ('Disponivel', 'Reservada', 'Vendida', 'Inativa')");
+                    // Reservada/vendida sempre tem pedido; disponível nunca tem
+                    t.HasCheckConstraint("CK_Chaves_Pedido",
+                        "(\"Status\" IN ('Reservada', 'Vendida') AND \"PedidoItemId\" IS NOT NULL) OR (\"Status\" = 'Disponivel' AND \"PedidoItemId\" IS NULL) OR \"Status\" = 'Inativa'");
+                });
+            });
+
+            modelBuilder.Entity<Pedido>(pedido =>
+            {
+                pedido.Property(p => p.Status).HasConversion<string>().HasMaxLength(30);
+                pedido.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Pedidos_Status",
+                        "\"Status\" IN ('AguardandoPagamento', 'Pago', 'Cancelado', 'Reembolsado')");
+                    t.HasCheckConstraint("CK_Pedidos_Total", "\"Total\" >= 0");
+                });
+                pedido.HasIndex(p => new { p.Status, p.PagarAte });
+            });
+
+            modelBuilder.Entity<PedidoItem>().ToTable(t =>
+            {
+                t.HasCheckConstraint("CK_PedidoItens_Quantidade", "\"Quantidade\" > 0");
+                t.HasCheckConstraint("CK_PedidoItens_Valores", "\"PrecoUnitario\" >= 0 AND \"Subtotal\" >= 0");
+            });
+
+            modelBuilder.Entity<Pagamento>(pagamento =>
+            {
+                pagamento.Property(p => p.Metodo).HasConversion<string>().HasMaxLength(20);
+                pagamento.Property(p => p.Status).HasConversion<string>().HasMaxLength(20);
+                pagamento.ToTable(t =>
+                {
+                    t.HasCheckConstraint("CK_Pagamentos_Metodo", "\"Metodo\" IN ('Pix', 'Cartao', 'Boleto')");
+                    t.HasCheckConstraint("CK_Pagamentos_Status", "\"Status\" IN ('Pendente', 'Aprovado', 'Recusado')");
+                });
+            });
+
+            // Carrinho: apagar o usuário ou o produto limpa os carrinhos
+            modelBuilder.Entity<CarrinhoItem>(item =>
+            {
+                item.HasOne(i => i.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
+                item.HasOne(i => i.Produto).WithMany().OnDelete(DeleteBehavior.Cascade);
+                item.ToTable(t => t.HasCheckConstraint("CK_CarrinhoItens_Quantidade",
+                    $"\"Quantidade\" BETWEEN 1 AND {CarrinhoItem.QuantidadeMaxima}"));
             });
 
             base.OnModelCreating(modelBuilder);

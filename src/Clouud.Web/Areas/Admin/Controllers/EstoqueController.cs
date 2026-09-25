@@ -60,6 +60,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 Filtro = status,
                 Total = consulta.Count(),
                 Chaves = consulta
+                    .Include(c => c.PedidoItem)
                     .OrderByDescending(c => c.AdicionadaEm).ThenByDescending(c => c.Id)
                     .Take(ChavesProdutoViewModel.LimiteListagem)
                     .ToList()
@@ -118,6 +119,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Reativar(int id, StatusChave? filtro)
         {
+            // Chave de pedido reembolsado não volta: o cliente já viu o código
+            var chave = bancoDados.Chaves.FirstOrDefault(c => c.Id == id);
+            if (chave != null && !chave.NuncaFoiVendida)
+            {
+                TempData["Erro"] = "Esta chave já foi entregue a um cliente e não pode voltar ao estoque.";
+                return RedirectToAction("Chaves", new { id = chave.ProdutoId, status = filtro });
+            }
             return MudarStatus(id, filtro, StatusChave.Inativa, StatusChave.Disponivel, "Chave devolvida ao estoque.");
         }
 
@@ -132,7 +140,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa)
+            if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa && chave.NuncaFoiVendida)
             {
                 bancoDados.Chaves.Remove(chave);
                 bancoDados.SaveChanges();
@@ -140,7 +148,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             }
             else
             {
-                TempData["Erro"] = "Chaves reservadas ou vendidas não podem ser excluídas.";
+                TempData["Erro"] = "Chaves que já foram para um pedido não podem ser excluídas.";
             }
             return RedirectToAction("Chaves", new { id = chave.ProdutoId, status = filtro });
         }

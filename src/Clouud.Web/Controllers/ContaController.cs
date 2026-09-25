@@ -79,9 +79,9 @@ namespace Clouud.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl)
         {
-            LoginViewModel login = new LoginViewModel();
+            LoginViewModel login = new LoginViewModel { ReturnUrl = returnUrl };
             return View(login);
         }
 
@@ -107,19 +107,15 @@ namespace Clouud.Web.Controllers
 
                 if (usuario != null && senhaValida && await AutenticaUsuario(usuario))
                 {
-                    if (usuario.Perfil == PerfilUsuario.Cliente)
+                    // Volta para a página que pediu o login, se for do próprio site
+                    if (Url.IsLocalUrl(login.ReturnUrl))
                     {
-                        // Redireciona para a tela desejada para o perfil Cliente
-                        return RedirectToAction("Index", "Home", new { area = "Cliente" });
+                        return LocalRedirect(login.ReturnUrl);
                     }
 
-                    var returnUrl = TempData["returnUrl"]?.ToString();
-                    if (string.IsNullOrWhiteSpace(returnUrl))
-                    {
-                        return RedirectToAction("Index", "Home", new { area = "Admin" });
-                    }
-
-                    return Redirect(returnUrl);
+                    return usuario.Perfil == PerfilUsuario.Cliente
+                        ? RedirectToAction("Index", "Home", new { area = "Cliente" })
+                        : RedirectToAction("Index", "Home", new { area = "Admin" });
                 }
                 else
                 {

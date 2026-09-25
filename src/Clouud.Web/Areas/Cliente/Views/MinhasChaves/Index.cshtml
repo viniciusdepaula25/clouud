@@ -1,0 +1,58 @@
+@model IEnumerable<Clouud.Web.Models.Chave>
+
+@{
+    ViewData["Title"] = "Minhas chaves";
+}
+
+<h1 class="mt-3">Minhas chaves</h1>
+<p>Todas as chaves dos seus pedidos pagos. Não compartilhe os códigos: cada chave só pode ser ativada uma vez.</p>
+<hr />
+
+@if (!Model.Any())
+{
+    <p>Você ainda não tem chaves. Elas aparecem aqui assim que o pagamento de um pedido é aprovado.</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Ver jogos</a>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Jogo</th>
+                <th>Plataforma</th>
+                <th>Chave</th>
+                <th>Comprada em</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var chave in Model)
+            {
+                var plataforma = chave.Produto.Plataforma;
+                <tr>
+                    <td>@chave.Produto.Jogo.Titulo@(chave.Produto.Edicao != "Standard" ? $" ({chave.Produto.Edicao})" : "")</td>
+                    <td>
+                        @plataforma.Nome
+                        @if (!string.IsNullOrWhiteSpace(plataforma.InstrucoesAtivacao))
+                        {
+                            <details class="small text-muted">
+                                <summary>Como ativar</summary>
+                                @plataforma.InstrucoesAtivacao
+                            </details>
+                        }
+                    </td>
+                    <td>
+                        <code class="text-white" id="chave-@chave.Id">@chave.Codigo</code>
+                        <button type="button" class="btn btn-outline-primary btn-sm ms-2" data-copiar="chave-@chave.Id">Copiar</button>
+                    </td>
+                    <td>@chave.VendidaEm?.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                    <td><a asp-controller="Pedidos" asp-action="Detalhes" asp-route-id="@chave.PedidoItem!.PedidoId">Pedido #@chave.PedidoItem!.PedidoId</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@section Scripts {
+    <partial name="_CopiarChave" />
+}

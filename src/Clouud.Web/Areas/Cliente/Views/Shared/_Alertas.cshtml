@@ -1,0 +1,9 @@
+@* Mensagens de sucesso e de erro vindas do redirecionamento anterior *@
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}

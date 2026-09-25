@@ -23,6 +23,9 @@ builder.Services.AddScoped<SenhaService>();
 builder.Services.AddScoped<AutenticacaoService>();
 builder.Services.AddScoped<CatalogoService>();
 builder.Services.AddScoped<EstoqueService>();
+builder.Services.AddScoped<CarrinhoService>();
+builder.Services.AddScoped<PedidoService>();
+builder.Services.AddHostedService<CancelamentoAutomatico>();
 builder.Services.AddHttpContextAccessor();
 
 

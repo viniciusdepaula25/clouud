@@ -25,11 +25,11 @@
 <div class="d-flex justify-content-between align-items-center mb-2">
     <div class="btn-group" role="group" aria-label="Filtrar por situação">
         <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId"
-           class="btn btn-sm @(filtro == null ? "btn-primary" : "btn-outline-light")">Todas</a>
+           class="btn btn-sm @(filtro == null ? "btn-primary" : "btn-outline-primary")">Todas</a>
         @foreach (var status in Enum.GetValues<StatusChave>())
         {
             <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId" asp-route-status="@status"
-               class="btn btn-sm @(filtro == status ? "btn-primary" : "btn-outline-light")">@status.Descricao()</a>
+               class="btn btn-sm @(filtro == status ? "btn-primary" : "btn-outline-primary")">@status.Descricao()</a>
         }
     </div>
     <div>
@@ -47,13 +47,14 @@
             <th scope="col">Código</th>
             <th scope="col">Situação</th>
             <th scope="col">Adicionada em</th>
+            <th scope="col">Pedido</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         @if (Model.Chaves.Count == 0)
         {
-            <tr><td colspan="4">Nenhuma chave@(filtro == null ? "" : $" com a situação {filtro.Value.Descricao().ToLower()}").</td></tr>
+            <tr><td colspan="5">Nenhuma chave@(filtro == null ? "" : $" com a situação {filtro.Value.Descricao().ToLower()}").</td></tr>
         }
         @foreach (var chave in Model.Chaves)
         {
@@ -64,6 +65,12 @@
                 </td>
                 <td>@chave.Status.Descricao()</td>
                 <td>@chave.AdicionadaEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td>
+                    @if (chave.PedidoItem != null)
+                    {
+                        <a asp-controller="Pedidos" asp-action="Detalhes" asp-route-id="@chave.PedidoItem.PedidoId">#@chave.PedidoItem.PedidoId</a>
+                    }
+                </td>
                 <td class="text-end">
                     @if (chave.Status == StatusChave.Disponivel)
                     {
@@ -71,13 +78,13 @@
                             <input type="submit" value="Inativar" class="btn btn-secondary btn-sm" />
                         </form>
                     }
-                    else if (chave.Status == StatusChave.Inativa)
+                    else if (chave.Status == StatusChave.Inativa && chave.NuncaFoiVendida)
                     {
                         <form asp-action="Reativar" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline">
                             <input type="submit" value="Reativar" class="btn btn-secondary btn-sm" />
                         </form>
                     }
-                    @if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa)
+                    @if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa && chave.NuncaFoiVendida)
                     {
                         <form asp-action="Excluir" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline"
                               onsubmit="return confirm('Excluir esta chave do estoque?')">

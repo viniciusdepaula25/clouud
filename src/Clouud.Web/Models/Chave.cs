@@ -13,7 +13,7 @@ namespace Clouud.Web.Models
         Reservada,
         /// <summary>Entregue a um cliente.</summary>
         Vendida,
-        /// <summary>Fora de venda (chave com problema ou retirada pelo admin).</summary>
+        /// <summary>Fora de venda: retirada pelo admin ou de um pedido reembolsado (o cliente já viu o código).</summary>
         Inativa
     }
 
@@ -58,6 +58,18 @@ namespace Clouud.Web.Models
 
         [Display(Name = "Adicionada em")]
         public DateTime AdicionadaEm { get; set; } = DateTime.UtcNow;
+
+        /// <summary>Item do pedido que reservou ou comprou a chave. Nulo enquanto está no estoque.</summary>
+        public int? PedidoItemId { get; set; }
+
+        [ForeignKey(nameof(PedidoItemId))]
+        public PedidoItem? PedidoItem { get; set; }
+
+        [Display(Name = "Vendida em")]
+        public DateTime? VendidaEm { get; set; }
+
+        /// <summary>Pode voltar ao estoque ou ser excluída: nunca foi para um pedido.</summary>
+        public bool NuncaFoiVendida => PedidoItemId == null;
 
         /// <summary>"ABCDE-FGHIJ-KLMNO" -> "ABCDE-*****-*LMNO": mostra só o começo e o fim.</summary>
         public string CodigoMascarado()

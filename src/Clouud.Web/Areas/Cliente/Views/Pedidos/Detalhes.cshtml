@@ -1,0 +1,101 @@
+@model Clouud.Web.Models.Pedido
+@using Clouud.Web.Models
+
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
+}
+
+<h1 class="mt-3">
+    Pedido #@Model.Id
+    <span class="badge fs-6 align-middle @Model.Status.Cor()">@Model.Status.Descricao()</span>
+</h1>
+<p class="text-muted">
+    Feito em @Model.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+    @if (Model.PagoEm.HasValue)
+    {
+        <text>· pago em @Model.PagoEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</text>
+    }
+</p>
+<hr />
+<partial name="_Alertas" />
+
+@if (Model.Status == StatusPedido.AguardandoPagamento)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+        <span>Aguardando pagamento até @Model.PagarAte?.ToLocalTime().ToString("dd/MM/yyyy HH:mm").</span>
+        <a asp-action="Pagar" asp-route-id="@Model.Id" class="btn btn-danger">Pagar agora</a>
+    </div>
+}
+
+<partial name="_Itens" model="Model" />
+
+@if (Model.Status == StatusPedido.Pago)
+{
+    <h3 class="mt-4">Suas chaves</h3>
+    @foreach (var item in Model.Itens.OrderBy(i => i.Id))
+    {
+        var chaves = item.Chaves.Where(c => c.Status == StatusChave.Vendida).OrderBy(c => c.Id).ToList();
+        <div class="card mb-3">
+            <div class="card-header">
+                @item.Produto.Jogo.Titulo — @item.Produto.Plataforma.Nome@(item.Produto.Edicao != "Standard" ? $" · {item.Produto.Edicao}" : "")
+            </div>
+            <div class="card-body">
+                @if (chaves.Count == 0)
+                {
+                    <p class="text-muted mb-0">Pedido feito antes da entrega automática de chaves: não há chave registrada para este item.</p>
+                }
+                @foreach (var chave in chaves)
+                {
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <code class="fs-5 text-white" id="chave-@chave.Id">@chave.Codigo</code>
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-copiar="chave-@chave.Id">Copiar</button>
+                    </div>
+                }
+                @if (chaves.Count > 0 && !string.IsNullOrWhiteSpace(item.Produto.Plataforma.InstrucoesAtivacao))
+                {
+                    <p class="small text-muted mb-0"><strong>Como ativar:</strong> @item.Produto.Plataforma.InstrucoesAtivacao</p>
+                }
+            </div>
+        </div>
+    }
+    <p><a asp-controller="MinhasChaves" asp-action="Index">Ver todas as minhas chaves</a></p>
+}
+else if (Model.Status == StatusPedido.Reembolsado)
+{
+    <div class="alert alert-info">Este pedido foi reembolsado e as chaves foram desativadas.</div>
+}
+else if (Model.Status == StatusPedido.Cancelado)
+{
+    <div class="alert alert-secondary">Este pedido foi cancelado. Nenhum valor foi cobrado.</div>
+}
+
+@{
+    var pagamentos = Model.Pagamentos.OrderBy(p => p.CriadoEm).ToList();
+}
+@if (pagamentos.Count > 0)
+{
+    <h5 class="mt-4">Pagamentos</h5>
+    <table class="table table-sm small">
+        <thead>
+            <tr><th>Data</th><th>Forma</th><th>Resultado</th><th>Transação</th><th class="text-end">Valor</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var pagamento in pagamentos)
+            {
+                <tr>
+                    <td>@pagamento.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@pagamento.Metodo.Descricao()</td>
+                    <td>@(pagamento.Status == StatusPagamento.Aprovado ? "Aprovado" : "Recusado")</td>
+                    <td class="font-monospace">@pagamento.CodigoTransacao</td>
+                    <td class="text-end">@pagamento.Valor.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="Index">Voltar aos pedidos</a>
+
+@section Scripts {
+    <partial name="_CopiarChave" />
+}

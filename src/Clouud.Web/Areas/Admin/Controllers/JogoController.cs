@@ -151,7 +151,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             }
 
             // Jogo com produtos ou pedidos não é apagado: o caminho é desativar
-            if (jogo.Produtos.Count > 0 || bancoDados.PedidoJogos.Any(e => e.JogoId == id))
+            if (jogo.Produtos.Count > 0)
             {
                 ModelState.AddModelError(string.Empty,
                     "Este jogo tem produtos ou pedidos e não pode ser excluído. Exclua os produtos ou desmarque \"Ativo\" para tirá-lo da loja.");

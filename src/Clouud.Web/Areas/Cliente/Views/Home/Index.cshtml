@@ -2,10 +2,9 @@
 
 @{
     ViewData["Title"] = "Produtos";
-    ViewData["BotaoAtivar"] = "modal";
+    ViewData["ModoVitrine"] = "carrinho";
 }
 
-<partial name="_NavbarCliente" />
 
 <div class="text-center">
     <div class="container">
@@ -15,47 +14,10 @@
             </div>
         </div>
 
+        @if (TempData["Erro"] is string erro)
+        {
+            <div class="alert alert-danger">@erro</div>
+        }
         <partial name="_Vitrine" model="Model" view-data="ViewData" />
     </div>
 </div>
-
-<!-- Modal -->
-<div class="modal fade" id="compraModal" tabindex="-1" aria-labelledby="compraModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="compraModalLabel">SUCESSO</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Sua chave foi ativada!</p>
-                <p>Chave de ativação: <span id="chaveAtivacao"></span></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    function gerarChaveAtivacao() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let chave = '';
-        for (let i = 0; i < 16; i++) {
-            chave += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return chave;
-    }
-
-    function finalizarCompra() {
-        const chaveAtivacao = gerarChaveAtivacao();
-        document.getElementById('chaveAtivacao').textContent = chaveAtivacao;
-        const compraModal = new bootstrap.Modal(document.getElementById('compraModal'));
-        compraModal.show();
-    }
-</script>
-
-
-
-

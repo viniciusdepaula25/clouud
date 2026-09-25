@@ -1,4 +1,11 @@
 @* Barra de navegação da área do cliente (nome e foto levam para "Minha conta") *@
+@using System.Security.Claims
+@inject Clouud.Web.Services.CarrinhoService Carrinho
+@{
+    var unidadesNoCarrinho = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId)
+        ? Carrinho.ContarUnidades(usuarioId)
+        : 0;
+}
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
     <div class="container-fluid">
         <a class="navbar-brand" asp-area="Cliente" asp-controller="Home" asp-action="Index">CLOUUD </a>
@@ -14,7 +21,22 @@
                 margin-left: 15px;
             }
         </style>
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+                <a class="nav-link" asp-area="Cliente" asp-controller="Pedidos" asp-action="Index">Meus pedidos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" asp-area="Cliente" asp-controller="MinhasChaves" asp-action="Index">Minhas chaves</a>
+            </li>
+        </ul>
         <div class="d-flex align-items-center gap-2" style="margin-right: 10px;">
+            <a asp-area="Cliente" asp-controller="Carrinho" asp-action="Index" class="btn btn-dark btn-sm position-relative" id="linkCarrinho">
+                Carrinho
+                @if (unidadesNoCarrinho > 0)
+                {
+                    <span class="badge rounded-pill bg-white text-black ms-1" id="contadorCarrinho">@unidadesNoCarrinho</span>
+                }
+            </a>
             <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta" class="text-white text-decoration-none">
                 <h5 class="mb-0">@Context.User.Identity?.Name</h5>
             </a>

@@ -15,5 +15,8 @@ namespace Clouud.Web.ViewModels
         [DataType(DataType.Password, ErrorMessage = "Informe uma senha válida")]
         public string Senha { get; set; } = string.Empty;
 
+        /// <summary>Página para onde voltar depois do login (só endereços do próprio site).</summary>
+        public string? ReturnUrl { get; set; }
+
     }
 }

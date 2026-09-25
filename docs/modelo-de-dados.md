@@ -2,7 +2,7 @@
 
 Este documento compara o modelo do curso com o que uma loja de chaves precisa e descreve o modelo proposto para o CLOUUD, junto com o plano para chegar nele.
 
-**Situação:** etapas 1 (catálogo) e 2 (estoque de chaves) concluídas. Veja o [plano](#4-plano-de-implementação).
+**Situação:** etapas 1 (catálogo), 2 (estoque de chaves) e 3 (compra) concluídas. Veja o [plano](#4-plano-de-implementação).
 
 ## 1. Modelo do curso (ponto de partida)
 
@@ -138,14 +138,15 @@ erDiagram
         string Codigo UK
         string Status "Disponivel | Reservada | Vendida | Inativa"
         datetime AdicionadaEm
-        int PedidoItemId FK "etapa 3"
-        datetime VendidaEm "etapa 3"
+        int PedidoItemId FK
+        datetime VendidaEm
     }
     CarrinhoItens {
         int Id PK
         int UsuarioId FK
         int ProdutoId FK
         int Quantidade
+        datetime AdicionadoEm
     }
     ListaDesejos {
         int UsuarioId PK,FK
@@ -158,6 +159,7 @@ erDiagram
         string Status "AguardandoPagamento | Pago | Cancelado | Reembolsado"
         numeric Total
         datetime CriadoEm
+        datetime PagarAte "prazo da reserva"
         datetime PagoEm
     }
     PedidoItens {
@@ -192,13 +194,15 @@ erDiagram
 | **Chaves** | Estoque. Cada linha é uma chave de ativação | Código único em toda a loja (a mesma chave não entra duas vezes, nem em produtos diferentes); status só com os quatro valores válidos |
 | **CarrinhoItens** | Produtos que o cliente separou antes de pagar | Um produto aparece uma vez no carrinho (a quantidade aumenta) |
 | **ListaDesejos** | Jogos que o cliente quer acompanhar | Par usuário/jogo único |
-| **Pedidos** | A compra, com status e datas | FK para o usuário |
+| **Pedidos** | A compra, com status, datas e prazo para pagar | FK para o usuário; status só com os quatro valores válidos; total não negativo |
 | **PedidoItens** | Itens da compra (o `Pedido_Jogo` do diagrama, agora apontando para o produto) | Quantidade maior que zero |
 | **Pagamentos** | Tentativas de pagamento do pedido (simulado no início) | FK para o pedido |
 
 ### Decisões importantes
 
 - **Ciclo de vida da chave:** a chave fica `Disponivel` no estoque. Quando o pedido é criado, ela passa para `Reservada`, para ninguém mais comprar. Com o pagamento aprovado, vira `Vendida` e aparece para o cliente. Se o pedido for cancelado antes do pagamento, a chave volta a ficar `Disponivel`. Se um pedido pago for reembolsado, ela vira `Inativa`, porque o cliente já viu o código.
+- **Prazo de pagamento:** as chaves ficam reservadas por 30 minutos (`Loja:MinutosParaPagar` no `appsettings.json`). Um serviço em segundo plano cancela a cada minuto os pedidos vencidos, e a tentativa de pagar um pedido vencido também o cancela.
+- **Duas compras ao mesmo tempo:** a reserva usa `SELECT ... FOR UPDATE SKIP LOCKED`, então duas pessoas comprando a última chave nunca recebem a mesma; uma delas recebe o aviso de que o produto esgotou. O banco também garante que chave reservada ou vendida sempre tem pedido (`CK_Chaves_Pedido`).
 - **Preço congelado:** `PedidoItens.PrecoUnitario` guarda o preço da hora da compra, como no diagrama original.
 - **Dinheiro em `numeric(10,2)`:** evita erros de arredondamento.
 - **Status como texto** (`'Pago'`, `'Disponivel'`): o banco fica legível sem precisar consultar o código.
@@ -223,8 +227,8 @@ A migration de cada etapa converte os dados que já existem:
 | `Jogos.Desenvolvedora` (texto) | Linha em `Empresas` + `Jogos.DesenvolvedoraId` |
 | `Jogos.Nome` | `Jogos.Titulo` (e `Slug` gerado a partir dele) |
 | `Jogos.Foto` | `Jogos.Capa` |
-| `Pedidos` | `Pedidos` + `Status`, `CriadoEm`, `PagoEm` |
-| `PedidoJogos` | `PedidoItens` (apontando para o produto do jogo) |
+| `Pedidos.Valor` | `Pedidos.Total`; os pedidos antigos ficam como `Pago`, com a data da migration |
+| `PedidoJogos` | `PedidoItens` (apontando para o produto do jogo; jogo sem produto ganha um produto inativo na plataforma "Não informada") |
 
 ## 4. Plano de implementação
 
@@ -232,5 +236,5 @@ Cada etapa é um commit, com as telas funcionando no final:
 
 1. ✅ **Catálogo** (migration `Catalogo`): `Plataformas`, `Categorias`, `Empresas`, `Jogos` reformulado e `Produtos`. Telas do admin para jogos e produtos (com preço promocional) e vitrine mostrando plataforma, preço e desconto.
 2. ✅ **Estoque de chaves** (migration `Estoque`): tabela `Chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
-3. **Compra:** `CarrinhoItens`, `Pedidos` com status, `PedidoItens` e `Pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
+3. ✅ **Compra** (migration `Compra`): `CarrinhoItens`, `Pedidos` com status, `PedidoItens` e `Pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
 4. **Lista de desejos.**

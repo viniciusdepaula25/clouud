@@ -49,6 +49,15 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com 
 
 No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço → importar as chaves de cada produto em **Estoque** (colando uma por linha). Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
 
+## Compra
+
+1. O cliente clica em **Comprar** na vitrine e o produto vai para o **carrinho** (até 10 unidades por produto, limitado ao estoque).
+2. Em **Finalizar compra**, o pedido é criado com o preço do momento e as chaves ficam **reservadas por 30 minutos** (ajuste em `Loja:MinutosParaPagar`, no `appsettings.json`).
+3. O **pagamento é simulado**: a tela tem um botão para aprovar e outro para recusar, sem pedir dados de pagamento nem cobrar nada.
+4. Com o pagamento aprovado, as chaves aparecem no pedido e em **Minhas chaves**, com o passo a passo de ativação da plataforma.
+
+Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam ao estoque. No admin, **Pedidos** mostra todos os pedidos e permite cancelar os que aguardam pagamento e reembolsar os pagos (as chaves reembolsadas ficam inativas).
+
 ## Estrutura
 
 ```
@@ -62,11 +71,11 @@ No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam,
         ├── Program.cs          # configuração da aplicação (serviços e pipeline)
         ├── Controllers/        # controllers da área pública (Home, Conta)
         ├── Areas/
-        │   ├── Admin/          # painel administrativo (jogos, produtos, estoque, plataformas, categorias, usuários)
-        │   └── Cliente/        # área do cliente logado
-        ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Chave, Plataforma, Categoria, Empresa, Pedido...)
+        │   ├── Admin/          # painel administrativo (jogos, produtos, estoque, pedidos, plataformas, categorias, usuários)
+        │   └── Cliente/        # área do cliente logado (loja, carrinho, pedidos, minhas chaves, minha conta)
+        ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Chave, Pedido, Pagamento, CarrinhoItem...)
         ├── ViewModels/         # modelos das telas (vitrine, formulários, login, cadastro)
-        ├── Services/           # regras reutilizáveis (hash de senha, login, vitrine, estoque, slugs)
+        ├── Services/           # regras reutilizáveis (login, vitrine, estoque, carrinho, pedidos, slugs)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework
         │   ├── AdminInicial.cs # cria o primeiro administrador

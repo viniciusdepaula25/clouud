@@ -1,0 +1,109 @@
+@model Clouud.Web.Models.Pedido
+@using Clouud.Web.Models
+
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
+}
+
+<h1>
+    Pedido #@Model.Id
+    <span class="badge fs-6 align-middle @Model.Status.Cor()">@Model.Status.Descricao()</span>
+</h1>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-2">Cliente</dt>
+    <dd class="col-sm-10">@Model.Usuario.Name (@Model.Usuario.Email)</dd>
+    <dt class="col-sm-2">Criado em</dt>
+    <dd class="col-sm-10">@Model.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+    @if (Model.Status == StatusPedido.AguardandoPagamento)
+    {
+        <dt class="col-sm-2">Pagar até</dt>
+        <dd class="col-sm-10">@Model.PagarAte?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+    }
+    @if (Model.PagoEm.HasValue)
+    {
+        <dt class="col-sm-2">Pago em</dt>
+        <dd class="col-sm-10">@Model.PagoEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+    }
+    <dt class="col-sm-2">Total</dt>
+    <dd class="col-sm-10">@Model.Total.ToString("C")</dd>
+</dl>
+
+<h4>Itens e chaves</h4>
+<table class="table table-sm">
+    <thead>
+        <tr><th>Produto</th><th class="text-end">Qtd.</th><th class="text-end">Preço unitário</th><th class="text-end">Subtotal</th><th>Chaves</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Itens.OrderBy(i => i.Id))
+        {
+            <tr>
+                <td>@item.Produto.Jogo.Titulo <small class="text-muted">— @item.Produto.Plataforma.Nome · @item.Produto.Edicao</small></td>
+                <td class="text-end">@item.Quantidade</td>
+                <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                <td class="text-end">@item.Subtotal.ToString("C")</td>
+                <td class="font-monospace small">
+                    @if (item.Chaves.Count == 0)
+                    {
+                        <span class="text-muted">nenhuma</span>
+                    }
+                    @foreach (var chave in item.Chaves.OrderBy(c => c.Id))
+                    {
+                        <div>@chave.CodigoMascarado() <span class="text-muted">(@chave.Status.Descricao())</span></div>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4>Pagamentos</h4>
+@if (Model.Pagamentos.Count == 0)
+{
+    <p class="text-muted">Nenhuma tentativa de pagamento.</p>
+}
+else
+{
+    <table class="table table-sm small">
+        <thead><tr><th>Data</th><th>Forma</th><th>Resultado</th><th>Transação</th><th class="text-end">Valor</th></tr></thead>
+        <tbody>
+            @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.CriadoEm))
+            {
+                <tr>
+                    <td>@pagamento.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@pagamento.Metodo.Descricao()</td>
+                    <td>@pagamento.Status</td>
+                    <td class="font-monospace">@pagamento.CodigoTransacao</td>
+                    <td class="text-end">@pagamento.Valor.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="d-flex gap-2 mt-3">
+    @if (Model.Status == StatusPedido.AguardandoPagamento)
+    {
+        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Cancelar o pedido #@Model.Id? As chaves reservadas voltam ao estoque.')">
+            <input type="submit" value="Cancelar pedido" class="btn btn-danger" />
+        </form>
+    }
+    @if (Model.Status == StatusPedido.Pago)
+    {
+        <form asp-action="Reembolsar" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Reembolsar o pedido #@Model.Id? As chaves entregues serão desativadas (o cliente já viu os códigos).')">
+            <input type="submit" value="Reembolsar" class="btn btn-danger" />
+        </form>
+    }
+    <a asp-action="Index" class="btn btn-link">Voltar aos pedidos</a>
+</div>

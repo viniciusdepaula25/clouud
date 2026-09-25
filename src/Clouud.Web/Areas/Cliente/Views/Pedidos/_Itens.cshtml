@@ -1,0 +1,32 @@
+@model Clouud.Web.Models.Pedido
+@* Itens do pedido (produto, quantidade e preço pago) *@
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Produto</th>
+            <th class="text-end">Qtd.</th>
+            <th class="text-end">Preço unitário</th>
+            <th class="text-end">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Itens.OrderBy(i => i.Id))
+        {
+            <tr>
+                <td>
+                    @item.Produto.Jogo.Titulo
+                    <small class="text-muted">— @item.Produto.Plataforma.Nome@(item.Produto.Edicao != "Standard" ? $" · {item.Produto.Edicao}" : "")</small>
+                </td>
+                <td class="text-end">@item.Quantidade</td>
+                <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
+                <td class="text-end">@item.Subtotal.ToString("C")</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="3" class="text-end">Total</th>
+            <th class="text-end">@Model.Total.ToString("C")</th>
+        </tr>
+    </tfoot>
+</table>

@@ -1,0 +1,82 @@
+@model Clouud.Web.Models.Pedido
+@using Clouud.Web.Models
+
+@{
+    ViewData["Title"] = "Pagamento";
+    var prazo = Model.PagarAte!.Value;
+}
+
+<h1 class="mt-3">Pagamento do pedido #@Model.Id</h1>
+<hr />
+<partial name="_Alertas" />
+
+<div class="alert alert-warning">
+    Suas chaves estão reservadas até <strong>@prazo.ToLocalTime().ToString("HH:mm")</strong>
+    (<span id="tempoRestante" data-prazo="@prazo.ToString("o")"></span>).
+    Depois disso o pedido é cancelado e as chaves voltam para a loja.
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <h4>Resumo</h4>
+        <partial name="_Itens" model="Model" />
+    </div>
+    <div class="col-md-5">
+        <h4>Forma de pagamento</h4>
+        <form asp-action="Pagar" asp-route-id="@Model.Id" method="post">
+            @foreach (var metodo in Enum.GetValues<MetodoPagamento>())
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="metodo" id="metodo-@metodo" value="@metodo"
+                           checked="@(metodo == MetodoPagamento.Pix)" />
+                    <label class="form-check-label" for="metodo-@metodo">@metodo.Descricao()</label>
+                </div>
+            }
+            <div class="border rounded p-2 my-3 small">
+                <strong>Pagamento simulado.</strong> A loja ainda não está ligada a uma operadora de pagamento:
+                nenhum dado de pagamento é pedido e nada é cobrado. Use os botões abaixo para simular a resposta.
+            </div>
+            <div class="d-grid gap-2">
+                <button type="submit" name="aprovar" value="true" class="btn btn-danger btn-lg">
+                    Pagar @Model.Total.ToString("C") (simular aprovação)
+                </button>
+                <button type="submit" name="aprovar" value="false" class="btn btn-outline-secondary btn-sm">
+                    Simular pagamento recusado
+                </button>
+            </div>
+        </form>
+
+        @if (Model.Pagamentos.Any())
+        {
+            <h6 class="mt-4">Tentativas anteriores</h6>
+            <ul class="small">
+                @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.CriadoEm))
+                {
+                    <li>@pagamento.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm") — @pagamento.Metodo.Descricao(): recusado</li>
+                }
+            </ul>
+        }
+
+        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="mt-4"
+              onsubmit="return confirm('Cancelar este pedido? As chaves voltam para a loja.')">
+            <input type="submit" value="Cancelar pedido" class="btn btn-link text-danger p-0" />
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Contagem regressiva do prazo de pagamento
+        (function () {
+            const campo = document.getElementById("tempoRestante");
+            const prazo = new Date(campo.dataset.prazo);
+            const atualizar = () => {
+                const segundos = Math.max(0, Math.floor((prazo - new Date()) / 1000));
+                const m = Math.floor(segundos / 60), s = segundos % 60;
+                campo.textContent = segundos > 0 ? `faltam ${m}:${String(s).padStart(2, "0")}` : "prazo encerrado";
+            };
+            atualizar();
+            setInterval(atualizar, 1000);
+        })();
+    </script>
+}

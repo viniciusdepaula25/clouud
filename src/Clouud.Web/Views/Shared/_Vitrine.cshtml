@@ -1,10 +1,11 @@
 @model Clouud.Web.ViewModels.VitrineViewModel
 @*
     Filtros + cards de produtos. Usado na página inicial e na área do cliente.
-    ViewData["BotaoAtivar"]: "login" (visitante vai para o login) ou "modal" (cliente logado).
+    ViewData["ModoVitrine"]: "login" (visitante vai para o login) ou "carrinho" (cliente logado compra).
 *@
 @{
-    var botaoModal = ViewData["BotaoAtivar"] as string == "modal";
+    var modoCarrinho = ViewData["ModoVitrine"] as string == "carrinho";
+    var paginaAtual = Context.Request.Path + Context.Request.QueryString;
 }
 
 <form class="row g-2 justify-content-center align-items-center my-3" method="get" asp-action="Index">
@@ -81,13 +82,18 @@
                         {
                             <button class="button-24 btn btn-outline-secondary" type="button" disabled>Esgotado</button>
                         }
-                        else if (botaoModal)
+                        else if (modoCarrinho)
                         {
-                            <button class="button-24 btn btn-outline-danger" type="button" role="button" onclick="finalizarCompra()">Ativar</button>
+                            <form asp-area="Cliente" asp-controller="Carrinho" asp-action="Adicionar" method="post">
+                                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                <input type="hidden" name="voltarPara" value="@paginaAtual" />
+                                <button class="button-24 btn btn-outline-danger" type="submit">Comprar</button>
+                            </form>
                         }
                         else
                         {
-                            <a asp-area="" asp-controller="Conta" asp-action="Login" class="button-24 btn btn-outline-danger" role="button">Ativar</a>
+                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="/Cliente/Home"
+                               class="button-24 btn btn-outline-danger" role="button">Comprar</a>
                         }
                     </div>
                 </div>
