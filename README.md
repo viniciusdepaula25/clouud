@@ -55,7 +55,7 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com 
         ├── Areas/
         │   ├── Admin/          # painel administrativo (jogos, usuários)
         │   └── Cliente/        # área do cliente logado
-        ├── Models/             # entidades do banco (Usuario, Cliente, Jogo, Pedido, PedidoJ)
+        ├── Models/             # entidades do banco (Usuario, Jogo, Pedido, PedidoJogo)
         ├── ViewModels/         # modelos das telas (login, cadastro, erro)
         ├── Services/           # regras reutilizáveis (ex.: hash de senha)
         ├── Data/

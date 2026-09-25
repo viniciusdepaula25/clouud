@@ -71,13 +71,6 @@ namespace Clouud.Web.Controllers
                     return View(conta);
                 }
 
-                //Cadastra o Cliente
-                Cliente cliente = new Cliente();
-                cliente.Id = usuario.ID;
-                cliente.Nome = conta.Nome;
-                bancoDados.Clientes.Add(cliente);
-                bancoDados.SaveChanges();
-
 
                 return RedirectToAction("Index", "Home");
             }

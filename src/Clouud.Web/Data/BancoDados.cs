@@ -10,8 +10,7 @@ namespace Clouud.Web.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Jogo> Jogos { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<PedidoJ> PedidoJs { get; set; }
-        public DbSet<Cliente> Clientes { get; set; }    
+        public DbSet<PedidoJogo> PedidoJogos { get; set; }    
 
 
 

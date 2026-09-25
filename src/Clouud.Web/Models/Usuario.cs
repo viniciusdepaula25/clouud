@@ -38,7 +38,7 @@ namespace Clouud.Web.Models
         public string? Foto { get; set; }
 
         [ValidateNever]
-        public virtual Cliente Cliente { get; set; } = null!;
+        public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 
     }
     public enum PerfilUsuario 

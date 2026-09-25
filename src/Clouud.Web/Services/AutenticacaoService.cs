@@ -1,5 +1,4 @@
 using System.Security.Claims;
-using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -13,29 +12,17 @@ namespace Clouud.Web.Services
     /// </summary>
     public class AutenticacaoService
     {
-        private readonly BancoDados bancoDados;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public AutenticacaoService(BancoDados bancoDados, IHttpContextAccessor httpContextAccessor)
+        public AutenticacaoService(IHttpContextAccessor httpContextAccessor)
         {
-            this.bancoDados = bancoDados;
             this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task EntrarAsync(Usuario usuario)
         {
-            string nome = string.Empty;
-            switch (usuario.Perfil)
-            {
-                case PerfilUsuario.Cliente:
-                    var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-                    // usuário cliente sem registro na tabela Clientes: usa o nome do usuário
-                    nome = cliente?.Nome ?? usuario.Name;
-                    break;
-                case PerfilUsuario.Admin:
-                    nome = "Administrador";
-                    break;
-            }
+            // nome exibido no topo das páginas
+            var nome = usuario.Perfil == PerfilUsuario.Admin ? "Administrador" : usuario.Name;
 
             //credencial do usuario
             var credencial = new List<Claim>

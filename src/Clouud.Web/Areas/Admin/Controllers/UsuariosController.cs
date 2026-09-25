@@ -80,13 +80,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
             bancoDados.Usuarios.Add(usuario);
             bancoDados.SaveChanges();
 
-            // Clientes também precisam do registro na tabela Clientes (igual ao cadastro pelo site)
-            if (usuario.Perfil == PerfilUsuario.Cliente)
-            {
-                bancoDados.Clientes.Add(new Clouud.Web.Models.Cliente { Id = usuario.ID, Nome = usuario.Name });
-                bancoDados.SaveChanges();
-            }
-
             TempData["Mensagem"] = $"Usuário {usuario.Name} cadastrado.";
             return RedirectToAction("Index");
         }
@@ -148,17 +141,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 usuario.Senha = senhas.GerarHash(usuario, form.Senha); // senha nova: gera o hash
             }
 
-            // Mantém a tabela Clientes em dia com o nome e o perfil
-            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-            if (cliente != null)
-            {
-                cliente.Nome = usuario.Name;
-            }
-            else if (usuario.Perfil == PerfilUsuario.Cliente)
-            {
-                bancoDados.Clientes.Add(new Clouud.Web.Models.Cliente { Id = usuario.ID, Nome = usuario.Name });
-            }
-
             bancoDados.SaveChanges();
             TempData["Mensagem"] = $"Usuário {usuario.Name} alterado.";
             return RedirectToAction("Index");
@@ -207,12 +189,6 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return View(usuario);
             }
 
-            // O registro em Clientes aponta para o usuário e precisa sair primeiro
-            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-            if (cliente != null)
-            {
-                bancoDados.Clientes.Remove(cliente);
-            }
             bancoDados.Usuarios.Remove(usuario);
 
             try

@@ -49,7 +49,11 @@ var app = builder.Build();
 
 // Números sempre com ponto decimal (ex.: 59.90), igual à validação do navegador.
 // Sem isso, em um computador com sistema em português "59.90" vira 5990.
-var cultura = CultureInfo.InvariantCulture;
+// A moeda é o real: valores com [DataType(Currency)] aparecem como "R$ 59.90".
+var cultura = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+cultura.NumberFormat.CurrencySymbol = "R$";
+cultura.NumberFormat.CurrencyPositivePattern = 2; // "R$ 59.90"
+cultura.NumberFormat.CurrencyNegativePattern = 9; // "-R$ 59.90"
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture(cultura),

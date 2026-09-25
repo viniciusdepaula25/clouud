@@ -10,18 +10,16 @@ namespace Clouud.Web.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [ForeignKey("Usuario")]
         [Display(Name = "Usuário")]
-       public int Id_Usuario { get; set; }
+        public int UsuarioId { get; set; }
+
+        [ForeignKey(nameof(UsuarioId))]
+        public Usuario Usuario { get; set; } = null!;
 
         [DataType(DataType.Currency)]
-        public double Valor {  get; set; }
-        
-        public ICollection<PedidoJ> PedidoJs { get; set; } = new List<PedidoJ>();
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal Valor { get; set; }
 
-        public Pedido()
-        { 
-          Valor = 0;
-        }
+        public ICollection<PedidoJogo> Itens { get; set; } = new List<PedidoJogo>();
     }
 }

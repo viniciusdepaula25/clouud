@@ -32,10 +32,9 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 return NotFound();
             }
 
-            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
             return View(new MinhaContaViewModel
             {
-                Nome = cliente?.Nome ?? usuario.Name,
+                Nome = usuario.Name,
                 Email = usuario.Email
             });
         }
@@ -83,12 +82,6 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             if (trocouSenha)
             {
                 usuario.Senha = senhas.GerarHash(usuario, conta.NovaSenha!);
-            }
-
-            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-            if (cliente != null)
-            {
-                cliente.Nome = usuario.Name;
             }
 
             bancoDados.SaveChanges();

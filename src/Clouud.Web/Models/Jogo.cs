@@ -23,23 +23,11 @@ namespace Clouud.Web.Models
         public string Categoria { get; set; } = string.Empty;
 
         [DataType(DataType.Currency)]
-        public double Valorj {  get; set; }
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal Valor { get; set; }
 
         [DataType(DataType.ImageUrl)]
         public string? Foto { get; set; }
 
-        public Jogo() 
-        {
-          Valorj = 0;
-        }
-    
-    
-    
-    
-    
-    
-    
-    
-    
     }
 }
