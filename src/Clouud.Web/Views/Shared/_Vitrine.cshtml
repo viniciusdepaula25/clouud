@@ -61,6 +61,10 @@
                         {
                             <span class="badge bg-danger position-absolute top-0 start-0 m-2 fs-6">-@item.PercentualDesconto%</span>
                         }
+                        @if (item.Esgotado)
+                        {
+                            <span class="badge bg-dark position-absolute top-0 end-0 m-2 fs-6">Esgotado</span>
+                        }
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">@(item.Desenvolvedora ?? "—")</li>
@@ -73,7 +77,11 @@
                         </li>
                     </ul>
                     <div class="card-body flex-grow-0 mt-auto">
-                        @if (botaoModal)
+                        @if (item.Esgotado)
+                        {
+                            <button class="button-24 btn btn-outline-secondary" type="button" disabled>Esgotado</button>
+                        }
+                        else if (botaoModal)
                         {
                             <button class="button-24 btn btn-outline-danger" type="button" role="button" onclick="finalizarCompra()">Ativar</button>
                         }

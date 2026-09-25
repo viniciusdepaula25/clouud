@@ -1,0 +1,73 @@
+@model IEnumerable<Clouud.Web.ViewModels.EstoqueProdutoViewModel>
+@using Clouud.Web.ViewModels
+
+@{
+    ViewData["Title"] = "Estoque";
+}
+
+<h1>Estoque de Chaves</h1>
+<p>Chaves de ativação de cada produto. Produto sem chave disponível aparece como <strong>Esgotado</strong> na loja.</p>
+<hr />
+<div class="d-flex justify-content-end">
+    <form asp-action="Index" method="get" class="d-flex">
+        <div class="form-group mb-2">
+            <input type="search" id="txtBusca" name="busca" value="@ViewData["Busca"]" placeholder="Nome do jogo" class="form-control me-sm-2" />
+        </div>
+        <input type="submit" value="Buscar" class="btn btn-secondary my-2 my-sm-0" />
+    </form>
+</div>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Jogo</th>
+            <th scope="col">Plataforma</th>
+            <th scope="col">Edição</th>
+            <th scope="col" class="text-end">Disponíveis</th>
+            <th scope="col" class="text-end">Reservadas</th>
+            <th scope="col" class="text-end">Vendidas</th>
+            <th scope="col" class="text-end">Inativas</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8">Nenhum produto encontrado. <a asp-controller="Produto" asp-action="Inclui">Cadastre um produto</a> para adicionar chaves.</td></tr>
+        }
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.Jogo
+                    @if (!item.Ativo)
+                    {
+                        <span class="badge bg-secondary">fora da loja</span>
+                    }
+                </td>
+                <td>@item.Plataforma</td>
+                <td>@item.Edicao</td>
+                <td class="text-end">
+                    @if (item.Disponiveis == 0)
+                    {
+                        <span class="badge bg-danger">Esgotado</span>
+                    }
+                    else if (item.Disponiveis < EstoqueProdutoViewModel.EstoqueBaixo)
+                    {
+                        <span class="badge bg-warning text-dark">@item.Disponiveis</span>
+                    }
+                    else
+                    {
+                        @item.Disponiveis
+                    }
+                </td>
+                <td class="text-end">@item.Reservadas</td>
+                <td class="text-end">@item.Vendidas</td>
+                <td class="text-end">@item.Inativas</td>
+                <td>
+                    <a asp-action="Importar" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Importar chaves</a> |
+                    <a asp-action="Chaves" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Ver chaves</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

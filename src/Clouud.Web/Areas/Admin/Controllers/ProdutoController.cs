@@ -1,5 +1,6 @@
 using Clouud.Web.Data;
 using Clouud.Web.Models;
+using Clouud.Web.Services;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
     public class ProdutoController : AdminController
     {
         private readonly BancoDados bancoDados;
+        private readonly EstoqueService estoque;
 
-        public ProdutoController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        public ProdutoController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, EstoqueService estoque)
+            : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
+            this.estoque = estoque;
         }
 
         [HttpGet]
@@ -34,6 +38,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             }
 
             ViewData["JogoId"] = jogoId;
+            ViewData["Estoque"] = estoque.DisponiveisPorProduto();
             return View(consulta.OrderBy(p => p.Jogo.Titulo).ThenBy(p => p.Plataforma.Nome).ThenBy(p => p.Edicao).ToList());
         }
 
@@ -61,7 +66,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             bancoDados.Produtos.Add(produto);
             bancoDados.SaveChanges();
 
-            TempData["Mensagem"] = "Produto cadastrado.";
+            TempData["Mensagem"] = "Produto cadastrado. Importe as chaves para ele aparecer à venda.";
             return RedirectToAction("Index", new { jogoId = produto.JogoId });
         }
 
@@ -135,6 +140,14 @@ namespace Clouud.Web.Areas.Admin.Controllers
             if (produto == null)
             {
                 return NotFound();
+            }
+
+            var chaves = bancoDados.Chaves.Count(c => c.ProdutoId == id);
+            if (chaves > 0)
+            {
+                ModelState.AddModelError(string.Empty,
+                    $"Este produto tem {chaves} chave(s) no estoque e não pode ser excluído. Exclua as chaves que não foram vendidas ou desmarque \"Ativo\" para tirá-lo da loja.");
+                return View(produto);
             }
 
             bancoDados.Produtos.Remove(produto);

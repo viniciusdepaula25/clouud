@@ -1,4 +1,5 @@
 using Clouud.Web.Data;
+using Clouud.Web.Models;
 using Clouud.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -40,8 +41,10 @@ namespace Clouud.Web.Services
                                                && (p.PromocaoAte == null || p.PromocaoAte >= hoje));
             }
 
+            // Esgotados vão para o fim da lista
             var produtos = consulta
-                .OrderByDescending(p => p.Jogo.Destaque)
+                .OrderByDescending(p => p.Chaves.Any(c => c.Status == StatusChave.Disponivel))
+                .ThenByDescending(p => p.Jogo.Destaque)
                 .ThenBy(p => p.Jogo.Titulo)
                 .ThenBy(p => p.Plataforma.Nome)
                 .Select(p => new ProdutoVitrineViewModel
@@ -58,7 +61,8 @@ namespace Clouud.Web.Services
                     PrecoAtual = p.PrecoPromocional != null && p.PrecoPromocional < p.Preco
                                  && (p.PromocaoAte == null || p.PromocaoAte >= hoje)
                         ? p.PrecoPromocional.Value
-                        : p.Preco
+                        : p.Preco,
+                    Disponiveis = p.Chaves.Count(c => c.Status == StatusChave.Disponivel)
                 })
                 .ToList();
 

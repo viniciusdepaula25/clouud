@@ -29,6 +29,11 @@ namespace Clouud.Web.ViewModels
         public decimal Preco { get; set; }
         public decimal PrecoAtual { get; set; }
 
+        /// <summary>Chaves disponíveis no estoque.</summary>
+        public int Disponiveis { get; set; }
+
+        public bool Esgotado => Disponiveis == 0;
+
         public bool EmPromocao => PrecoAtual < Preco;
         public int PercentualDesconto => Preco > 0 && EmPromocao ? (int)Math.Round((1 - PrecoAtual / Preco) * 100) : 0;
     }

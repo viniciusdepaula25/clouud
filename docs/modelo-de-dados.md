@@ -2,7 +2,7 @@
 
 Este documento compara o modelo do curso com o que uma loja de chaves precisa e descreve o modelo proposto para o CLOUUD, junto com o plano para chegar nele.
 
-**Situação:** etapa 1 (catálogo) concluída. Veja o [plano](#4-plano-de-implementação).
+**Situação:** etapas 1 (catálogo) e 2 (estoque de chaves) concluídas. Veja o [plano](#4-plano-de-implementação).
 
 ## 1. Modelo do curso (ponto de partida)
 
@@ -135,10 +135,11 @@ erDiagram
     Chaves {
         int Id PK
         int ProdutoId FK
-        string Codigo
+        string Codigo UK
         string Status "Disponivel | Reservada | Vendida | Inativa"
-        int PedidoItemId FK
-        datetime VendidaEm
+        datetime AdicionadaEm
+        int PedidoItemId FK "etapa 3"
+        datetime VendidaEm "etapa 3"
     }
     CarrinhoItens {
         int Id PK
@@ -188,7 +189,7 @@ erDiagram
 | **Empresas** | Desenvolvedoras e publicadoras | Slug único |
 | **Jogos** | Informações do jogo: título, descrição, capa, lançamento | Slug único (usado na URL: `/jogo/elden-ring`) |
 | **Produtos** | O que é vendido: jogo + plataforma + edição, com preço e promoção | Não repete jogo + plataforma + edição; preço promocional menor que o preço |
-| **Chaves** | Estoque. Cada linha é uma chave de ativação | Mesma chave não entra duas vezes no mesmo produto |
+| **Chaves** | Estoque. Cada linha é uma chave de ativação | Código único em toda a loja (a mesma chave não entra duas vezes, nem em produtos diferentes); status só com os quatro valores válidos |
 | **CarrinhoItens** | Produtos que o cliente separou antes de pagar | Um produto aparece uma vez no carrinho (a quantidade aumenta) |
 | **ListaDesejos** | Jogos que o cliente quer acompanhar | Par usuário/jogo único |
 | **Pedidos** | A compra, com status e datas | FK para o usuário |
@@ -230,6 +231,6 @@ A migration de cada etapa converte os dados que já existem:
 Cada etapa é um commit, com as telas funcionando no final:
 
 1. ✅ **Catálogo** (migration `Catalogo`): `Plataformas`, `Categorias`, `Empresas`, `Jogos` reformulado e `Produtos`. Telas do admin para jogos e produtos (com preço promocional) e vitrine mostrando plataforma, preço e desconto.
-2. **Estoque de chaves:** tabela `Chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
+2. ✅ **Estoque de chaves** (migration `Estoque`): tabela `Chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
 3. **Compra:** `CarrinhoItens`, `Pedidos` com status, `PedidoItens` e `Pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
 4. **Lista de desejos.**

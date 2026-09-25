@@ -15,6 +15,7 @@ namespace Clouud.Web.Data
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
         public DbSet<Produto> Produtos { get; set; }
+        public DbSet<Chave> Chaves { get; set; }
 
 
 
@@ -50,6 +51,14 @@ namespace Clouud.Web.Data
                 t.HasCheckConstraint("CK_Produtos_Preco", "\"Preco\" >= 0");
                 t.HasCheckConstraint("CK_Produtos_PrecoPromocional",
                     "\"PrecoPromocional\" IS NULL OR (\"PrecoPromocional\" >= 0 AND \"PrecoPromocional\" < \"Preco\")");
+            });
+
+            // Status da chave gravado como texto, para o banco ficar legível
+            modelBuilder.Entity<Chave>(chave =>
+            {
+                chave.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
+                chave.ToTable(t => t.HasCheckConstraint("CK_Chaves_Status",
+                    "\"Status\" IN ('Disponivel', 'Reservada', 'Vendida', 'Inativa')"));
             });
 
             base.OnModelCreating(modelBuilder);

@@ -1,0 +1,110 @@
+@model Clouud.Web.ViewModels.ChavesProdutoViewModel
+@using Clouud.Web.Models
+
+@{
+    ViewData["Title"] = "Chaves";
+    var filtro = Model.Filtro;
+}
+
+<h1>Chaves</h1>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+@if (TempData["Aviso"] is string aviso)
+{
+    <div class="alert alert-warning">@aviso</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+<partial name="_Produto" model="Model.Produto" />
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <div class="btn-group" role="group" aria-label="Filtrar por situação">
+        <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId"
+           class="btn btn-sm @(filtro == null ? "btn-primary" : "btn-outline-light")">Todas</a>
+        @foreach (var status in Enum.GetValues<StatusChave>())
+        {
+            <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId" asp-route-status="@status"
+               class="btn btn-sm @(filtro == status ? "btn-primary" : "btn-outline-light")">@status.Descricao()</a>
+        }
+    </div>
+    <div>
+        <div class="form-check form-switch d-inline-block me-3">
+            <input class="form-check-input" type="checkbox" id="mostrarCodigos" />
+            <label class="form-check-label" for="mostrarCodigos">Mostrar códigos</label>
+        </div>
+        <a asp-action="Importar" asp-route-id="@Model.Produto.ProdutoId" class="btn btn-secondary">Importar chaves</a>
+    </div>
+</div>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Código</th>
+            <th scope="col">Situação</th>
+            <th scope="col">Adicionada em</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Chaves.Count == 0)
+        {
+            <tr><td colspan="4">Nenhuma chave@(filtro == null ? "" : $" com a situação {filtro.Value.Descricao().ToLower()}").</td></tr>
+        }
+        @foreach (var chave in Model.Chaves)
+        {
+            <tr>
+                <td class="font-monospace">
+                    <span class="codigo-mascarado">@chave.CodigoMascarado()</span>
+                    <span class="codigo-completo d-none">@chave.Codigo</span>
+                </td>
+                <td>@chave.Status.Descricao()</td>
+                <td>@chave.AdicionadaEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td class="text-end">
+                    @if (chave.Status == StatusChave.Disponivel)
+                    {
+                        <form asp-action="Inativar" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline">
+                            <input type="submit" value="Inativar" class="btn btn-secondary btn-sm" />
+                        </form>
+                    }
+                    else if (chave.Status == StatusChave.Inativa)
+                    {
+                        <form asp-action="Reativar" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline">
+                            <input type="submit" value="Reativar" class="btn btn-secondary btn-sm" />
+                        </form>
+                    }
+                    @if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa)
+                    {
+                        <form asp-action="Excluir" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline"
+                              onsubmit="return confirm('Excluir esta chave do estoque?')">
+                            <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@if (Model.Total > Model.Chaves.Count)
+{
+    <p class="text-muted">Mostrando as @Model.Chaves.Count chaves mais recentes de @Model.Total. Use os filtros para ver as outras.</p>
+}
+
+<div>
+    <a asp-action="Index">Voltar ao estoque</a> |
+    <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="">Produtos</a>
+</div>
+
+@section Scripts {
+    <script>
+        // Os códigos ficam mascarados na tela; o interruptor mostra os códigos completos
+        document.getElementById("mostrarCodigos").addEventListener("change", function () {
+            document.querySelectorAll(".codigo-mascarado").forEach(e => e.classList.toggle("d-none", this.checked));
+            document.querySelectorAll(".codigo-completo").forEach(e => e.classList.toggle("d-none", !this.checked));
+        });
+    </script>
+}

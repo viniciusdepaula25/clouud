@@ -1,0 +1,16 @@
+@model Clouud.Web.ViewModels.EstoqueProdutoViewModel
+@* Cabeçalho com o produto e os totais do estoque, usado em Chaves e Importar *@
+<h4>
+    @Model.Jogo
+    <small class="text-muted">— @Model.Plataforma@(Model.Edicao != "Standard" ? $" · {Model.Edicao}" : "")</small>
+    @if (!Model.Ativo)
+    {
+        <span class="badge bg-secondary">fora da loja</span>
+    }
+</h4>
+<p>
+    <strong class="@(Model.Disponiveis == 0 ? "text-danger" : Model.Disponiveis < Clouud.Web.ViewModels.EstoqueProdutoViewModel.EstoqueBaixo ? "text-warning" : "text-success")">
+        @Model.Disponiveis disponíveis
+    </strong>
+    · @Model.Reservadas reservadas · @Model.Vendidas vendidas · @Model.Inativas inativas
+</p>

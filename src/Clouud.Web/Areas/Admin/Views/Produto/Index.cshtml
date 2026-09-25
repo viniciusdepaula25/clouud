@@ -5,6 +5,7 @@
     var jogoId = ViewData["JogoId"] as int?;
     var jogoTitulo = ViewData["JogoTitulo"] as string;
     var hoje = DateOnly.FromDateTime(DateTime.Today);
+    var estoque = ViewData["Estoque"] as Dictionary<int, int> ?? new();
 }
 
 <h1>@(jogoTitulo is null ? "Produtos Cadastrados" : $"Produtos de {jogoTitulo}")</h1>
@@ -35,6 +36,7 @@
             <th scope="col">Região</th>
             <th scope="col">Preço</th>
             <th scope="col">Promoção</th>
+            <th scope="col">Estoque</th>
             <th scope="col">Situação</th>
             <th></th>
         </tr>
@@ -42,7 +44,7 @@
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="8">Nenhum produto cadastrado.</td></tr>
+            <tr><td colspan="9">Nenhum produto cadastrado.</td></tr>
         }
         @foreach (var item in Model)
         {
@@ -66,8 +68,22 @@
                         }
                     }
                 </td>
+                <td>
+                    @{ var disponiveis = estoque.GetValueOrDefault(item.Id); }
+                    <a asp-controller="Estoque" asp-action="Chaves" asp-route-id="@item.Id">
+                        @if (disponiveis == 0)
+                        {
+                            <span class="badge bg-danger">Esgotado</span>
+                        }
+                        else
+                        {
+                            @($"{disponiveis} chave(s)")
+                        }
+                    </a>
+                </td>
                 <td>@(item.Ativo ? "À venda" : "Inativo")</td>
                 <td>
+                    <a asp-controller="Estoque" asp-action="Importar" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Importar chaves</a> |
                     <a asp-action="Altera" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Alterar</a> |
                     <a asp-action="Exclui" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Excluir</a>
                 </td>

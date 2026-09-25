@@ -45,8 +45,9 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com 
 - **Jogo:** informações do jogo (título, descrição, capa, lançamento, classificação, desenvolvedora, publicadora e categorias).
 - **Produto:** o que a loja vende, ou seja, um jogo em uma plataforma e edição, com preço e preço promocional opcional (com data de término). O jogo só aparece na vitrine depois de ter um produto ativo.
 - **Plataformas** e **categorias** são cadastradas no admin e viram os filtros da vitrine.
+- **Chaves:** o estoque de cada produto. Produto sem chave disponível aparece como **Esgotado** na vitrine. Uma chave é única em toda a loja, e chaves vendidas não podem ser excluídas.
 
-No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço. Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
+No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço → importar as chaves de cada produto em **Estoque** (colando uma por linha). Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
 
 ## Estrutura
 
@@ -61,11 +62,11 @@ No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam,
         ├── Program.cs          # configuração da aplicação (serviços e pipeline)
         ├── Controllers/        # controllers da área pública (Home, Conta)
         ├── Areas/
-        │   ├── Admin/          # painel administrativo (jogos, produtos, plataformas, categorias, usuários)
+        │   ├── Admin/          # painel administrativo (jogos, produtos, estoque, plataformas, categorias, usuários)
         │   └── Cliente/        # área do cliente logado
-        ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Plataforma, Categoria, Empresa, Pedido...)
+        ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Chave, Plataforma, Categoria, Empresa, Pedido...)
         ├── ViewModels/         # modelos das telas (vitrine, formulários, login, cadastro)
-        ├── Services/           # regras reutilizáveis (hash de senha, login, vitrine, slugs)
+        ├── Services/           # regras reutilizáveis (hash de senha, login, vitrine, estoque, slugs)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework
         │   ├── AdminInicial.cs # cria o primeiro administrador

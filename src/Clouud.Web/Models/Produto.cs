@@ -6,7 +6,7 @@ namespace Clouud.Web.Models
 {
     /// <summary>
     /// O que a loja vende: um jogo, em uma plataforma, em uma edição.
-    /// Ex.: "Elden Ring — Steam — Standard". Tem preço próprio e (na próxima etapa) estoque de chaves.
+    /// Ex.: "Elden Ring — Steam — Standard". Tem preço próprio e estoque de chaves.
     /// </summary>
     [Table("Produtos")]
     [Index(nameof(JogoId), nameof(PlataformaId), nameof(Edicao), IsUnique = true)]
@@ -53,6 +53,9 @@ namespace Clouud.Web.Models
         public DateOnly? PromocaoAte { get; set; }
 
         public bool Ativo { get; set; } = true;
+
+        /// <summary>Estoque de chaves do produto.</summary>
+        public ICollection<Chave> Chaves { get; set; } = new List<Chave>();
 
         public bool EmPromocao(DateOnly hoje) =>
             PrecoPromocional.HasValue && PrecoPromocional < Preco && (PromocaoAte == null || PromocaoAte >= hoje);
