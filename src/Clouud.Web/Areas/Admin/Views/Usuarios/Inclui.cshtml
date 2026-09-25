@@ -1,0 +1,29 @@
+@model Clouud.Web.ViewModels.UsuarioFormViewModel
+
+@{
+    ViewData["Title"] = "Inclui";
+    ViewData["NovoUsuario"] = true;
+}
+
+<h1>Inclui</h1>
+
+<h4>Usuário</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Inclui">
+            <partial name="_Form" model="Model" view-data="ViewData" />
+            <div class="form-group mt-3">
+                <input type="submit" value="Cadastrar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

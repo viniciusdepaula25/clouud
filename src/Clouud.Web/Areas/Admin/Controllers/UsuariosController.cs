@@ -1,103 +1,167 @@
+using System.Security.Claims;
 using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
-using Microsoft.AspNetCore.Mvc;
+using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace Clouud.Web.Areas.Admin.Controllers
 {
-    [Authorize(Roles = "Administrador")]
+    [Authorize(Roles = "Admin")]
     public class UsuariosController : AdminController
     {
         private readonly BancoDados bancoDados;
         private readonly SenhaService senhas;
 
-
         public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, SenhaService senhas) : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
-            this.senhas = senhas; 
+            this.senhas = senhas;
         }
 
         [HttpGet]
         public IActionResult Index()
         {
             //lista todos os usuarios
-            var usuarios = bancoDados.Usuarios.ToList();
-            //envia a lista de usuarios para a view
+            var usuarios = bancoDados.Usuarios.OrderBy(e => e.Name).ToList();
             return View(usuarios);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(string busca)
+        public IActionResult Index(string? busca)
         {
-            //lista os usuarios realizando a busca
-            var usuarios = new List<Usuario>();
-            if (string.IsNullOrEmpty(busca))
+            //lista os usuarios realizando a busca por nome ou e-mail
+            var consulta = bancoDados.Usuarios.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(busca))
             {
-                usuarios = bancoDados.Usuarios.ToList();
+                var termo = $"%{busca.Trim()}%";
+                consulta = consulta.Where(e => EF.Functions.ILike(e.Name, termo) || EF.Functions.ILike(e.Email, termo));
             }
-            else 
-            { 
-              usuarios = bancoDados.Usuarios.Where(e => e.Email.Contains(busca)).ToList();
-            }
-            return View(usuarios);
+            ViewData["Busca"] = busca;
+            return View(consulta.OrderBy(e => e.Name).ToList());
         }
+
         [HttpGet]
-        public IActionResult Inclui() 
-        { 
-         Usuario usuario = new Usuario();
-            return View(usuario);
+        public IActionResult Inclui()
+        {
+            return View(new UsuarioFormViewModel());
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Inclui(Usuario usuario, IFormFile arquivo)
+        public IActionResult Inclui(UsuarioFormViewModel form)
         {
-            if (ModelState.IsValid)
-            { 
-                usuario.Email = usuario.Email.Trim().ToLowerInvariant();
-                usuario.Senha = senhas.GerarHash(usuario, usuario.Senha); // salva só o hash
-                bancoDados.Usuarios.Add(usuario);//Incluir
-                bancoDados.SaveChanges();//Salva
-                //voltar para index
-                return RedirectToAction("Index");
+            var email = form.Email.Trim().ToLowerInvariant();
+
+            if (string.IsNullOrWhiteSpace(form.Senha))
+            {
+                ModelState.AddModelError(nameof(form.Senha), "Senha obrigatória");
             }
-            return View(usuario);
+            if (bancoDados.Usuarios.Any(e => e.Email == email))
+            {
+                ModelState.AddModelError(nameof(form.Email), "Já existe uma conta com este e-mail");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(form);
+            }
+
+            var usuario = new Usuario
+            {
+                Name = form.Nome.Trim(),
+                Email = email,
+                Perfil = form.Perfil
+            };
+            usuario.Senha = senhas.GerarHash(usuario, form.Senha!); // salva só o hash
+            bancoDados.Usuarios.Add(usuario);
+            bancoDados.SaveChanges();
+
+            // Clientes também precisam do registro na tabela Clientes (igual ao cadastro pelo site)
+            if (usuario.Perfil == PerfilUsuario.Cliente)
+            {
+                bancoDados.Clientes.Add(new Clouud.Web.Models.Cliente { Id = usuario.ID, Nome = usuario.Name });
+                bancoDados.SaveChanges();
+            }
+
+            TempData["Mensagem"] = $"Usuário {usuario.Name} cadastrado.";
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
         public IActionResult Altera(int id)
         {
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
-            if(usuario == null)
+            if (usuario == null)
             {
                 return NotFound();
             }
-            return View(usuario);
+
+            return View(new UsuarioFormViewModel
+            {
+                ID = usuario.ID,
+                Nome = usuario.Name,
+                Email = usuario.Email,
+                Perfil = usuario.Perfil
+            });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Altera(Usuario usuario, IFormFile arquivo)
+        public IActionResult Altera(UsuarioFormViewModel form)
         {
-            if (ModelState.IsValid)
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == form.ID);
+            if (usuario == null)
             {
-                // Se a senha do formulário for diferente do hash salvo, é uma senha nova: gera o hash
-                var senhaAtual = bancoDados.Usuarios.AsNoTracking()
-                    .Where(e => e.ID == usuario.ID).Select(e => e.Senha).FirstOrDefault();
-                if (usuario.Senha != senhaAtual)
-                {
-                    usuario.Senha = senhas.GerarHash(usuario, usuario.Senha);
-                }
-                usuario.Email = usuario.Email.Trim().ToLowerInvariant();
-                bancoDados.Usuarios.Update(usuario);
-                bancoDados.SaveChanges();
-                return RedirectToAction("Index");
+                return NotFound();
             }
-            return View(usuario);
+
+            var email = form.Email.Trim().ToLowerInvariant();
+            if (bancoDados.Usuarios.Any(e => e.Email == email && e.ID != usuario.ID))
+            {
+                ModelState.AddModelError(nameof(form.Email), "Já existe uma conta com este e-mail");
+            }
+
+            var deixaDeSerAdmin = usuario.Perfil == PerfilUsuario.Admin && form.Perfil != PerfilUsuario.Admin;
+            if (deixaDeSerAdmin && usuario.ID == UsuarioLogadoId())
+            {
+                ModelState.AddModelError(nameof(form.Perfil), "Você não pode tirar o seu próprio perfil de administrador");
+            }
+            else if (deixaDeSerAdmin && UltimoAdmin(usuario.ID))
+            {
+                ModelState.AddModelError(nameof(form.Perfil), "Este é o único administrador; cadastre outro antes de alterar o perfil");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(form);
+            }
+
+            usuario.Name = form.Nome.Trim();
+            usuario.Email = email;
+            usuario.Perfil = form.Perfil;
+            if (!string.IsNullOrWhiteSpace(form.Senha))
+            {
+                usuario.Senha = senhas.GerarHash(usuario, form.Senha); // senha nova: gera o hash
+            }
+
+            // Mantém a tabela Clientes em dia com o nome e o perfil
+            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
+            if (cliente != null)
+            {
+                cliente.Nome = usuario.Name;
+            }
+            else if (usuario.Perfil == PerfilUsuario.Cliente)
+            {
+                bancoDados.Clientes.Add(new Clouud.Web.Models.Cliente { Id = usuario.ID, Nome = usuario.Name });
+            }
+
+            bancoDados.SaveChanges();
+            TempData["Mensagem"] = $"Usuário {usuario.Name} alterado.";
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -115,24 +179,65 @@ namespace Clouud.Web.Areas.Admin.Controllers
         public IActionResult Exclui(int id)
         {
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
-            if(usuario == null)
+            if (usuario == null)
             {
                 return NotFound();
             }
             return View(usuario);
         }
 
-        [HttpPost]
+        [HttpPost, ActionName("Exclui")]
         [ValidateAntiForgeryToken]
-        public IActionResult Exclui(Usuario usuario)
+        public IActionResult ConfirmaExclusao(int id)
         {
-            if(usuario.ID > 0)
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == id);
+            if (usuario == null)
             {
-                bancoDados.Usuarios.Remove(usuario);
-                bancoDados.SaveChanges();
-                return RedirectToAction("Index");
+                return NotFound();
             }
-            return View(usuario);
+
+            if (usuario.ID == UsuarioLogadoId())
+            {
+                ModelState.AddModelError(string.Empty, "Você não pode excluir a sua própria conta");
+                return View(usuario);
+            }
+            if (usuario.Perfil == PerfilUsuario.Admin && UltimoAdmin(usuario.ID))
+            {
+                ModelState.AddModelError(string.Empty, "Este é o único administrador e não pode ser excluído");
+                return View(usuario);
+            }
+
+            // O registro em Clientes aponta para o usuário e precisa sair primeiro
+            var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
+            if (cliente != null)
+            {
+                bancoDados.Clientes.Remove(cliente);
+            }
+            bancoDados.Usuarios.Remove(usuario);
+
+            try
+            {
+                bancoDados.SaveChanges();
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "Este usuário tem pedidos registrados e não pode ser excluído");
+                return View(usuario);
+            }
+
+            TempData["Mensagem"] = $"Usuário {usuario.Name} excluído.";
+            return RedirectToAction("Index");
+        }
+
+        private int UsuarioLogadoId()
+        {
+            return int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+        }
+
+        /// <summary>True se não existe outro administrador além do usuário informado.</summary>
+        private bool UltimoAdmin(int usuarioId)
+        {
+            return !bancoDados.Usuarios.Any(e => e.Perfil == PerfilUsuario.Admin && e.ID != usuarioId);
         }
     }
 }

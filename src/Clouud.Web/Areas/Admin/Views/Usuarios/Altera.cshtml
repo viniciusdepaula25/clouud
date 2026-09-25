@@ -1,0 +1,28 @@
+@model Clouud.Web.ViewModels.UsuarioFormViewModel
+
+@{
+    ViewData["Title"] = "Altera";
+}
+
+<h1>Altera</h1>
+
+<h4>Usuário</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Altera">
+            <partial name="_Form" model="Model" view-data="ViewData" />
+            <div class="form-group mt-3">
+                <input type="submit" value="Salvar" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Voltar</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

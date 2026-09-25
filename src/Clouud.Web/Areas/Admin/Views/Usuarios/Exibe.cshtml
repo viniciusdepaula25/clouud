@@ -1,0 +1,17 @@
+@model Clouud.Web.Models.Usuario
+
+@{
+    ViewData["Title"] = "Exibe";
+}
+
+<h1>Exibe</h1>
+
+<div>
+    <h4>Usuário</h4>
+    <hr />
+    <partial name="_Detalhes" model="Model" />
+</div>
+<div>
+    <a asp-action="Altera" asp-route-id="@Model.ID" class="btn btn-secondary">Alterar</a> |
+    <a asp-action="Index">Voltar</a>
+</div>

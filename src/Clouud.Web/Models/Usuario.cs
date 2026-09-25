@@ -16,11 +16,13 @@ namespace Clouud.Web.Models
 
         [Required(ErrorMessage = "Nome obrigatório")]
         [StringLength(60)]
+        [Display(Name = "Nome")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Email obrigatório")]
         [StringLength(100)]
         [DataType(DataType.EmailAddress, ErrorMessage = "Informe um e-mail válido")]
+        [Display(Name = "E-mail")]
         public string Email { get; set; } = string.Empty;
 
         [Display(Name = "Perfil do Usuário")]
