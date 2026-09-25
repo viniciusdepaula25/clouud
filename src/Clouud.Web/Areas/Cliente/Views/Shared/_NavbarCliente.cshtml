@@ -2,10 +2,12 @@
 @using System.Security.Claims
 @inject Clouud.Web.Services.CarrinhoService Carrinho
 @inject Clouud.Web.Services.ListaDesejosService Desejos
+@inject Clouud.Web.Services.FotoPerfilService Fotos
 @{
     var logado = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId);
     var unidadesNoCarrinho = logado ? Carrinho.ContarUnidades(usuarioId) : 0;
     var jogosDesejados = logado ? Desejos.Contar(usuarioId) : 0;
+    var foto = logado ? Fotos.UrlDoUsuario(usuarioId) : Clouud.Web.Services.FotoPerfilService.FotoPadrao;
 }
 <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
     <div class="container-fluid">
@@ -55,7 +57,8 @@
                 }
             </style>
             <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta">
-                <img src="~/img/perfil.jpg" class="card-img-top rounded-circle" alt="Minha conta" style="width:40px;height:40px">
+                <img src="@foto" class="rounded-circle" alt="Minha conta" style="width:40px;height:40px;object-fit:cover"
+                     onerror="this.onerror=null;this.src='@Clouud.Web.Services.FotoPerfilService.FotoPadrao'">
             </a>
             <a asp-area="" asp-controller="Conta" asp-action="Logout" class="btn btn-secondary btn-sm">Sair</a>
         </div>

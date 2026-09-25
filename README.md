@@ -90,7 +90,7 @@ Na vitrine, o **♡** de cada card põe o jogo na lista de desejos do cliente (v
             ├── css/, js/       # estilos e scripts do site
             ├── img/            # imagens fixas do layout
             ├── lib/            # bibliotecas de terceiros (Bootstrap, jQuery)
-            └── uploads/        # imagens enviadas pelo admin (fora do Git)
+            └── uploads/        # capas dos jogos e, em perfis/, fotos de perfil (fora do Git)
 ```
 
 ## Banco de dados

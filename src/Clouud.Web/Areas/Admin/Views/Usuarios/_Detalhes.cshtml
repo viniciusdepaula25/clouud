@@ -1,5 +1,8 @@
 @model Clouud.Web.Models.Usuario
 @* Dados do usuário, usados em Exibe e Exclui (a senha nunca é mostrada) *@
+<img src="@Clouud.Web.Services.FotoPerfilService.Url(Model.Foto)" alt="Foto de perfil" class="rounded-circle mb-3"
+     style="width: 80px; height: 80px; object-fit: cover"
+     onerror="this.onerror=null;this.src='@Clouud.Web.Services.FotoPerfilService.FotoPadrao'" />
 <dl class="row">
     <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ID)</dt>
     <dd class="col-sm-10">@Html.DisplayFor(model => model.ID)</dd>

@@ -26,6 +26,7 @@
 <table class="table table-hover">
     <thead>
         <tr>
+            <th scope="col"></th>
             <th scope="col">@Html.DisplayNameFor(model => model.Name)</th>
             <th scope="col">@Html.DisplayNameFor(model => model.Email)</th>
             <th scope="col">@Html.DisplayNameFor(model => model.Perfil)</th>
@@ -35,11 +36,16 @@
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="4">Nenhum usuário encontrado.</td></tr>
+            <tr><td colspan="5">Nenhum usuário encontrado.</td></tr>
         }
         @foreach (var item in Model)
         {
             <tr>
+                <td>
+                    <img src="@Clouud.Web.Services.FotoPerfilService.Url(item.Foto)" alt="" class="rounded-circle"
+                         style="width: 32px; height: 32px; object-fit: cover"
+                         onerror="this.onerror=null;this.src='@Clouud.Web.Services.FotoPerfilService.FotoPadrao'" />
+                </td>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
                 <td>@Html.DisplayFor(modelItem => item.Perfil)</td>

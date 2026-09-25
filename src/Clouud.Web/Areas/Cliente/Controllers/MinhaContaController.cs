@@ -14,13 +14,15 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         private readonly BancoDados bancoDados;
         private readonly SenhaService senhas;
         private readonly AutenticacaoService autenticacao;
+        private readonly FotoPerfilService fotos;
 
         public MinhaContaController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados,
-            SenhaService senhas, AutenticacaoService autenticacao) : base(webHostEnvironment)
+            SenhaService senhas, AutenticacaoService autenticacao, FotoPerfilService fotos) : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
             this.senhas = senhas;
             this.autenticacao = autenticacao;
+            this.fotos = fotos;
         }
 
         [HttpGet]
@@ -35,7 +37,8 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             return View(new MinhaContaViewModel
             {
                 Nome = usuario.Name,
-                Email = usuario.Email
+                Email = usuario.Email,
+                Foto = usuario.Foto
             });
         }
 
@@ -74,6 +77,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
 
             if (!ModelState.IsValid)
             {
+                conta.Foto = usuario.Foto;
                 return View(conta);
             }
 
@@ -90,6 +94,52 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             await autenticacao.EntrarAsync(usuario);
 
             TempData["Mensagem"] = "Seus dados foram atualizados.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>Troca a foto de perfil (formulário separado: não pede a senha atual).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Foto(IFormFile? arquivo)
+        {
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == UsuarioLogadoId());
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            var (foto, erro) = fotos.Salvar(arquivo);
+            if (erro != null)
+            {
+                TempData["Erro"] = erro;
+                return RedirectToAction(nameof(Index));
+            }
+
+            var antiga = usuario.Foto;
+            usuario.Foto = foto;
+            bancoDados.SaveChanges();
+            fotos.Excluir(antiga);
+
+            TempData["Mensagem"] = "Foto atualizada.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult RemoverFoto()
+        {
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == UsuarioLogadoId());
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+
+            var antiga = usuario.Foto;
+            usuario.Foto = null;
+            bancoDados.SaveChanges();
+            fotos.Excluir(antiga);
+
+            TempData["Mensagem"] = "Foto removida.";
             return RedirectToAction(nameof(Index));
         }
 

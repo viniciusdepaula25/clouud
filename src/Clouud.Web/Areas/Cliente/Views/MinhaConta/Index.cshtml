@@ -1,4 +1,5 @@
 @model Clouud.Web.ViewModels.MinhaContaViewModel
+@using Clouud.Web.Services
 
 @{
     ViewData["Title"] = "Minha conta";
@@ -9,10 +10,30 @@
     <div class="offset-md-4 col-md-4">
         <h2>Minha conta</h2>
         <hr />
-        @if (TempData["Mensagem"] is string mensagem)
-        {
-            <div class="alert alert-success">@mensagem</div>
-        }
+        <partial name="_Alertas" />
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+            <img src="@FotoPerfilService.Url(Model.Foto)" alt="Sua foto de perfil" id="fotoPerfil"
+                 class="rounded-circle" style="width: 96px; height: 96px; object-fit: cover"
+                 onerror="this.onerror=null;this.src='@FotoPerfilService.FotoPadrao'" />
+            <div class="flex-grow-1">
+                <form asp-action="Foto" method="post" enctype="multipart/form-data">
+                    <label for="arquivoFoto" class="form-label mb-1">Foto de perfil</label>
+                    <input type="file" name="arquivo" id="arquivoFoto" class="form-control form-control-sm"
+                           accept="image/jpeg,image/png,image/gif,image/webp" required />
+                    <small class="form-text d-block">JPG, PNG, GIF ou WebP, até 2 MB.</small>
+                    <span class="text-danger small d-block" id="erroFoto"></span>
+                    <input type="submit" value="Enviar foto" class="btn btn-secondary btn-sm mt-1" />
+                </form>
+                @if (!string.IsNullOrEmpty(Model.Foto))
+                {
+                    <form asp-action="RemoverFoto" method="post" class="mt-1">
+                        <input type="submit" value="Remover foto" class="btn btn-link btn-sm text-danger p-0" />
+                    </form>
+                }
+            </div>
+        </div>
+
         <form asp-action="Index" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
@@ -55,4 +76,23 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Mostra a foto escolhida antes de enviar e avisa na hora se passar de 2 MB
+        (function () {
+            const campo = document.getElementById("arquivoFoto");
+            const erro = document.getElementById("erroFoto");
+            const limite = @FotoPerfilService.TamanhoMaximo;
+            campo.addEventListener("change", () => {
+                erro.textContent = "";
+                const arquivo = campo.files[0];
+                if (!arquivo) return;
+                if (arquivo.size > limite) {
+                    erro.textContent = "A imagem pode ter no máximo 2 MB.";
+                    campo.value = "";
+                    return;
+                }
+                document.getElementById("fotoPerfil").src = URL.createObjectURL(arquivo);
+            });
+        })();
+    </script>
 }

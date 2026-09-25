@@ -14,11 +14,14 @@ namespace Clouud.Web.Areas.Admin.Controllers
     {
         private readonly BancoDados bancoDados;
         private readonly SenhaService senhas;
+        private readonly FotoPerfilService fotos;
 
-        public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, SenhaService senhas) : base(webHostEnvironment)
+        public UsuariosController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, SenhaService senhas,
+            FotoPerfilService fotos) : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
             this.senhas = senhas;
+            this.fotos = fotos;
         }
 
         [HttpGet]
@@ -200,6 +203,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 ModelState.AddModelError(string.Empty, "Este usuário tem pedidos registrados e não pode ser excluído");
                 return View(usuario);
             }
+            fotos.Excluir(usuario.Foto);
 
             TempData["Mensagem"] = $"Usuário {usuario.Name} excluído.";
             return RedirectToAction("Index");

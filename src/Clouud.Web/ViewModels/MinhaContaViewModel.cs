@@ -29,5 +29,8 @@ namespace Clouud.Web.ViewModels
         [DataType(DataType.Password)]
         [Display(Name = "Confirmar nova senha")]
         public string? ConfirmarNovaSenha { get; set; }
+
+        /// <summary>Foto atual (só para exibir; a troca é feita por um formulário próprio).</summary>
+        public string? Foto { get; set; }
     }
 }
