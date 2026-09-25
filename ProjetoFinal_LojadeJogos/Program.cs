@@ -11,7 +11,7 @@ builder.Services.AddControllersWithViews();
 builder.Services
     .AddAuthentication(options =>
     {
-        //opção por cookies
+        //opÃ§Ã£o por cookies
         options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -22,7 +22,7 @@ builder.Services
         options.LogoutPath = "/";
     });
 
-// Adiciona o serviço de envio de arquivos
+// Adiciona o serviÃ§o de envio de arquivos
 builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
     Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
 
@@ -34,7 +34,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
-//ativa o serviço de autenticacao de usuarios no servidor
+//ativa o serviÃ§o de autenticacao de usuarios no servidor
 app.UseAuthentication();
 
 app.UseStaticFiles();

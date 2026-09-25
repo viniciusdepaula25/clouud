@@ -1,4 +1,4 @@
-﻿using ProjetoFinal_LojadeJogos.Data;
+using ProjetoFinal_LojadeJogos.Data;
 using System.ComponentModel.DataAnnotations;
 
 

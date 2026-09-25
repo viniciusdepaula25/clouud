@@ -1,0 +1,21 @@
+# Normaliza finais de linha: LF no repositório e na pasta de trabalho
+* text=auto eol=lf
+
+# O Visual Studio espera CRLF no .sln
+*.sln text eol=crlf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.jfif binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+
+# Bibliotecas de terceiros ficam exatamente como foram baixadas
+**/wwwroot/lib/** -text

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ProjetoFinal_LojadeJogos.Data;
 using ProjetoFinal_LojadeJogos.Models;
 using System.Diagnostics;

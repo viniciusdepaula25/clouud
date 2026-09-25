@@ -1,4 +1,4 @@
-﻿using ProjetoFinal_LojadeJogos.Data;
+using ProjetoFinal_LojadeJogos.Data;
 using ProjetoFinal_LojadeJogos.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
