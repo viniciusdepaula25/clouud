@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Clouud.Web.Areas.Admin.Controllers
 {
-    //[Authorize(Roles = "Administrador,Cliente")]
+    [Authorize(Roles = "Admin")]
     public class HomeController : AdminController 
     {
         public HomeController(IWebHostEnvironment webHostEnvironment) : base(webHostEnvironment)

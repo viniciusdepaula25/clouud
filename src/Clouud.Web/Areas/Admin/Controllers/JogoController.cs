@@ -2,6 +2,7 @@ using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clouud.Web.Areas.Admin.Controllers
     
@@ -28,7 +29,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index(string busca)
+        public IActionResult Index(string? busca)
         {
             //lista os usuarios realizando a busca
             var jogos = new List<Jogo>();
@@ -38,7 +39,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
             }
             else
             {
-                jogos = bancoDados.Jogos.Where(e => e.Nome.Contains(busca)).ToList();
+                // ILike: busca sem diferenciar maiúsculas de minúsculas (PostgreSQL)
+                jogos = bancoDados.Jogos.Where(e => EF.Functions.ILike(e.Nome, $"%{busca}%")).ToList();
             }
             return View(jogos);
         }
@@ -52,7 +54,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Inclui(Jogo jogo, IFormFile arquivo)
+        public IActionResult Inclui(Jogo jogo, IFormFile? arquivo)
         {
             if (ModelState.IsValid)
             {
@@ -83,7 +85,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Altera(Jogo jogo, IFormFile arquivo)
+        public IActionResult Altera(Jogo jogo, IFormFile? arquivo)
         {
             if (ModelState.IsValid)
             {

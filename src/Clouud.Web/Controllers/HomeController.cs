@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Clouud.Web.ViewModels;
@@ -18,10 +19,15 @@ namespace Clouud.Web.Controllers
             this.bancoDados = bancoDados;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string? busca)
         {
-            //lista todos os usuarios
-            var jogos = bancoDados.Jogos.ToList();
+            //lista todos os jogos (ou só os que batem com a busca)
+            var consulta = bancoDados.Jogos.AsQueryable();
+            if (!string.IsNullOrWhiteSpace(busca))
+            {
+                consulta = consulta.Where(e => EF.Functions.ILike(e.Nome, $"%{busca}%"));
+            }
+            var jogos = consulta.ToList();
             //envia a lista de usuarios para a view
             return View(jogos);
         }

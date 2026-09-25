@@ -12,7 +12,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
         }
 
         //Metodos de Manipulação de Arquivos
-        public string SalvaArquivo(IFormFile arquivo)
+        // protected: métodos auxiliares, não podem ser acessados como página (action)
+        protected string SalvaArquivo(IFormFile? arquivo)
         {
             // VERIFICAR SE O ARQUIVO É VÁLIDO
             if (arquivo == null)
@@ -23,13 +24,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
             var nomeArquivo = $"{Path.GetRandomFileName()}{Path.GetExtension(arquivo.FileName)}";
             var pastaArquivo = Path.Combine(servidorWeb.WebRootPath, "uploads");
             var localArquivo = Path.Combine(pastaArquivo, nomeArquivo);
-            var dadosArquivo = new FileStream(localArquivo, FileMode.Create);
+            using var dadosArquivo = new FileStream(localArquivo, FileMode.Create);
             arquivo.CopyTo(dadosArquivo);
             return nomeArquivo;
 
         }
 
-        public bool ExcluiArquivo(string nomeArquivo)
+        protected bool ExcluiArquivo(string? nomeArquivo)
         {
             //verifica o nome do arquivo
             if (string.IsNullOrWhiteSpace(nomeArquivo))
@@ -39,7 +40,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
             //remover o arquivo no servidor web
             var pastaArquivo = Path.Combine(servidorWeb.WebRootPath, "uploads");
-            var localArquivo = Path.Combine(pastaArquivo, nomeArquivo);
+            // GetFileName impede caminhos como "../appsettings.json" (só apaga dentro de uploads)
+            var localArquivo = Path.Combine(pastaArquivo, Path.GetFileName(nomeArquivo));
             System.IO.File.Delete(localArquivo);
             return true;
         }

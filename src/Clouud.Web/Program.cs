@@ -1,4 +1,6 @@
+using System.Globalization;
 using Clouud.Web.Data;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
@@ -26,6 +28,7 @@ builder.Services
     {
         options.LoginPath = "/conta/login";
         options.LogoutPath = "/";
+        options.AccessDeniedPath = "/Conta/AcessoNegado";
     });
 
 // Adiciona o serviço de envio de arquivos
@@ -34,6 +37,16 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
 
 
 var app = builder.Build();
+
+// Números sempre com ponto decimal (ex.: 59.90), igual à validação do navegador.
+// Sem isso, em um computador com sistema em português "59.90" vira 5990.
+var cultura = CultureInfo.InvariantCulture;
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(cultura),
+    SupportedCultures = [cultura],
+    SupportedUICultures = [cultura]
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

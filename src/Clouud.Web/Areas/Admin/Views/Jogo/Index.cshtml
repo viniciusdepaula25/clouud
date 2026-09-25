@@ -11,9 +11,9 @@
         <a class="btn btn btn-secondary" asp-action="Inclui">Cadastre um Jogo</a>
     </div>
     <div class="d-inline-flex">
-        <form asp-action="Index" class="d-flex">
+        <form asp-action="Index" method="post" class="d-flex">
             <div class="form-group mb-2">
-                <input type="search" id="txtBusca" name="Busca" placeholder="Ex: Tekken 8" class="form-control me-sm-2" />
+                <input type="search" id="txtBusca" name="busca" placeholder="Ex: Tekken 8" class="form-control me-sm-2" />
             </div>
             <input type="submit" value="Buscar" class="btn btn-secondary my-2 my-sm-0" />
         </form>

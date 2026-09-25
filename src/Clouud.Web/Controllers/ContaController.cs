@@ -71,14 +71,14 @@ namespace Clouud.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Login(LoginViewModel login)
+        public async Task<IActionResult> Login(LoginViewModel login)
         {
             if (ModelState.IsValid)
             {
                 var usuario = bancoDados.Usuarios
                     .FirstOrDefault(e => e.Email == login.Email && e.Senha == login.Senha);
 
-                if (AutenticaUsuario(usuario))
+                if (usuario != null && await AutenticaUsuario(usuario))
                 {
                     if (usuario.Perfil == PerfilUsuario.Cliente)
                     {
@@ -103,15 +103,21 @@ namespace Clouud.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
             //desabilita a autenticacao do usuario
-            HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
 
+        [HttpGet]
+        public IActionResult AcessoNegado()
+        {
+            return View();
+        }
+
         //metodos
-        public bool AutenticaUsuario(Usuario usuario)
+        private async Task<bool> AutenticaUsuario(Usuario usuario)
         {
             if (usuario != null)
             {
@@ -120,7 +126,8 @@ namespace Clouud.Web.Controllers
                 {
                     case PerfilUsuario.Cliente:
                         var cliente = bancoDados.Clientes.FirstOrDefault(e => e.Id == usuario.ID);
-                        nome = cliente.Nome;
+                        // usuário cliente sem registro na tabela Clientes: usa o nome do usuário
+                        nome = cliente?.Nome ?? usuario.Name;
                         break;
                     case PerfilUsuario.Admin:
                         nome = "Administrador";
@@ -149,7 +156,7 @@ namespace Clouud.Web.Controllers
 
                 //autentica o usuario no servidor por Cookies
                 var autenticacaoUsuario = new ClaimsPrincipal(identidade);
-                HttpContext.SignInAsync(autenticacaoUsuario, autenticacaoCookie);
+                await HttpContext.SignInAsync(autenticacaoUsuario, autenticacaoCookie);
 
                 //redireciona para o painel administrativo
                 return true;
