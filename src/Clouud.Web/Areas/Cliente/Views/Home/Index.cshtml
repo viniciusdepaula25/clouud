@@ -14,10 +14,7 @@
             </div>
         </div>
 
-        @if (TempData["Erro"] is string erro)
-        {
-            <div class="alert alert-danger">@erro</div>
-        }
+        <partial name="_Alertas" />
         <partial name="_Vitrine" model="Model" view-data="ViewData" />
     </div>
 </div>

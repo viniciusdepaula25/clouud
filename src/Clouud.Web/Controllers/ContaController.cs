@@ -38,7 +38,7 @@ namespace Clouud.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Cadastro(ContaViewModel conta)
+        public async Task<IActionResult> Cadastro(ContaViewModel conta)
         {
             // e-mail sempre em minúsculas e sem espaços, para não existirem duas contas iguais
             var email = conta.Email.Trim().ToLowerInvariant();
@@ -71,8 +71,10 @@ namespace Clouud.Web.Controllers
                     return View(conta);
                 }
 
-
-                return RedirectToAction("Index", "Home");
+                // Já entra com a conta nova: não precisa fazer login logo depois de se cadastrar
+                await autenticacao.EntrarAsync(usuario);
+                TempData["Mensagem"] = $"Conta criada. Bem-vindo(a), {usuario.Name}!";
+                return RedirectToAction("Index", "Home", new { area = "Cliente" });
             }
 
             return View(conta);
