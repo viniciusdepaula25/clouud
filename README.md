@@ -108,6 +108,7 @@ A loja manda e-mails automáticos. Eles entram numa fila no banco (tabela `email
 
 - **Boas-vindas** no cadastro, com o link para **confirmar o e-mail** (vale 7 dias). A conta funciona sem confirmar; em **Minha conta** aparece se o e-mail está confirmado e dá para pedir o link de novo. Trocar o e-mail pede nova confirmação.
 - **Esqueci minha senha**, no login: o cliente informa o e-mail e recebe um link para criar uma senha nova. O link vale 1 hora e uma vez só (usar um link invalida os outros), no banco fica só o hash do código, e a tela responde igual para e-mails com e sem conta (ninguém descobre quem é cliente). São no máximo 3 pedidos por hora por conta. Depois da troca, chega um aviso de "senha alterada".
+- **Pedido pago**: quando o pagamento é aprovado, o cliente recebe o resumo da compra, as chaves e o passo a passo de ativação de cada plataforma. O e-mail é gravado na mesma transação do pagamento; se algo der errado ao montá-lo, o pagamento continua valendo e as chaves seguem em **Minhas chaves**.
 
 Onde os e-mails vão parar (seção `Email` do `appsettings.json`):
 

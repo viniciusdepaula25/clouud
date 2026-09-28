@@ -57,9 +57,9 @@ namespace Clouud.Web.Areas.Cliente.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Pagar(int id, MetodoPagamento metodo, bool aprovar)
+        public async Task<IActionResult> Pagar(int id, MetodoPagamento metodo, bool aprovar)
         {
-            var erro = pedidos.Pagar(id, UsuarioId, metodo, aprovar);
+            var erro = await pedidos.PagarAsync(id, UsuarioId, metodo, aprovar);
             if (erro != null)
             {
                 TempData["Erro"] = erro;
@@ -71,7 +71,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 return RedirectToAction("Pagar", new { id });
             }
 
-            TempData["Mensagem"] = "Pagamento aprovado! Suas chaves estão abaixo.";
+            TempData["Mensagem"] = "Pagamento aprovado! Suas chaves estão abaixo e também foram enviadas para o seu e-mail.";
             return RedirectToAction("Detalhes", new { id });
         }
 

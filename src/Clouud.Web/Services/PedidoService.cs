@@ -2,6 +2,7 @@ using System.Data;
 using System.Security.Cryptography;
 using Clouud.Web.Data;
 using Clouud.Web.Models;
+using Clouud.Web.Services.Emails;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clouud.Web.Services
@@ -16,10 +17,13 @@ namespace Clouud.Web.Services
         private readonly BancoDados bancoDados;
         private readonly CupomService cupons;
         private readonly ILogger<PedidoService> logger;
+        private readonly EmailPedidoPago emailPago;
 
-        public PedidoService(BancoDados bancoDados, CupomService cupons, IConfiguration configuracao, ILogger<PedidoService> logger)
+        public PedidoService(BancoDados bancoDados, CupomService cupons, IConfiguration configuracao, ILogger<PedidoService> logger,
+            EmailPedidoPago emailPago)
         {
             this.bancoDados = bancoDados;
+            this.emailPago = emailPago;
             this.cupons = cupons;
             this.logger = logger;
             PrazoPagamento = TimeSpan.FromMinutes(configuracao.GetValue("Loja:MinutosParaPagar", 30));
@@ -130,7 +134,7 @@ namespace Clouud.Web.Services
         /// Pagamento simulado: registra a tentativa e, se aprovada, entrega as chaves.
         /// Devolve a mensagem de erro, ou null se o pagamento foi registrado.
         /// </summary>
-        public string? Pagar(int pedidoId, int usuarioId, MetodoPagamento metodo, bool aprovar)
+        public async Task<string?> PagarAsync(int pedidoId, int usuarioId, MetodoPagamento metodo, bool aprovar)
         {
             using var transacao = bancoDados.Database.BeginTransaction(IsolationLevel.ReadCommitted);
             var pedido = TravarPedido(pedidoId);
@@ -171,6 +175,17 @@ namespace Clouud.Web.Services
                     .ExecuteUpdate(s => s
                         .SetProperty(c => c.Status, StatusChave.Vendida)
                         .SetProperty(c => c.VendidaEm, agora));
+
+                // E-mail com as chaves, gravado na mesma transação. Um erro ao montar o e-mail não
+                // pode impedir o pagamento: as chaves continuam na tela do pedido e em "Minhas chaves".
+                try
+                {
+                    await emailPago.AdicionarAsync(pedido.Id);
+                }
+                catch (Exception erro)
+                {
+                    logger.LogError(erro, "Não foi possível montar o e-mail do pedido {PedidoId}", pedido.Id);
+                }
             }
 
             bancoDados.SaveChanges();

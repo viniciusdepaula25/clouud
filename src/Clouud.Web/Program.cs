@@ -43,6 +43,7 @@ builder.Services.AddScoped<RenderizadorEmail>();
 builder.Services.AddScoped<FilaEmails>();
 builder.Services.AddScoped<ConfirmacaoEmail>();
 builder.Services.AddScoped<RedefinicaoSenhaService>();
+builder.Services.AddScoped<EmailPedidoPago>();
 builder.Services.AddHostedService<EnvioEmails>();
 builder.Services.AddHttpContextAccessor();
 

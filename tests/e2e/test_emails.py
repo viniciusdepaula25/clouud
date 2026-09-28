@@ -125,3 +125,33 @@ def test_email_que_falha_e_tentado_de_novo(banco, caixa, fabrica):
         time.sleep(0.3)
     tentativas, erro, enviado = banco.linhas("SELECT tentativas, ultimo_erro, enviado_em FROM emails WHERE para = %s", ruim)[0]
     assert tentativas >= 2 and erro and enviado is None
+
+
+def test_pedido_pago_manda_as_chaves_por_email(paginas, fabrica, banco, caixa):
+    jogo = fabrica.jogo(preco=1234.5, chaves=3)
+    codigos = [c[0] for c in banco.linhas("SELECT codigo FROM chaves WHERE produto_id = %s ORDER BY id", jogo["produto_id"])]
+    cliente = fabrica.cliente()
+    banco.executar("INSERT INTO carrinho_itens (usuario_id, produto_id, quantidade, adicionado_em) VALUES (%s, %s, 2, now())",
+                   cliente["id"], jogo["produto_id"])
+    pagina = paginas.logada(cliente["email"], cliente["senha"])
+    pagina.goto("/Cliente/Carrinho")
+    enviar(pagina, "input[value='Finalizar compra']")
+    pedido = int(pagina.url.rsplit("/", 1)[1])
+
+    enviar(pagina, "button[value=false]")  # recusado: nada de e-mail
+    enviar(pagina, "button[value=true]")
+    assert "também foram enviadas para o seu e-mail" in pagina.inner_text(".alert-success")
+
+    [mensagem] = caixa.esperar(cliente["email"], f"Pedido #{pedido} aprovado")
+    vendidas = [c[0] for c in banco.linhas("""SELECT c.codigo FROM chaves c JOIN pedido_itens i ON i.id = c.pedido_item_id
+                                               WHERE i.pedido_id = %s ORDER BY c.id""", pedido)]
+    assert len(vendidas) == 2
+    for codigo in vendidas:
+        assert codigo in mensagem["html"] and codigo in mensagem["texto"]
+    fora = set(codigos) - set(vendidas)
+    assert all(c not in mensagem["html"] for c in fora)  # a chave que não foi vendida não aparece
+    assert jogo["titulo"] in mensagem["texto"] and "R$ 2.469,00" in mensagem["texto"]
+    assert "Como ativar:" in mensagem["texto"] and "Adicionar um jogo" in mensagem["texto"]  # instruções da Steam
+    assert caixa.link(mensagem, f"/Cliente/Pedidos/Detalhes/{pedido}")
+    assert len(caixa.de(cliente["email"])) == 1
+    assert banco.valor("SELECT html FROM emails WHERE usuario_id = %s AND tipo = 'PedidoPago'", cliente["id"]) is None

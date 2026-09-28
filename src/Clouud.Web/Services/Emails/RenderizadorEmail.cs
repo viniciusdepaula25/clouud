@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,23 @@ namespace Clouud.Web.Services.Emails
 
         /// <summary>Devolve (html, texto) da view Views/Emails/{nome}.cshtml.</summary>
         public async Task<(string Html, string Texto)> RenderizarAsync<T>(string nome, T modelo)
+        {
+            // Dinheiro sempre como "R$ 1.234,50", também nos serviços em segundo plano (fora de uma requisição)
+            var culturaAnterior = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = Cultura;
+            try
+            {
+                return await RenderizarNaCulturaAsync(nome, modelo);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = culturaAnterior;
+            }
+        }
+
+        private static readonly CultureInfo Cultura = Infraestrutura.Dinheiro.CriarCultura();
+
+        private async Task<(string Html, string Texto)> RenderizarNaCulturaAsync<T>(string nome, T modelo)
         {
             var httpContext = new DefaultHttpContext { RequestServices = servicos };
             var contexto = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
