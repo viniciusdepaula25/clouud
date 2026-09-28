@@ -96,7 +96,7 @@ def test_pedido_cancelado_que_devolve_chave_tambem_avisa(paginas, fabrica, banco
 
 def test_sem_confirmacao_ou_com_avisos_desligados_nao_recebe(admin, fabrica, banco, caixa):
     jogo = fabrica.jogo(preco=100, chaves=0)
-    sem_confirmar, desligado, confirmado = fabrica.cliente(), fabrica.cliente(), fabrica.cliente()
+    sem_confirmar, desligado, confirmado = fabrica.cliente(confirmado=False), fabrica.cliente(), fabrica.cliente()
     confirmar_email(banco, desligado)
     confirmar_email(banco, confirmado)
     banco.executar("UPDATE usuarios SET receber_avisos = false WHERE id = %s", desligado["id"])

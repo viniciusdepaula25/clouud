@@ -35,6 +35,8 @@ namespace Clouud.Web.Services.Emails
                 .Select(c => new { c.PedidoItemId, c.Codigo })
                 .ToList();
 
+            // As chaves só vão por e-mail para endereço confirmado; senão, o cliente vê em "Minhas chaves"
+            var mandarChaves = pedido.Usuario.EmailConfirmadoEm != null;
             var modelo = new EmailPedidoPagoViewModel(
                 pedido.Usuario.Name,
                 pedido.Id,
@@ -45,22 +47,24 @@ namespace Clouud.Web.Services.Emails
                     i.Quantidade,
                     i.PrecoUnitario,
                     i.Subtotal,
-                    chaves.Where(c => c.PedidoItemId == i.Id).Select(c => c.Codigo).ToList(),
+                    mandarChaves ? chaves.Where(c => c.PedidoItemId == i.Id).Select(c => c.Codigo).ToList() : new List<string>(),
                     i.Produto.Plataforma.InstrucoesAtivacao)).ToList(),
                 pedido.Subtotal,
                 pedido.Desconto,
                 pedido.Cupom?.Codigo,
                 pedido.Total,
                 links.Absoluto($"/Cliente/Pedidos/Detalhes/{pedido.Id}"),
-                links.Absoluto("/Cliente/MinhasChaves"));
+                links.Absoluto("/Cliente/MinhasChaves"),
+                mandarChaves);
 
             await fila.AdicionarAsync(TipoEmail.PedidoPago, pedido.Usuario,
-                $"Pedido #{pedido.Id} aprovado — suas chaves chegaram", "PedidoPago", modelo);
+                mandarChaves ? $"Pedido #{pedido.Id} aprovado — suas chaves chegaram" : $"Pedido #{pedido.Id} aprovado",
+                "PedidoPago", modelo);
         }
     }
 
     public record EmailPedidoPagoViewModel(string Nome, int PedidoId, List<EmailPedidoItem> Itens, decimal Subtotal,
-        decimal Desconto, string? Cupom, decimal Total, string LinkPedido, string LinkMinhasChaves);
+        decimal Desconto, string? Cupom, decimal Total, string LinkPedido, string LinkMinhasChaves, bool ComChaves);
 
     public record EmailPedidoItem(string Jogo, string Plataforma, string Edicao, int Quantidade, decimal PrecoUnitario,
         decimal Subtotal, List<string> Chaves, string? ComoAtivar);

@@ -35,7 +35,7 @@ namespace Clouud.Web.Models
     /// por isso o código é único em toda a loja (a mesma chave não entra em dois produtos).
     /// </summary>
     [Table("chaves")]
-    [Index(nameof(Codigo), IsUnique = true)]
+    [Index(nameof(CodigoHash), IsUnique = true)]
     [Index(nameof(ProdutoId), nameof(Status))]
     public class Chave
     {
@@ -49,10 +49,18 @@ namespace Clouud.Web.Models
         [ForeignKey(nameof(ProdutoId))]
         public Produto Produto { get; set; } = null!;
 
+        /// <summary>
+        /// Código da chave. Na memória é o texto normal; no banco fica cifrado na coluna codigo_cifrado
+        /// (conversor em BancoDados, com <see cref="Infraestrutura.CriptografiaChaves"/>).
+        /// Por isso não dá para filtrar por ele numa consulta: para achar um código use <see cref="CodigoHash"/>.
+        /// </summary>
         [Required]
-        [StringLength(TamanhoMaximoCodigo)]
         [Display(Name = "Código")]
         public string Codigo { get; set; } = string.Empty;
+
+        /// <summary>HMAC do código: garante que a mesma chave não entra duas vezes, sem guardar o código aberto.</summary>
+        [StringLength(64)]
+        public string? CodigoHash { get; set; }
 
         public StatusChave Status { get; set; } = StatusChave.Disponivel;
 

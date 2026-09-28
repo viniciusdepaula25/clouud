@@ -58,7 +58,7 @@ def test_link_alterado_ou_vencido_nao_confirma(paginas, fabrica, banco, caixa):
 
 
 def test_reenviar_confirmacao_e_trocar_de_email(paginas, fabrica, banco, caixa):
-    cliente = fabrica.cliente()  # conta criada direto no banco: sem confirmação
+    cliente = fabrica.cliente(confirmado=False)
     pagina = paginas.logada(cliente["email"], cliente["senha"])
     pagina.goto("/Cliente/MinhaConta")
     enviar(pagina, "input[value='Reenviar e-mail de confirmação']")
@@ -129,7 +129,7 @@ def test_email_que_falha_e_tentado_de_novo(banco, caixa, fabrica):
 
 def test_pedido_pago_manda_as_chaves_por_email(paginas, fabrica, banco, caixa):
     jogo = fabrica.jogo(preco=1234.5, chaves=3)
-    codigos = [c[0] for c in banco.linhas("SELECT codigo FROM chaves WHERE produto_id = %s ORDER BY id", jogo["produto_id"])]
+    codigos = banco.codigos("produto_id = %s", jogo["produto_id"])
     cliente = fabrica.cliente()
     banco.executar("INSERT INTO carrinho_itens (usuario_id, produto_id, quantidade, adicionado_em) VALUES (%s, %s, 2, now())",
                    cliente["id"], jogo["produto_id"])
@@ -143,8 +143,7 @@ def test_pedido_pago_manda_as_chaves_por_email(paginas, fabrica, banco, caixa):
     assert "também foram enviadas para o seu e-mail" in pagina.inner_text(".alert-success")
 
     [mensagem] = caixa.esperar(cliente["email"], f"Pedido #{pedido} aprovado")
-    vendidas = [c[0] for c in banco.linhas("""SELECT c.codigo FROM chaves c JOIN pedido_itens i ON i.id = c.pedido_item_id
-                                               WHERE i.pedido_id = %s ORDER BY c.id""", pedido)]
+    vendidas = banco.codigos("pedido_item_id IN (SELECT id FROM pedido_itens WHERE pedido_id = %s)", pedido)
     assert len(vendidas) == 2
     for codigo in vendidas:
         assert codigo in mensagem["html"] and codigo in mensagem["texto"]
@@ -155,3 +154,20 @@ def test_pedido_pago_manda_as_chaves_por_email(paginas, fabrica, banco, caixa):
     assert caixa.link(mensagem, f"/Cliente/Pedidos/Detalhes/{pedido}")
     assert len(caixa.de(cliente["email"])) == 1
     assert banco.valor("SELECT html FROM emails WHERE usuario_id = %s AND tipo = 'PedidoPago'", cliente["id"]) is None
+
+
+def test_email_nao_confirmado_recebe_o_pedido_sem_as_chaves(paginas, fabrica, banco, caixa):
+    jogo = fabrica.jogo(preco=50, chaves=1)
+    cliente = fabrica.cliente(confirmado=False)
+    banco.executar("INSERT INTO carrinho_itens (usuario_id, produto_id, quantidade, adicionado_em) VALUES (%s, %s, 1, now())",
+                   cliente["id"], jogo["produto_id"])
+    pagina = paginas.logada(cliente["email"], cliente["senha"])
+    pagina.goto("/Cliente/Carrinho")
+    enviar(pagina, "input[value='Finalizar compra']")
+    pedido = int(pagina.url.rsplit("/", 1)[1])
+    enviar(pagina, "button[value=true]")
+    [mensagem] = caixa.esperar(cliente["email"], f"Pedido #{pedido} aprovado")
+    [codigo] = banco.codigos("produto_id = %s", jogo["produto_id"])
+    assert codigo not in mensagem["html"] and codigo not in mensagem["texto"]
+    assert "ainda não foi confirmado" in mensagem["texto"]
+    assert codigo in pagina.inner_text("main")  # na loja a chave aparece normalmente

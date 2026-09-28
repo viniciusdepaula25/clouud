@@ -33,10 +33,16 @@
         }
     </div>
     <div>
-        <div class="form-check form-switch d-inline-block me-3">
-            <input class="form-check-input" type="checkbox" id="mostrarCodigos" />
-            <label class="form-check-label" for="mostrarCodigos">Mostrar códigos</label>
-        </div>
+        @if (Model.MostrarCodigos)
+        {
+            <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId" asp-route-status="@filtro" class="btn btn-outline-primary me-2" id="esconderCodigos">Esconder códigos</a>
+        }
+        else
+        {
+            <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId" asp-route-status="@filtro" asp-route-mostrar="true"
+               class="btn btn-outline-primary me-2" id="mostrarCodigos"
+               title="Mostra os códigos das chaves que nunca foram vendidas. O acesso fica registrado.">Mostrar códigos</a>
+        }
         <a asp-action="Importar" asp-route-id="@Model.Produto.ProdutoId" class="btn btn-secondary">Importar chaves</a>
     </div>
 </div>
@@ -60,8 +66,15 @@
         {
             <tr>
                 <td class="font-monospace">
-                    <span class="codigo-mascarado">@chave.CodigoMascarado()</span>
-                    <span class="codigo-completo d-none">@chave.Codigo</span>
+                    @* O código completo só vai para a página quando pedido, e nunca o de chaves que foram para um cliente *@
+                    @if (Model.MostrarCodigos && chave.NuncaFoiVendida)
+                    {
+                        <span class="codigo-completo">@chave.Codigo</span>
+                    }
+                    else
+                    {
+                        <span class="codigo-mascarado">@chave.CodigoMascarado()</span>
+                    }
                 </td>
                 <td>@chave.Status.Descricao()</td>
                 <td>@chave.AdicionadaEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
@@ -105,13 +118,3 @@
     <a asp-action="Index">Voltar ao estoque</a> |
     <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="">Produtos</a>
 </div>
-
-@section Scripts {
-    <script>
-        // Os códigos ficam mascarados na tela; o interruptor mostra os códigos completos
-        document.getElementById("mostrarCodigos").addEventListener("change", function () {
-            document.querySelectorAll(".codigo-mascarado").forEach(e => e.classList.toggle("d-none", this.checked));
-            document.querySelectorAll(".codigo-completo").forEach(e => e.classList.toggle("d-none", !this.checked));
-        });
-    </script>
-}

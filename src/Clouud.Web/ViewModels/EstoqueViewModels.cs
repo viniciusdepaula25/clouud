@@ -32,6 +32,9 @@ namespace Clouud.Web.ViewModels
         public StatusChave? Filtro { get; set; }
         public List<Chave> Chaves { get; set; } = new();
 
+        /// <summary>Mostrar os códigos completos (só das chaves que nunca foram para um pedido).</summary>
+        public bool MostrarCodigos { get; set; }
+
         /// <summary>Total de chaves no filtro (a lista mostra no máximo <see cref="LimiteListagem"/>).</summary>
         public int Total { get; set; }
     }

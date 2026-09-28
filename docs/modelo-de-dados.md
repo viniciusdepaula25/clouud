@@ -163,7 +163,8 @@ erDiagram
     chaves {
         int id PK
         int produto_id FK
-        string codigo UK
+        string codigo_cifrado "AES-256-GCM"
+        string codigo_hash UK "HMAC-SHA256"
         string status "Disponivel | Reservada | Vendida | Inativa"
         datetime adicionada_em
         int pedido_item_id FK
@@ -252,7 +253,7 @@ erDiagram
 | **empresas** | Desenvolvedoras e publicadoras | Slug único |
 | **jogos** | Informações do jogo: título, descrição, capa, lançamento | Slug único (usado na URL: `/jogo/elden-ring`) |
 | **produtos** | O que é vendido: jogo + plataforma + edição, com preço e promoção | Não repete jogo + plataforma + edição; preço promocional menor que o preço |
-| **chaves** | Estoque. Cada linha é uma chave de ativação | Código único em toda a loja (a mesma chave não entra duas vezes, nem em produtos diferentes); status só com os quatro valores válidos |
+| **chaves** | Estoque. Cada linha é uma chave de ativação, com o código cifrado | Código único em toda a loja pelo `codigo_hash` (a mesma chave não entra duas vezes, nem em produtos diferentes); status só com os quatro valores válidos |
 | **carrinho_itens** | Produtos que o cliente separou antes de pagar | Um produto aparece uma vez no carrinho (a quantidade aumenta) |
 | **lista_desejos** | Jogos que o cliente quer acompanhar | Par usuário/jogo único |
 | **pedidos** | A compra, com status, datas e prazo para pagar | FK para o usuário; status só com os quatro valores válidos; total não negativo |

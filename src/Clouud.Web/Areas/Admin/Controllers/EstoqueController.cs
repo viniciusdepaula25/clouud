@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
@@ -14,12 +15,15 @@ namespace Clouud.Web.Areas.Admin.Controllers
     {
         private readonly BancoDados bancoDados;
         private readonly EstoqueService estoque;
+        private readonly ILogger<EstoqueController> logger;
 
-        public EstoqueController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, EstoqueService estoque)
+        public EstoqueController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, EstoqueService estoque,
+            ILogger<EstoqueController> logger)
             : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
             this.estoque = estoque;
+            this.logger = logger;
         }
 
         [HttpGet]
@@ -40,7 +44,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         /// <summary>Chaves de um produto (id do produto), com filtro opcional por situação.</summary>
         [HttpGet]
-        public IActionResult Chaves(int id, StatusChave? status)
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+        public IActionResult Chaves(int id, StatusChave? status, bool mostrar = false)
         {
             var produto = ResumoDosProdutos(bancoDados.Produtos.Where(p => p.Id == id)).FirstOrDefault();
             if (produto == null)
@@ -54,10 +59,18 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 consulta = consulta.Where(c => c.Status == status);
             }
 
+            if (mostrar)
+            {
+                // Quem viu os códigos fica registrado no log
+                logger.LogInformation("Admin {Admin} abriu os códigos das chaves do produto {Produto}",
+                    User.FindFirstValue(ClaimTypes.Email), id);
+            }
+
             return View(new ChavesProdutoViewModel
             {
                 Produto = produto,
                 Filtro = status,
+                MostrarCodigos = mostrar,
                 Total = consulta.Count(),
                 Chaves = consulta
                     .Include(c => c.PedidoItem)

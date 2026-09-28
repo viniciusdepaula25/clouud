@@ -79,7 +79,12 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
 // para continuarem valendo depois de mudar a pasta de instalação ou a versão
 builder.Services.AddDataProtection().SetApplicationName("Clouud");
 
+// Criptografia dos códigos das chaves (a chave mestra vem de Seguranca__ChaveCriptografia, nunca do appsettings)
+builder.Services.AddSingleton(_ => CriptografiaChaves.Atual);
+
 var app = builder.Build();
+
+CriptografiaChaves.Atual = CriptografiaChaves.DaConfiguracao(app.Configuration);
 
 Segredos.ConferirAoIniciar(app.Configuration, app.Environment, app.Logger);
 
@@ -120,6 +125,9 @@ if (app.Configuration.GetValue("Banco:AplicarMigrations", false))
     using var escopo = app.Services.CreateScope();
     await escopo.ServiceProvider.GetRequiredService<BancoDados>().Database.MigrateAsync();
 }
+
+// Bancos de antes da criptografia: cifra as chaves que ainda estiverem em texto puro
+await ConversaoChavesLegadas.ConverterAsync(app.Services);
 
 // Cria o primeiro administrador, se ainda não existir (seção "AdminInicial" do appsettings)
 await AdminInicial.CriarAsync(app.Services);

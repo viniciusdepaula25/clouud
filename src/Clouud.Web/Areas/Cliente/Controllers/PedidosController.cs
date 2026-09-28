@@ -34,6 +34,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         }
 
         [HttpGet]
+        [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)] // tem chaves: não guardar no cache do navegador
         public IActionResult Detalhes(int id)
         {
             var pedido = BuscarDoUsuario(id);

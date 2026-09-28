@@ -19,9 +19,9 @@ def vitrine(fabrica, banco):
     cliente = fabrica.cliente()
     promo = fabrica.jogo(f"Promo {s}", preco=1000, promocional=5, chaves=2)          # 99,5% de desconto
     fabrica.produto(promo["jogo_id"], "epic-games", 1000, promocional=5)            # mesmo jogo em outra loja
-    banco.executar("INSERT INTO chaves (produto_id, codigo, status, adicionada_em) SELECT id, %s, 'Disponivel', now() "
-                   "FROM produtos WHERE jogo_id = %s AND plataforma_id = (SELECT id FROM plataformas WHERE slug = 'epic-games')",
-                   f"EPIC{s}", promo["jogo_id"])
+    epic = banco.valor("SELECT id FROM produtos WHERE jogo_id = %s AND plataforma_id = "
+                       "(SELECT id FROM plataformas WHERE slug = 'epic-games')", promo["jogo_id"])
+    fabrica.chaves(epic, 1)
     esgotado = fabrica.jogo(f"Esgotado {s}", preco=1000, promocional=1, chaves=0)  # 99,9%, mas sem chave
     campeao = fabrica.jogo(f"Campeao {s}", preco=20, chaves=5)
     fabrica.pedido_pago(cliente["id"], campeao["produto_id"], quantidade=500, preco=20)

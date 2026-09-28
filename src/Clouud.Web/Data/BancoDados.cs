@@ -1,3 +1,4 @@
+using Clouud.Web.Infraestrutura;
 using Clouud.Web.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -65,6 +66,13 @@ namespace Clouud.Web.Data
             modelBuilder.Entity<Chave>(chave =>
             {
                 chave.Property(c => c.Status).HasConversion<string>().HasMaxLength(20);
+                // Código cifrado com AES-GCM: o banco nunca vê o código aberto
+                chave.Property(c => c.Codigo)
+                    .HasColumnName("codigo_cifrado")
+                    .HasColumnType("text")
+                    .HasConversion(
+                        codigo => CriptografiaChaves.Atual.Cifrar(codigo),
+                        cifrado => CriptografiaChaves.Atual.Decifrar(cifrado));
                 chave.ToTable(t =>
                 {
                     t.HasCheckConstraint("ck_chaves_status",

@@ -1,4 +1,5 @@
 using Clouud.Web.Data;
+using Clouud.Web.Infraestrutura;
 using Clouud.Web.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,10 +28,12 @@ namespace Clouud.Web.Services
         public const int MaximoPorImportacao = 5000;
 
         private readonly BancoDados bancoDados;
+        private readonly CriptografiaChaves cripto;
 
-        public EstoqueService(BancoDados bancoDados)
+        public EstoqueService(BancoDados bancoDados, CriptografiaChaves cripto)
         {
             this.bancoDados = bancoDados;
+            this.cripto = cripto;
         }
 
         /// <summary>
@@ -75,16 +78,19 @@ namespace Clouud.Web.Services
                 }
             }
 
+            // Os códigos ficam cifrados no banco: a comparação é pelo HMAC de cada um
+            var hashes = novas.ToDictionary(c => c, c => cripto.Hash(c));
+            var listaHashes = hashes.Values.ToList();
             var existentes = bancoDados.Chaves
-                .Where(c => novas.Contains(c.Codigo))
-                .Select(c => c.Codigo)
+                .Where(c => c.CodigoHash != null && listaHashes.Contains(c.CodigoHash))
+                .Select(c => c.CodigoHash!)
                 .ToHashSet();
-            resultado.JaCadastradas.AddRange(novas.Where(existentes.Contains));
+            resultado.JaCadastradas.AddRange(novas.Where(c => existentes.Contains(hashes[c])));
 
             var agora = DateTime.UtcNow;
-            foreach (var codigo in novas.Where(c => !existentes.Contains(c)))
+            foreach (var codigo in novas.Where(c => !existentes.Contains(hashes[c])))
             {
-                bancoDados.Chaves.Add(new Chave { ProdutoId = produtoId, Codigo = codigo, AdicionadaEm = agora });
+                bancoDados.Chaves.Add(new Chave { ProdutoId = produtoId, Codigo = codigo, CodigoHash = hashes[codigo], AdicionadaEm = agora });
                 resultado.Adicionadas++;
             }
 

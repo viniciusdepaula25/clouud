@@ -84,6 +84,12 @@ namespace Clouud.Web.Services.Emails
                     logger.LogWarning("Falha ao enviar o e-mail {Id} para {Para}: {Erro}", email.Id, email.Para, erro.Message);
                 }
                 email.Tentativas++;
+                if (email.Desistiu)
+                {
+                    // Não vai mais tentar: apaga o conteúdo também (pode ter link de senha ou chaves)
+                    email.Html = null;
+                    email.Texto = null;
+                }
                 await bancoDados.SaveChangesAsync(cancelar);
             }
             return enviados;

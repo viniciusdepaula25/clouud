@@ -4,7 +4,15 @@
     var botao = ("Ver o pedido na loja", Model.LinkPedido);
 }
 <h1 style="margin:0 0 12px;color:#ffffff;font-size:22px;">Pagamento aprovado, @Model.Nome!</h1>
-<p style="margin:0 0 16px;">Obrigado pela compra. Estas são as chaves do <strong>pedido #@Model.PedidoId</strong>. Cada chave só pode ser ativada uma vez: não compartilhe os códigos.</p>
+@if (Model.ComChaves)
+{
+    <p style="margin:0 0 16px;">Obrigado pela compra. Estas são as chaves do <strong>pedido #@Model.PedidoId</strong>. Cada chave só pode ser ativada uma vez: não compartilhe os códigos.</p>
+}
+else
+{
+    <p style="margin:0 0 16px;">Obrigado pela compra do <strong>pedido #@Model.PedidoId</strong>. As chaves já estão em <a href="@Model.LinkMinhasChaves" style="color:#2a9fd6;">Minhas chaves</a>.
+        Elas não vão neste e-mail porque o seu endereço ainda não foi confirmado: confirme em <strong>Minha conta</strong> para recebê-las por e-mail nas próximas compras.</p>
+}
 
 @foreach (var item in Model.Itens)
 {

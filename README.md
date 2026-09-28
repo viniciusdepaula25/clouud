@@ -31,6 +31,7 @@ Na primeira vez o log mostra um erro de `__EFMigrationsHistory` não existir: é
    ```bash
    dotnet user-secrets --project src/Clouud.Web set "Banco:Senha" "postgres"
    dotnet user-secrets --project src/Clouud.Web set "AdminInicial:Senha" "uma-senha-forte"
+   dotnet user-secrets --project src/Clouud.Web set "Seguranca:ChaveCriptografia" "$(openssl rand -base64 32)"
    ```
    Servidor, banco e usuário do PostgreSQL ficam em `src/Clouud.Web/appsettings.json` (`ConnectionStrings:LojaJogos`), sem a senha.
 2. Restaure as ferramentas e crie o banco:
@@ -52,7 +53,10 @@ Nenhuma senha fica nos arquivos `appsettings*.json`. Cada uma vem de uma variáv
 |---|---|---|
 | `Banco:Senha` | `Banco__Senha` | Senha do PostgreSQL (ou passe a connection string inteira em `ConnectionStrings__LojaJogos`) |
 | `AdminInicial:Senha` | `AdminInicial__Senha` | Senha do primeiro administrador, criado só se ainda não existir nenhum (mínimo de 8 caracteres) |
+| `Seguranca:ChaveCriptografia` | `Seguranca__ChaveCriptografia` | Chave (32 bytes em Base64) que cifra os códigos das chaves de ativação no banco. Obrigatória: sem ela a aplicação não inicia |
 | `Email:Smtp:Senha` | `Email__Smtp__Senha` | Senha do servidor de e-mail, se usar SMTP |
+
+**Guarde uma cópia da `ChaveCriptografia`** (gerenciador de senhas, cofre do provedor de nuvem). Sem ela, os códigos das chaves do estoque e das já vendidas não podem mais ser lidos, nem restaurando um backup do banco.
 
 ### Primeiro acesso
 
@@ -67,7 +71,7 @@ Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e d
 - **Jogo:** informações do jogo (título, descrição, capa, lançamento, classificação, desenvolvedora, publicadora e categorias).
 - **Produto:** o que a loja vende, ou seja, um jogo em uma plataforma e edição, com preço e preço promocional opcional (com data de término). O jogo só aparece na vitrine depois de ter um produto ativo.
 - **Plataformas** e **categorias** são cadastradas no admin e viram os filtros da vitrine.
-- **Chaves:** o estoque de cada produto. Produto sem chave disponível aparece como **Esgotado** na vitrine. Uma chave é única em toda a loja, e chaves vendidas não podem ser excluídas.
+- **Chaves:** o estoque de cada produto. Produto sem chave disponível aparece como **Esgotado** na vitrine. Uma chave é única em toda a loja, e chaves vendidas não podem ser excluídas. No banco, cada código fica **cifrado** (AES-256-GCM, coluna `codigo_cifrado`) com um HMAC ao lado (`codigo_hash`) para achar repetidas sem decifrar nada; quem acessar o banco não vê os códigos. Na tela do admin os códigos aparecem mascarados, e "Mostrar códigos" abre só os das chaves que nunca foram para um cliente (o acesso fica no log). Bancos antigos, com os códigos em texto puro, são convertidos na primeira vez que a aplicação inicia.
 
 No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço → importar as chaves de cada produto em **Estoque** (colando uma por linha). Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
 

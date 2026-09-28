@@ -25,9 +25,11 @@ def test_importar_ignora_vazias_repetidas_e_longas(paginas, fabrica, banco):
     assert "3 chaves importadas." in t
     assert "1 estavam repetidas no texto" in t and "1 passavam de 200" in t
     assert "3 disponíveis" in t
-    assert f"A{s}-1" not in admin.locator(".codigo-mascarado").all_inner_texts()
-    admin.check("#mostrarCodigos")
-    assert admin.locator(".codigo-completo:visible", has_text=f"A{s}-1").count() == 1
+    assert f"A{s}-1" not in admin.inner_text("main")  # mascaradas: o código nem vai para a página
+    enviar(admin, "#mostrarCodigos")
+    assert admin.locator(".codigo-completo", has_text=f"A{s}-1").count() == 1
+    enviar(admin, "#esconderCodigos")
+    assert f"A{s}-1" not in admin.inner_text("main")
 
 
 def test_chave_nao_entra_em_dois_produtos(paginas, fabrica):

@@ -10,6 +10,9 @@ Cada execução:
 Antes de rodar: dotnet build (ver o README, seção "Testes").
 """
 import os
+import base64
+import hashlib
+import hmac
 import re
 import shutil
 import subprocess
@@ -18,6 +21,9 @@ import uuid
 from urllib.parse import urlparse
 from pathlib import Path
 
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from email import policy
 from email.parser import BytesParser
 
@@ -45,6 +51,9 @@ LOJA = "/loja"
 # Fuso fixo para a aplicação: o painel conta "dias" no horário local, e os testes calculam do mesmo jeito no SQL
 FUSO = "America/Sao_Paulo"
 
+# Chave mestra só desta execução dos testes (em produção vem de Seguranca__ChaveCriptografia)
+CHAVE_CRIPTOGRAFIA = base64.b64encode(os.urandom(32)).decode()
+
 ADMIN_EMAIL = "admin@clouud.com"
 ADMIN_SENHA = "Admin@123"
 
@@ -68,6 +77,30 @@ def string_conexao(banco: str = BANCO) -> str:
     return f"Host={PG_HOST};Port={PG_PORTA};Database={banco};Username={PG_USUARIO};Password={PG_SENHA}"
 
 
+class Cofre:
+    """O mesmo esquema de Infraestrutura/CriptografiaChaves.cs, para os testes gravarem e lerem chaves no banco."""
+
+    def __init__(self, chave_mestra_base64: str):
+        mestra = base64.b64decode(chave_mestra_base64)
+        derivar = lambda info: HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=info).derive(mestra)
+        self.cifra = AESGCM(derivar(b"clouud/chaves/cifra/v1"))
+        self.busca = derivar(b"clouud/chaves/busca/v1")
+
+    def cifrar(self, codigo: str) -> str:
+        nonce = os.urandom(12)
+        return "v1:" + base64.b64encode(nonce + self.cifra.encrypt(nonce, codigo.encode(), b"v1:")).decode()
+
+    def decifrar(self, valor: str) -> str:
+        dados = base64.b64decode(valor.removeprefix("v1:"))
+        return self.cifra.decrypt(dados[:12], dados[12:], b"v1:").decode()
+
+    def hash(self, codigo: str) -> str:
+        return hmac.new(self.busca, codigo.encode(), hashlib.sha256).hexdigest()
+
+
+COFRE = Cofre(CHAVE_CRIPTOGRAFIA)
+
+
 class Banco:
     """Acesso direto ao banco de testes, para preparar dados e conferir o resultado."""
 
@@ -83,6 +116,11 @@ class Banco:
     def valor(self, sql: str, *parametros):
         linha = self.conexao.execute(sql, parametros or None).fetchone()
         return None if linha is None else linha[0]
+
+    def codigos(self, where: str, *parametros) -> list[str]:
+        """Códigos das chaves (decifrados), em ordem de id. Ex.: codigos("produto_id = %s", 10)."""
+        return [COFRE.decifrar(c) for (c,) in self.linhas(
+            f"SELECT codigo_cifrado FROM chaves c WHERE {where} ORDER BY c.id", *parametros)]
 
 
 # ---------------------------------------------------------------- aplicação
@@ -101,6 +139,67 @@ def arquivos_em_uploads() -> set[Path]:
     return {p for p in UPLOADS.rglob("*") if p.is_file()} if UPLOADS.exists() else set()
 
 
+def ambiente_da_aplicacao(url: str = URL, banco: str = BANCO, **extras: str) -> dict:
+    """Variáveis de ambiente da aplicação nos testes (os segredos vêm daqui, como em produção)."""
+    ambiente = os.environ.copy()
+    ambiente.update({
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "TZ": FUSO,
+        "ConnectionStrings__LojaJogos": string_conexao(banco),
+        "Banco__AplicarMigrations": "true",
+        "AdminInicial__Email": ADMIN_EMAIL,
+        "AdminInicial__Senha": ADMIN_SENHA,
+        "Seguranca__ChaveCriptografia": CHAVE_CRIPTOGRAFIA,
+        # e-mails viram arquivos .eml numa pasta que os testes leem; a fila é conferida a cada segundo
+        "Email__Modo": "Pasta",
+        "Email__Pasta": str(PASTA_EMAILS),
+        "Email__IntervaloSegundos": "1",
+        "Loja__AvisosIntervaloSegundos": "1",
+        "Loja__UrlPublica": url,
+    })
+    ambiente.update(extras)
+    return ambiente
+
+
+class Aplicacao:
+    """Um processo da aplicação. Os testes de configuração sobem outras, em outras portas."""
+
+    def __init__(self, url: str, ambiente: dict, log: Path):
+        self.url = url
+        self.log = log
+        self.arquivo_log = open(log, "w")
+        self.processo = subprocess.Popen(["dotnet", str(encontrar_dll()), "--urls", url],
+                                         cwd=PROJETO, env=ambiente, stdout=self.arquivo_log, stderr=subprocess.STDOUT)
+
+    def esperar(self, segundos: float = 120) -> bool:
+        """Espera responder. False se o processo parou (ex.: configuração inválida)."""
+        limite = time.time() + segundos
+        while True:
+            if self.processo.poll() is not None:
+                return False
+            try:
+                requests.get(self.url, timeout=2, allow_redirects=False, verify=False)
+                return True
+            except requests.RequestException:
+                pass
+            if time.time() > limite:
+                raise TimeoutError(f"A aplicação não respondeu. Veja {self.log}")
+            time.sleep(0.3)
+
+    def texto_do_log(self) -> str:
+        self.arquivo_log.flush()
+        return self.log.read_text()
+
+    def parar(self):
+        if self.processo.poll() is None:
+            self.processo.terminate()
+            try:
+                self.processo.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                self.processo.kill()
+        self.arquivo_log.close()
+
+
 @pytest.fixture(scope="session")
 def app():
     """Sobe a aplicação num banco de testes novo. Devolve a URL."""
@@ -113,45 +212,16 @@ def app():
     SAIDA.mkdir(exist_ok=True)
     shutil.rmtree(PASTA_EMAILS, ignore_errors=True)
     PASTA_EMAILS.mkdir(parents=True)
-    log = open(SAIDA / "app.log", "w")
-    ambiente = os.environ.copy()
-    ambiente.update({
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "TZ": FUSO,
-        "ConnectionStrings__LojaJogos": string_conexao(),
-        "Banco__AplicarMigrations": "true",
-        "AdminInicial__Email": ADMIN_EMAIL,
-        "AdminInicial__Senha": ADMIN_SENHA,
-        # e-mails viram arquivos .eml numa pasta que os testes leem; a fila é conferida a cada segundo
-        "Email__Modo": "Pasta",
-        "Email__Pasta": str(PASTA_EMAILS),
-        "Email__IntervaloSegundos": "1",
-        "Loja__AvisosIntervaloSegundos": "1",
-        "Loja__UrlPublica": URL,
-    })
-    processo = subprocess.Popen(["dotnet", str(encontrar_dll()), "--urls", URL],
-                                cwd=PROJETO, env=ambiente, stdout=log, stderr=subprocess.STDOUT)
+    aplicacao = Aplicacao(URL, ambiente_da_aplicacao(), SAIDA / "app.log")
     try:
-        limite = time.time() + 120
-        while True:
-            if processo.poll() is not None:
+        try:
+            if not aplicacao.esperar() or requests.get(URL, timeout=10).status_code != 200:
                 pytest.exit(f"A aplicação parou ao iniciar. Veja {SAIDA / 'app.log'}", returncode=2)
-            try:
-                if requests.get(URL, timeout=2).status_code == 200:
-                    break
-            except requests.RequestException:
-                pass
-            if time.time() > limite:
-                pytest.exit(f"A aplicação não respondeu em 2 minutos. Veja {SAIDA / 'app.log'}", returncode=2)
-            time.sleep(0.5)
+        except TimeoutError:
+            pytest.exit(f"A aplicação não respondeu em 2 minutos. Veja {SAIDA / 'app.log'}", returncode=2)
         yield URL
     finally:
-        processo.terminate()
-        try:
-            processo.wait(timeout=20)
-        except subprocess.TimeoutExpired:
-            processo.kill()
-        log.close()
+        aplicacao.parar()
         for arquivo in arquivos_em_uploads() - antes:
             arquivo.unlink(missing_ok=True)
 
@@ -174,11 +244,12 @@ class Fabrica:
     def sufixo() -> str:
         return uuid.uuid4().hex[:8]
 
-    def cliente(self, nome: str = "Cliente", senha: str = "senha123") -> dict:
+    def cliente(self, nome: str = "Cliente", senha: str = "senha123", confirmado: bool = True) -> dict:
         # Senha em texto puro de propósito: é o formato das contas antigas, e o login converte para hash
         email = f"{nome.lower().replace(' ', '')}.{self.sufixo()}@teste.com"
         usuario_id = self.banco.valor(
-            "INSERT INTO usuarios (name, email, senha, perfil) VALUES (%s, %s, %s, 0) RETURNING id", nome, email, senha)
+            """INSERT INTO usuarios (name, email, senha, perfil, email_confirmado_em)
+               VALUES (%s, %s, %s, 0, CASE WHEN %s THEN now() END) RETURNING id""", nome, email, senha, confirmado)
         return {"id": usuario_id, "nome": nome, "email": email, "senha": senha}
 
     def jogo(self, titulo: str | None = None, plataforma: str = "steam", preco: float = 100, chaves: int = 0,
@@ -208,8 +279,9 @@ class Fabrica:
         codigos = [f"K{self.sufixo().upper()}-{i:03d}" for i in range(quantidade)]
         for codigo in codigos:
             self.banco.executar(
-                "INSERT INTO chaves (produto_id, codigo, status, adicionada_em) VALUES (%s, %s, 'Disponivel', now())",
-                produto_id, codigo)
+                """INSERT INTO chaves (produto_id, codigo_cifrado, codigo_hash, status, adicionada_em)
+                   VALUES (%s, %s, %s, 'Disponivel', now())""",
+                produto_id, COFRE.cifrar(codigo), COFRE.hash(codigo))
         return codigos
 
     def pedido_pago(self, usuario_id: int, produto_id: int, quantidade: int = 1, preco: float = 100,
