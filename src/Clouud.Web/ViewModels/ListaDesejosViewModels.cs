@@ -5,6 +5,7 @@ namespace Clouud.Web.ViewModels
     {
         public int JogoId { get; set; }
         public string Titulo { get; set; } = string.Empty;
+        public string Slug { get; set; } = string.Empty;
         public string? Capa { get; set; }
         public bool JogoAtivo { get; set; }
         public DateTime AdicionadoEm { get; set; }

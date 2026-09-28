@@ -84,6 +84,8 @@ erDiagram
     pedido_itens ||--o{ chaves : entrega
     pedidos ||--o{ pagamentos : ""
     cupons |o--o{ pedidos : "desconto em"
+    usuarios ||--o{ avaliacoes : escreve
+    jogos ||--o{ avaliacoes : recebe
 
     usuarios {
         int id PK
@@ -167,6 +169,14 @@ erDiagram
         datetime pagar_ate "prazo da reserva"
         datetime pago_em
     }
+    avaliacoes {
+        int usuario_id PK,FK
+        int jogo_id PK,FK
+        int nota "1 a 5"
+        string comentario
+        datetime criada_em
+        datetime atualizada_em
+    }
     cupons {
         int id PK
         string codigo UK
@@ -214,6 +224,7 @@ erDiagram
 | **pedidos** | A compra, com status, datas e prazo para pagar | FK para o usuário; status só com os quatro valores válidos; total não negativo |
 | **pedido_itens** | Itens da compra (o `Pedido_Jogo` do diagrama, agora apontando para o produto) | Quantidade maior que zero |
 | **pagamentos** | Tentativas de pagamento do pedido (simulado no início) | FK para o pedido |
+| **avaliacoes** | Nota e comentário de quem comprou o jogo | Uma por cliente e jogo (pode ser editada); nota de 1 a 5 |
 | **cupons** | Cupons de desconto (% ou valor fixo), com pedido mínimo, validade e limites de uso | Código único e em maiúsculas; % até 100; no pedido, `total = subtotal - desconto` e o desconto nunca passa do subtotal |
 
 ### Decisões importantes
@@ -229,7 +240,6 @@ erDiagram
 
 ### O que ficou de fora (pode entrar depois)
 
-- **Avaliações dos jogos:** tabela `avaliacoes` (usuário, jogo, nota, comentário).
 - **Galeria de imagens do jogo:** tabela `jogo_imagens`.
 
 ## 3. Do modelo atual para o proposto
@@ -259,5 +269,6 @@ Cada etapa é um commit, com as telas funcionando no final:
 Depois das quatro etapas:
 
 - ✅ **Cupons de desconto** (migration `Cupons`): tabela `cupons`; pedidos ganham `subtotal`, `desconto` e `cupom_id` (os antigos ficam com desconto zero). O uso do cupom é conferido com a linha do cupom travada, então compras simultâneas não passam do limite. Pedidos cancelados ou reembolsados devolvem o uso.
+- ✅ **Página do jogo e avaliações** (migration `Avaliacoes`): página pública `/jogo/{slug}` e tabela `avaliacoes`. Só avalia quem tem um pedido pago com o jogo; a média aparece na vitrine.
 
 Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.

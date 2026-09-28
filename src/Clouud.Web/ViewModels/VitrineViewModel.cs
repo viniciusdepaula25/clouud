@@ -23,6 +23,7 @@ namespace Clouud.Web.ViewModels
     {
         public int ProdutoId { get; set; }
         public int JogoId { get; set; }
+        public string Slug { get; set; } = string.Empty;
         public string Titulo { get; set; } = string.Empty;
         public string? Capa { get; set; }
         public string Plataforma { get; set; } = string.Empty;
@@ -31,6 +32,10 @@ namespace Clouud.Web.ViewModels
         public string? Desenvolvedora { get; set; }
         public decimal Preco { get; set; }
         public decimal PrecoAtual { get; set; }
+
+        /// <summary>Média das avaliações do jogo (nulo sem avaliações).</summary>
+        public double? MediaAvaliacoes { get; set; }
+        public int TotalAvaliacoes { get; set; }
 
         /// <summary>Chaves disponíveis no estoque.</summary>
         public int Disponiveis { get; set; }

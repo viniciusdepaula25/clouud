@@ -15,6 +15,7 @@ namespace Clouud.Web.Data
         public DbSet<CarrinhoItem> CarrinhoItens { get; set; }
         public DbSet<ListaDesejo> ListaDesejos { get; set; }
         public DbSet<Cupom> Cupons { get; set; }
+        public DbSet<Avaliacao> Avaliacoes { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
@@ -120,6 +121,14 @@ namespace Clouud.Web.Data
                     t.HasCheckConstraint("ck_cupons_valor", "valor > 0 AND (tipo <> 'Percentual' OR valor <= 100)");
                     t.HasCheckConstraint("ck_cupons_codigo", "codigo = upper(codigo)");
                 });
+            });
+
+            // Avaliações: nota de 1 a 5; apagar o usuário ou o jogo apaga as avaliações dele
+            modelBuilder.Entity<Avaliacao>(avaliacao =>
+            {
+                avaliacao.HasOne(a => a.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
+                avaliacao.HasOne(a => a.Jogo).WithMany(j => j.Avaliacoes).OnDelete(DeleteBehavior.Cascade);
+                avaliacao.ToTable(t => t.HasCheckConstraint("ck_avaliacoes_nota", "nota BETWEEN 1 AND 5"));
             });
 
             // Lista de desejos: apagar o usuário ou o jogo remove o jogo das listas

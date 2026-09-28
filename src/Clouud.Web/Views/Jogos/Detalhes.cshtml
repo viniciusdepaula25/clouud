@@ -1,0 +1,274 @@
+@model Clouud.Web.ViewModels.PaginaJogoViewModel
+@using Clouud.Web.Models
+@using Clouud.Web.Services
+
+@{
+    var jogo = Model.Jogo;
+    ViewData["Title"] = jogo.Titulo;
+    var pagina = $"/jogo/{jogo.Slug}";
+    var capa = string.IsNullOrEmpty(jogo.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + jogo.Capa);
+    var total = Model.Avaliacoes.Count;
+}
+
+@if (Model.Logado)
+{
+    <partial name="~/Areas/Cliente/Views/Shared/_NavbarCliente.cshtml" />
+}
+else
+{
+    <partial name="_NavbarPublica" />
+}
+
+<style>
+    .pagina-jogo a { margin-left: 0; }
+    .pagina-jogo .card { background: #282828; border: 0; }
+    .estrelas { color: #f80; letter-spacing: 1px; }
+    .estrelas-vazias { color: #555; }
+    .pagina-jogo .muted { color: #adafae; }
+    .distribuicao .progress { height: .6rem; background: #3a3a3a; }
+    .distribuicao .progress-bar { background: #2a9fd6; }
+    .nota-opcoes input { position: absolute; opacity: 0; }
+    .nota-opcoes label { cursor: pointer; font-size: 1.75rem; color: #555; padding: 0 .1rem; }
+    .nota-opcoes label.acesa { color: #f80; }
+    .nota-opcoes input:focus-visible + label { outline: 2px solid #2a9fd6; border-radius: 4px; }
+</style>
+
+<div class="container pagina-jogo mt-3 mb-5">
+    @if (TempData["Mensagem"] is string mensagem)
+    {
+        <div class="alert alert-success">@mensagem</div>
+    }
+    @if (TempData["Erro"] is string erro)
+    {
+        <div class="alert alert-danger">@erro</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <img src="@capa" alt="Capa de @jogo.Titulo" class="img-fluid rounded w-100" style="object-fit: cover"
+                 onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+        </div>
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <h1 class="mb-1">@jogo.Titulo</h1>
+                @if (Model.Logado)
+                {
+                    <form asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Alternar" method="post">
+                        <input type="hidden" name="jogoId" value="@jogo.Id" />
+                        <input type="hidden" name="voltarPara" value="@pagina" />
+                        <button type="submit" class="btn btn-link text-danger fs-2 p-0 text-decoration-none desejo"
+                                aria-pressed="@(Model.NaListaDesejos ? "true" : "false")"
+                                title="@(Model.NaListaDesejos ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
+                                aria-label="@(Model.NaListaDesejos ? "Tirar da lista de desejos" : "Pôr na lista de desejos")">@(Model.NaListaDesejos ? "♥" : "♡")</button>
+                    </form>
+                }
+            </div>
+            <div class="mb-2" id="resumoNotas">
+                @if (Model.Media.HasValue)
+                {
+                    <partial name="_Estrelas" model="Model.Media.Value" />
+                    <strong class="text-white ms-1">@Model.Media.Value.ToString("0.0")</strong>
+                    <a href="#avaliacoes" class="muted ms-1">(@total @(total == 1 ? "avaliação" : "avaliações"))</a>
+                }
+                else
+                {
+                    <span class="muted">Ainda sem avaliações</span>
+                }
+            </div>
+            <div class="mb-3">
+                @foreach (var categoria in jogo.Categorias.OrderBy(c => c.Nome))
+                {
+                    <a href="/?categoria=@categoria.Slug" class="badge bg-secondary text-decoration-none me-1">@categoria.Nome</a>
+                }
+            </div>
+            <dl class="row small mb-3">
+                @if (jogo.Desenvolvedora != null)
+                {
+                    <dt class="col-sm-3 muted">Desenvolvedora</dt>
+                    <dd class="col-sm-9">@jogo.Desenvolvedora.Nome</dd>
+                }
+                @if (jogo.Publicadora != null)
+                {
+                    <dt class="col-sm-3 muted">Publicadora</dt>
+                    <dd class="col-sm-9">@jogo.Publicadora.Nome</dd>
+                }
+                @if (jogo.DataLancamento.HasValue)
+                {
+                    <dt class="col-sm-3 muted">Lançamento</dt>
+                    <dd class="col-sm-9">@jogo.DataLancamento.Value.ToString("dd/MM/yyyy")</dd>
+                }
+                @if (jogo.ClassificacaoIndicativa != null)
+                {
+                    <dt class="col-sm-3 muted">Classificação</dt>
+                    <dd class="col-sm-9">@(jogo.ClassificacaoIndicativa == "L" ? "Livre" : jogo.ClassificacaoIndicativa + " anos")</dd>
+                }
+            </dl>
+
+            <div class="card"><div class="card-body">
+                <h5>Onde comprar</h5>
+                @if (Model.Produtos.Count == 0)
+                {
+                    <p class="muted mb-0">No momento este jogo não está à venda.</p>
+                }
+                else
+                {
+                    <table class="table table-sm align-middle mb-0" id="produtos">
+                        <tbody>
+                            @foreach (var produto in Model.Produtos)
+                            {
+                                <tr>
+                                    <td>@produto.Plataforma@(produto.Edicao != "Standard" ? $" · {produto.Edicao}" : "")</td>
+                                    <td class="text-end">
+                                        @if (produto.EmPromocao)
+                                        {
+                                            <span class="badge bg-danger">-@produto.PercentualDesconto%</span>
+                                            <s class="muted small ms-1">@produto.Preco.ToString("C")</s>
+                                        }
+                                        <strong class="ms-1 text-white">@produto.PrecoAtual.ToString("C")</strong>
+                                    </td>
+                                    <td class="text-end" style="width: 130px">
+                                        @if (produto.Esgotado)
+                                        {
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" disabled>Esgotado</button>
+                                        }
+                                        else if (Model.Logado)
+                                        {
+                                            <form asp-area="Cliente" asp-controller="Carrinho" asp-action="Adicionar" method="post">
+                                                <input type="hidden" name="produtoId" value="@produto.ProdutoId" />
+                                                <input type="hidden" name="voltarPara" value="@pagina" />
+                                                <button type="submit" class="btn btn-danger btn-sm">Comprar</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina" class="btn btn-danger btn-sm">Comprar</a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div></div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(jogo.Descricao))
+    {
+        <h4 class="mt-4">Sobre o jogo</h4>
+        <p style="white-space: pre-line">@jogo.Descricao</p>
+    }
+
+    <h4 class="mt-4" id="avaliacoes">Avaliações</h4>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card"><div class="card-body">
+                @if (Model.Media.HasValue)
+                {
+                    <div class="d-flex align-items-baseline gap-2">
+                        <span class="text-white" style="font-size: 3rem; font-weight: 600; line-height: 1">@Model.Media.Value.ToString("0.0")</span>
+                        <span class="muted">de 5</span>
+                    </div>
+                    <partial name="_Estrelas" model="Model.Media.Value" />
+                    <div class="muted small mb-3">@total @(total == 1 ? "avaliação" : "avaliações") de quem comprou</div>
+                    <div class="distribuicao">
+                        @for (var nota = 5; nota >= 1; nota--)
+                        {
+                            var quantidade = Model.QuantidadeComNota(nota);
+                            var porcento = total == 0 ? 0 : quantidade * 100 / total;
+                            <div class="d-flex align-items-center gap-2 small mb-1">
+                                <span class="muted" style="width: 2.5rem">@nota ★</span>
+                                <div class="progress flex-grow-1" role="progressbar" aria-label="@nota estrelas"
+                                     aria-valuenow="@porcento" aria-valuemin="0" aria-valuemax="100">
+                                    <div class="progress-bar" style="width: @porcento%"></div>
+                                </div>
+                                <span class="text-end" style="width: 2rem">@quantidade</span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="muted mb-0">Este jogo ainda não tem avaliações.</p>
+                }
+            </div></div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card mb-3" id="avaliar"><div class="card-body">
+                @if (!Model.Logado)
+                {
+                    <p class="mb-0"><a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina">Entre</a> para avaliar este jogo. Só quem comprou pode avaliar.</p>
+                }
+                else if (!Model.PodeAvaliar)
+                {
+                    <p class="muted mb-0">Só quem comprou este jogo pode avaliar. Depois do pagamento aprovado, volte aqui para dar a sua nota.</p>
+                }
+                else
+                {
+                    var minha = Model.MinhaAvaliacao;
+                    <h5>@(minha == null ? "Avalie este jogo" : "Sua avaliação")</h5>
+                    <form action="@pagina/avaliar" method="post" id="formAvaliar">
+                        @Html.AntiForgeryToken()
+                        <fieldset class="nota-opcoes mb-2" id="notaOpcoes">
+                            <legend class="small muted mb-0">Sua nota</legend>
+                            @for (var nota = 1; nota <= 5; nota++)
+                            {
+                                <input type="radio" name="Nota" id="nota-@nota" value="@nota" checked="@(minha?.Nota == nota)" required />
+                                <label for="nota-@nota" title="@nota de 5" aria-label="@nota de 5 estrelas" class="@(minha != null && nota <= minha.Nota ? "acesa" : "")">★</label>
+                            }
+                        </fieldset>
+                        <textarea name="Comentario" class="form-control" rows="3" maxlength="@Avaliacao.TamanhoComentario"
+                                  placeholder="O que você achou? (opcional)" aria-label="Comentário">@minha?.Comentario</textarea>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <input type="submit" value="@(minha == null ? "Enviar avaliação" : "Atualizar avaliação")" class="btn btn-primary btn-sm" />
+                            <small class="muted">até @Avaliacao.TamanhoComentario caracteres</small>
+                        </div>
+                    </form>
+                    @if (minha != null)
+                    {
+                        <form action="@pagina/avaliacao/excluir" method="post" class="mt-2"
+                              onsubmit="return confirm('Excluir a sua avaliação?')">
+                            @Html.AntiForgeryToken()
+                            <input type="submit" value="Excluir minha avaliação" class="btn btn-link btn-sm text-danger p-0" />
+                        </form>
+                    }
+                }
+            </div></div>
+
+            @foreach (var avaliacao in Model.Avaliacoes)
+            {
+                <div class="card mb-2 avaliacao"><div class="card-body py-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <img src="@FotoPerfilService.Url(avaliacao.Foto)" alt="" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover"
+                             onerror="this.onerror=null;this.src='@FotoPerfilService.FotoPadrao'" />
+                        <strong class="text-white">@avaliacao.Nome</strong>
+                        <partial name="_Estrelas" model="(double)avaliacao.Nota" />
+                        <small class="muted ms-auto">@avaliacao.Data.ToLocalTime().ToString("dd/MM/yyyy")@(avaliacao.Editada ? " (editada)" : "")</small>
+                    </div>
+                    @if (avaliacao.Comentario != null)
+                    {
+                        <p class="mb-0 mt-2" style="white-space: pre-line">@avaliacao.Comentario</p>
+                    }
+                </div></div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Acende as estrelas até a nota escolhida
+        (function () {
+            const grupo = document.getElementById("notaOpcoes");
+            if (!grupo) return;
+            const acender = () => {
+                const marcada = grupo.querySelector("input:checked");
+                const nota = marcada ? Number(marcada.value) : 0;
+                grupo.querySelectorAll("label").forEach((rotulo, i) => rotulo.classList.toggle("acesa", i < nota));
+            };
+            grupo.addEventListener("change", acender);
+            acender();
+        })();
+    </script>
+}

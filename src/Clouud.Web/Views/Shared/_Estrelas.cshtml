@@ -1,0 +1,6 @@
+@model double
+@* Estrelas de 0 a 5 (arredondadas para a estrela mais próxima), com o texto para leitores de tela *@
+@{
+    var cheias = (int)Math.Round(Model, MidpointRounding.AwayFromZero);
+}
+<span class="estrelas" role="img" aria-label="@Model.ToString("0.#") de 5 estrelas" title="@Model.ToString("0.#") de 5">@(new string('★', cheias))<span class="estrelas-vazias">@(new string('★', 5 - cheias))</span></span>

@@ -1,0 +1,55 @@
+@model IEnumerable<Clouud.Web.Models.Avaliacao>
+
+@{
+    ViewData["Title"] = "Avaliações";
+    var nota = ViewData["Nota"] as int?;
+}
+
+<h1>Avaliações</h1>
+<p>O que os clientes que compraram estão dizendo. Exclua avaliações com conteúdo impróprio.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+<form asp-action="Index" method="get" class="d-flex flex-wrap gap-2 mb-3">
+    <select name="nota" class="form-select" style="width: auto" aria-label="Nota">
+        <option value="">Todas as notas</option>
+        @for (var n = 5; n >= 1; n--)
+        {
+            <option value="@n" selected="@(nota == n)">@n estrela@(n > 1 ? "s" : "")</option>
+        }
+    </select>
+    <input type="search" name="busca" value="@ViewData["Busca"]" placeholder="Jogo, cliente ou texto" class="form-control" style="max-width: 320px" />
+    <input type="submit" value="Filtrar" class="btn btn-secondary" />
+</form>
+<table class="table table-hover align-middle">
+    <thead>
+        <tr><th>Jogo</th><th>Cliente</th><th>Nota</th><th>Comentário</th><th>Data</th><th></th></tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="6">Nenhuma avaliação encontrada.</td></tr>
+        }
+        @foreach (var avaliacao in Model)
+        {
+            <tr>
+                <td><a href="/jogo/@avaliacao.Jogo.Slug" target="_blank">@avaliacao.Jogo.Titulo</a></td>
+                <td>@avaliacao.Usuario.Name<br /><small class="text-muted">@avaliacao.Usuario.Email</small></td>
+                <td class="text-nowrap"><partial name="~/Views/Shared/_Estrelas.cshtml" model="(double)avaliacao.Nota" /></td>
+                <td style="white-space: pre-line; max-width: 420px">@avaliacao.Comentario</td>
+                <td class="text-nowrap">@((avaliacao.AtualizadaEm ?? avaliacao.CriadaEm).ToLocalTime().ToString("dd/MM/yyyy"))</td>
+                <td>
+                    <form asp-action="Excluir" method="post" onsubmit="return confirm('Excluir esta avaliação?')">
+                        <input type="hidden" name="usuarioId" value="@avaliacao.UsuarioId" />
+                        <input type="hidden" name="jogoId" value="@avaliacao.JogoId" />
+                        <input type="hidden" name="nota" value="@nota" />
+                        <input type="hidden" name="busca" value="@ViewData["Busca"]" />
+                        <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

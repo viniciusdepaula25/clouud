@@ -60,6 +60,7 @@ namespace Clouud.Web.Models
 
         public ICollection<Categoria> Categorias { get; set; } = new List<Categoria>();
         public ICollection<Produto> Produtos { get; set; } = new List<Produto>();
+        public ICollection<Avaliacao> Avaliacoes { get; set; } = new List<Avaliacao>();
 
         public static readonly string[] Classificacoes = ["L", "10", "12", "14", "16", "18"];
     }

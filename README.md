@@ -58,6 +58,10 @@ No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam,
 
 Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam ao estoque. No admin, **Pedidos** mostra todos os pedidos e permite cancelar os que aguardam pagamento e reembolsar os pagos (as chaves reembolsadas ficam inativas).
 
+## Página do jogo e avaliações
+
+Cada jogo tem uma página pública em `/jogo/{slug}` (ex.: `/jogo/elden-ring`), aberta pelo título do card na vitrine: capa, descrição, ficha técnica, onde comprar (plataformas, preços e estoque) e as avaliações. Só quem tem um pedido **pago** com o jogo pode avaliar (nota de 1 a 5 e comentário opcional); cada cliente tem uma avaliação por jogo, que pode editar ou excluir. A média aparece na vitrine, e em **Admin > Avaliações** o admin filtra e exclui avaliações impróprias.
+
 ## Cupons de desconto
 
 Em **Admin > Cupons** o admin cria cupons de porcentagem ou de valor fixo, com pedido mínimo, datas de validade, limite de usos no total e por cliente. O cliente digita o código no carrinho e vê o desconto na hora; o cupom é conferido de novo ao finalizar. Pedidos cancelados ou reembolsados devolvem o uso do cupom, e um cupom já usado não pode ser excluído (só desativado).

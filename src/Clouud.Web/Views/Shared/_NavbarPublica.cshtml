@@ -1,0 +1,22 @@
+@* Barra de navegação para visitantes (sem login) *@
+<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">CLOUUD </a>
+        <style>
+            .navbar-brand {
+                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+                font-size: 30px; /* Tamanho da fonte */
+                font-weight: bold; /* Peso da fonte (negrito) */
+                /* Outros estilos que você desejar */
+            }
+
+            a {
+                margin-left: 15px;
+            }
+        </style>
+        <form class="d-flex" role="search">
+            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@(Context.Request.Path == "/" ? null : Context.Request.Path.Value)" class="btn btn-secondary">Entrar</a>
+            <a asp-area="" asp-controller="Conta" asp-action="Cadastro" class="btn btn-secondary">Cadastrar</a>
+        </form>
+    </div>
+</nav>

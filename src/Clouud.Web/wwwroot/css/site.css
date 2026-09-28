@@ -16,3 +16,7 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Estrelas das avaliações (vitrine e página do jogo) */
+.estrelas { color: #f80; letter-spacing: 1px; }
+.estrelas-vazias { color: #555; }

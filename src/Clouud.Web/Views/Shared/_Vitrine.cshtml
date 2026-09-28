@@ -50,10 +50,17 @@
         <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
             <div class="container-fluid h-100">
                 <div class="card h-100">
-                    <h5 class="card-header text-truncate" title="@item.Titulo">@item.Titulo</h5>
+                    <h5 class="card-header text-truncate" title="@item.Titulo"><a href="/jogo/@item.Slug" class="text-reset text-decoration-none" style="margin-left: 0">@item.Titulo</a></h5>
                     <div class="card-body flex-grow-0">
                         <h6 class="card-title mb-1">@item.Plataforma @(item.Edicao != "Standard" ? $"· {item.Edicao}" : "")</h6>
                         <small class="card-subtitle text-muted">@string.Join(", ", item.Categorias)</small>
+                        @if (item.MediaAvaliacoes.HasValue)
+                        {
+                            <div class="small mt-1">
+                                <partial name="_Estrelas" model="item.MediaAvaliacoes.Value" />
+                                <span class="text-muted">@item.MediaAvaliacoes.Value.ToString("0.0") (@item.TotalAvaliacoes)</span>
+                            </div>
+                        }
                     </div>
                     <div class="position-relative">
                         <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content($"~/uploads/{item.Capa}"))"

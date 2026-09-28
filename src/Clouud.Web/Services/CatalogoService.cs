@@ -76,6 +76,7 @@ namespace Clouud.Web.Services
                 {
                     JogoId = d.JogoId,
                     Titulo = d.Jogo.Titulo,
+                    Slug = d.Jogo.Slug,
                     Capa = d.Jogo.Capa,
                     JogoAtivo = d.Jogo.Ativo,
                     AdicionadoEm = d.AdicionadoEm
@@ -94,6 +95,61 @@ namespace Clouud.Web.Services
             return desejos;
         }
 
+        /// <summary>Página do jogo: informações, produtos à venda e avaliações. Nulo se o jogo não está na loja.</summary>
+        public PaginaJogoViewModel? MontarPaginaJogo(string slug, int? usuarioId)
+        {
+            var jogo = bancoDados.Jogos
+                .Where(j => j.Slug == slug && j.Ativo)
+                .Include(j => j.Categorias)
+                .Include(j => j.Desenvolvedora)
+                .Include(j => j.Publicadora)
+                .AsSplitQuery()
+                .FirstOrDefault();
+            if (jogo == null)
+            {
+                return null;
+            }
+
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
+            var avaliacoes = bancoDados.Avaliacoes
+                .Where(a => a.JogoId == jogo.Id)
+                .OrderByDescending(a => a.AtualizadaEm ?? a.CriadaEm)
+                .Select(a => new AvaliacaoViewModel
+                {
+                    UsuarioId = a.UsuarioId,
+                    Nome = a.Usuario.Name,
+                    Foto = a.Usuario.Foto,
+                    Nota = a.Nota,
+                    Comentario = a.Comentario,
+                    Data = a.AtualizadaEm ?? a.CriadaEm,
+                    Editada = a.AtualizadaEm != null
+                })
+                .ToList();
+
+            var pagina = new PaginaJogoViewModel
+            {
+                Jogo = jogo,
+                Produtos = Projetar(bancoDados.Produtos
+                    .Where(p => p.JogoId == jogo.Id && p.Ativo && p.Plataforma.Ativa)
+                    .OrderBy(p => p.Plataforma.Nome).ThenBy(p => p.Edicao), hoje).ToList(),
+                Avaliacoes = avaliacoes,
+                Logado = usuarioId.HasValue
+            };
+
+            if (usuarioId.HasValue)
+            {
+                pagina.MinhaAvaliacao = avaliacoes.FirstOrDefault(a => a.UsuarioId == usuarioId);
+                pagina.PodeAvaliar = ComprouOJogo(usuarioId.Value, jogo.Id);
+                pagina.NaListaDesejos = bancoDados.ListaDesejos.Any(d => d.UsuarioId == usuarioId && d.JogoId == jogo.Id);
+            }
+            return pagina;
+        }
+
+        /// <summary>Só avalia quem tem um pedido pago com algum produto do jogo.</summary>
+        public bool ComprouOJogo(int usuarioId, int jogoId) =>
+            bancoDados.PedidoItens.Any(i => i.Pedido.UsuarioId == usuarioId && i.Pedido.Status == StatusPedido.Pago
+                                            && i.Produto.JogoId == jogoId);
+
         private static IQueryable<ProdutoVitrineViewModel> Projetar(IQueryable<Produto> consulta, DateOnly hoje)
         {
             return consulta
@@ -101,6 +157,7 @@ namespace Clouud.Web.Services
                 {
                     ProdutoId = p.Id,
                     JogoId = p.JogoId,
+                    Slug = p.Jogo.Slug,
                     Titulo = p.Jogo.Titulo,
                     Capa = p.Jogo.Capa,
                     Plataforma = p.Plataforma.Nome,
@@ -112,7 +169,9 @@ namespace Clouud.Web.Services
                                  && (p.PromocaoAte == null || p.PromocaoAte >= hoje)
                         ? p.PrecoPromocional.Value
                         : p.Preco,
-                    Disponiveis = p.Chaves.Count(c => c.Status == StatusChave.Disponivel)
+                    Disponiveis = p.Chaves.Count(c => c.Status == StatusChave.Disponivel),
+                    MediaAvaliacoes = p.Jogo.Avaliacoes.Average(a => (double?)a.Nota),
+                    TotalAvaliacoes = p.Jogo.Avaliacoes.Count()
                 });
         }
     }
