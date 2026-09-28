@@ -64,7 +64,7 @@ Cada jogo tem uma página pública em `/jogo/{slug}` (ex.: `/jogo/elden-ring`), 
 
 ## Galeria de imagens
 
-Em **Admin > Jogos > Galeria** o admin envia até 12 imagens por jogo (várias de uma vez; JPG, PNG, GIF ou WebP de até 5 MB, conferidas pelo conteúdo do arquivo), coloca legendas e muda a ordem. Elas aparecem na página do jogo com miniaturas para navegar. Os arquivos ficam em `wwwroot/uploads/galeria` e são apagados junto com a imagem ou com o jogo.
+Em **Admin > Jogos > Galeria** o admin envia até 12 imagens por jogo (várias de uma vez; JPG, PNG, GIF ou WebP de até 5 MB, conferidas pelo conteúdo do arquivo), coloca legendas e muda a ordem. Elas aparecem na página do jogo com miniaturas para navegar. Os arquivos ficam em `wwwroot/uploads/galeria` e são apagados junto com a imagem ou com o jogo. A **capa** do jogo passa pela mesma conferência (até 5 MB) e fica em `wwwroot/uploads/capas`; capas antigas, gravadas direto em `uploads`, continuam funcionando.
 
 ## Cupons de desconto
 
@@ -106,7 +106,7 @@ A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (
             ├── css/, js/       # estilos e scripts do site
             ├── img/            # imagens fixas do layout
             ├── lib/            # bibliotecas de terceiros (Bootstrap, jQuery)
-            └── uploads/        # capas dos jogos, perfis/ (fotos de perfil) e galeria/ (fora do Git)
+            └── uploads/        # capas/, perfis/ (fotos de perfil) e galeria/ (fora do Git)
 ```
 
 ## Banco de dados

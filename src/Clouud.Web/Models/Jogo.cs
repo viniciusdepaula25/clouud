@@ -38,7 +38,12 @@ namespace Clouud.Web.Models
         [Display(Name = "Classificação indicativa")]
         public string? ClassificacaoIndicativa { get; set; }
 
-        /// <summary>Nome do arquivo da capa em wwwroot/uploads.</summary>
+        public const long TamanhoMaximoCapa = 5 * 1024 * 1024;
+
+        /// <summary>
+        /// Caminho da capa dentro de wwwroot/uploads: "capas/abc123.jpg" para as enviadas agora,
+        /// ou só o nome do arquivo para as capas antigas, que ficavam direto em uploads.
+        /// </summary>
         [StringLength(300)]
         public string? Capa { get; set; }
 

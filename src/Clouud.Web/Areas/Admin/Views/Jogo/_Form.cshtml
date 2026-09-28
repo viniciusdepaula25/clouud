@@ -86,7 +86,20 @@
                 <img src="~/uploads/@Model.CapaAtual" alt="Capa atual" class="img-fluid d-block mb-2" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
                 <small class="form-text">Escolha um arquivo só se quiser trocar a capa.</small>
             }
-            <input type="file" name="arquivo" id="txtArquivo" class="form-control" accept="image/*" />
+            <input type="file" name="arquivo" id="txtArquivo" class="form-control" accept="@Clouud.Web.Services.ImagemUpload.AcceptHtml" />
+            <small class="form-text d-block">@Clouud.Web.Services.ImagemUpload.FormatosAceitos, até @(Jogo.TamanhoMaximoCapa / (1024 * 1024)) MB.</small>
+            <span class="text-danger d-block" id="erroCapa">@Html.ValidationMessage("arquivo")</span>
+            <script>
+                // Avisa na hora se a capa passar do tamanho máximo (o servidor confere de novo)
+                document.getElementById("txtArquivo").addEventListener("change", function () {
+                    const erro = document.getElementById("erroCapa");
+                    erro.textContent = "";
+                    if (this.files[0] && this.files[0].size > @Jogo.TamanhoMaximoCapa) {
+                        erro.textContent = "Capa: a imagem pode ter no máximo @(Jogo.TamanhoMaximoCapa / (1024 * 1024)) MB.";
+                        this.value = "";
+                    }
+                });
+            </script>
         </div>
     </div>
 </div>

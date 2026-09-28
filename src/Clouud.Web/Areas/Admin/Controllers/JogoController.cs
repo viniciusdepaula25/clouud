@@ -47,6 +47,8 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Inclui(JogoFormViewModel form, IFormFile? arquivo)
         {
+            // A capa é conferida antes de gravar o jogo: com imagem inválida, nada é salvo
+            var capa = ValidarCapa(arquivo);
             if (!ModelState.IsValid)
             {
                 PreencherOpcoes(form);
@@ -55,10 +57,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
             var jogo = new Jogo();
             Aplicar(form, jogo);
-            if (arquivo != null)
-            {
-                jogo.Capa = SalvaArquivo(arquivo);
-            }
+            jogo.Capa = capa;
 
             bancoDados.Jogos.Add(jogo);
             bancoDados.SaveChanges();
@@ -109,6 +108,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            var capaNova = ValidarCapa(arquivo);
             if (!ModelState.IsValid)
             {
                 form.CapaAtual = jogo.Capa;
@@ -117,14 +117,18 @@ namespace Clouud.Web.Areas.Admin.Controllers
             }
 
             Aplicar(form, jogo);
-            if (arquivo != null)
+            var capaAntiga = jogo.Capa;
+            if (capaNova != null)
             {
-                //troca a capa: exclui o arquivo antigo e salva o novo
-                ExcluiArquivo(jogo.Capa);
-                jogo.Capa = SalvaArquivo(arquivo);
+                jogo.Capa = capaNova;
             }
 
             bancoDados.SaveChanges();
+            if (capaNova != null)
+            {
+                // a antiga só é apagada depois que a nova ficou gravada no jogo
+                ExcluirCapa(capaAntiga);
+            }
             TempData["Mensagem"] = $"Jogo \"{jogo.Titulo}\" alterado.";
             return RedirectToAction("Index");
         }
@@ -164,11 +168,48 @@ namespace Clouud.Web.Areas.Admin.Controllers
             var imagensDaGaleria = bancoDados.JogoImagens.Where(i => i.JogoId == id).Select(i => i.Arquivo).ToList();
             bancoDados.Jogos.Remove(jogo);
             bancoDados.SaveChanges();
-            ExcluiArquivo(jogo.Capa);
+            ExcluirCapa(jogo.Capa);
             galeria.ExcluirArquivos(imagensDaGaleria);
 
             TempData["Mensagem"] = $"Jogo \"{jogo.Titulo}\" excluído.";
             return RedirectToAction("Index");
+        }
+
+        private const string PastaCapas = "capas";
+
+        /// <summary>
+        /// Grava a capa enviada em uploads/capas, conferindo o conteúdo do arquivo (JPG, PNG, GIF ou WebP, até 5 MB).
+        /// Sem arquivo devolve null; com arquivo inválido registra o erro no formulário e devolve null.
+        /// </summary>
+        private string? ValidarCapa(IFormFile? arquivo)
+        {
+            if (arquivo == null || arquivo.Length == 0 || !ModelState.IsValid)
+            {
+                return null;
+            }
+            var (caminho, erro) = ImagemUpload.Salvar(arquivo, WebRoot, PastaCapas, Jogo.TamanhoMaximoCapa);
+            if (erro != null)
+            {
+                ModelState.AddModelError("arquivo", $"Capa: {erro}");
+            }
+            return caminho;
+        }
+
+        /// <summary>Apaga o arquivo da capa, esteja em uploads/capas ou (capas antigas) direto em uploads.</summary>
+        private void ExcluirCapa(string? capa)
+        {
+            if (string.IsNullOrWhiteSpace(capa))
+            {
+                return;
+            }
+            if (capa.Contains('/'))
+            {
+                ImagemUpload.Excluir(capa, WebRoot, PastaCapas);
+            }
+            else
+            {
+                ExcluiArquivo(capa);
+            }
         }
 
         private List<Jogo> ListarJogos(string? busca)

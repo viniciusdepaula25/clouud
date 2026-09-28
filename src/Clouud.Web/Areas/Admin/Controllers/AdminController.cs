@@ -11,25 +11,12 @@ namespace Clouud.Web.Areas.Admin.Controllers
             servidorWeb = webHostEnvironment;
         }
 
-        //Metodos de Manipulação de Arquivos
-        // protected: métodos auxiliares, não podem ser acessados como página (action)
-        protected string SalvaArquivo(IFormFile? arquivo)
-        {
-            // VERIFICAR SE O ARQUIVO É VÁLIDO
-            if (arquivo == null)
-            {
-                return string.Empty;
-            }
-            //ARMAZENAR O ARQUIVO NO SERVIDOR WEB
-            var nomeArquivo = $"{Path.GetRandomFileName()}{Path.GetExtension(arquivo.FileName)}";
-            var pastaArquivo = Path.Combine(servidorWeb.WebRootPath, "uploads");
-            var localArquivo = Path.Combine(pastaArquivo, nomeArquivo);
-            using var dadosArquivo = new FileStream(localArquivo, FileMode.Create);
-            arquivo.CopyTo(dadosArquivo);
-            return nomeArquivo;
+        /// <summary>Pasta raiz dos arquivos públicos (wwwroot).</summary>
+        protected string WebRoot => servidorWeb.WebRootPath;
 
-        }
-
+        // Imagens novas são gravadas com Services/ImagemUpload (confere o conteúdo do arquivo).
+        // Este método só apaga arquivos antigos, que ficavam direto em wwwroot/uploads.
+        // protected: método auxiliar, não pode ser acessado como página (action)
         protected bool ExcluiArquivo(string? nomeArquivo)
         {
             //verifica o nome do arquivo
