@@ -1,7 +1,7 @@
 """Página do jogo e avaliações: só quem comprou avalia, média, distribuição, edição, exclusão e moderação."""
 import pytest
 
-from conftest import enviar, entrar
+from conftest import LOJA, enviar, entrar
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ def test_quem_comprou_avalia_edita_e_exclui(paginas, fabrica, banco, cenario):
     assert "4.0" in resumo(pagina) and "(1 avaliação)" in resumo(pagina)
     assert "<script>alert(1)</script> Muito bom!" in pagina.locator(".avaliacao").first.inner_text()  # texto, não HTML
 
-    pagina.goto(f"/Cliente/Home?busca={jogo['titulo']}")
+    pagina.goto(f"{LOJA}?busca={jogo['titulo']}")
     assert "4.0 (1)" in pagina.locator(".card", has_text=jogo["titulo"]).first.inner_text()
 
     pagina.goto(url)

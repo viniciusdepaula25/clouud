@@ -1,6 +1,6 @@
 @model Clouud.Web.ViewModels.VitrineViewModel
 @*
-    Filtros + cards de produtos. Usado na página inicial e na área do cliente.
+    Filtros + cards de produtos da loja (a mesma para visitante e cliente).
     ViewData["ModoVitrine"]: "login" (visitante vai para o login) ou "carrinho" (cliente logado compra).
 *@
 @{
@@ -50,7 +50,7 @@
         <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
             <div class="container-fluid h-100">
                 <div class="card h-100">
-                    <h5 class="card-header text-truncate" title="@item.Titulo"><a href="/jogo/@item.Slug" class="text-reset text-decoration-none" style="margin-left: 0">@item.Titulo</a></h5>
+                    <h5 class="card-header text-truncate" title="@item.Titulo"><a href="/jogo/@item.Slug" class="text-reset text-decoration-none">@item.Titulo</a></h5>
                     <div class="card-body flex-grow-0">
                         <h6 class="card-title mb-1">@item.Plataforma @(item.Edicao != "Standard" ? $"· {item.Edicao}" : "")</h6>
                         <small class="card-subtitle text-muted">@string.Join(", ", item.Categorias)</small>
@@ -99,7 +99,7 @@
                         }
                         else
                         {
-                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="/Cliente/Home"
+                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@paginaAtual"
                                class="button-24 btn btn-outline-danger" role="button">Comprar</a>
                         }
                         @* Coração: põe ou tira o jogo da lista de desejos *@
@@ -117,8 +117,8 @@
                         }
                         else
                         {
-                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="/Cliente/Home"
-                               class="text-danger fs-4 text-decoration-none" style="margin-left: 0"
+                            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@paginaAtual"
+                               class="text-danger fs-4 text-decoration-none"
                                title="Entre para usar a lista de desejos" aria-label="Entre para usar a lista de desejos">♡</a>
                         }
                     </div>

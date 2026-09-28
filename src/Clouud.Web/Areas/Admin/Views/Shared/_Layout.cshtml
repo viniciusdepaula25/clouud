@@ -1,96 +1,69 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CLOUUD</title>
-    
+    <title>@ViewData["Title"] - CLOUUD Admin</title>
+    <link rel="icon" type="image/png" href="~/img/logo.png" />
     <link rel="stylesheet" href="~/css/mytheme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Clouud.Web.styles.css" asp-append-version="true" />
 </head>
-<body>
-     <header> 
-    @* <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+@{
+    var controllerAtual = ViewContext.RouteData.Values["controller"] as string;
+    string? Ativo(string controller) => string.Equals(controllerAtual, controller, StringComparison.OrdinalIgnoreCase) ? "active" : null;
+}
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <nav class="navbar navbar-expand-xl navbar-dark bg-danger barra-admin" aria-label="Menu do admin">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CLOUUD</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand marca" asp-area="Admin" asp-controller="Home" asp-action="Index">CLOUUD</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuAdmin"
+                        aria-controls="menuAdmin" aria-expanded="false" aria-label="Abrir o menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div class="collapse navbar-collapse" id="menuAdmin">
+                    <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Jogo")" asp-area="Admin" asp-controller="Jogo" asp-action="Index">Jogos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Produto")" asp-area="Admin" asp-controller="Produto" asp-action="Index">Produtos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Estoque")" asp-area="Admin" asp-controller="Estoque" asp-action="Index">Estoque</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Pedidos")" asp-area="Admin" asp-controller="Pedidos" asp-action="Index">Pedidos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Cupons")" asp-area="Admin" asp-controller="Cupons" asp-action="Index">Cupons</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Avaliacoes")" asp-area="Admin" asp-controller="Avaliacoes" asp-action="Index">Avaliações</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Plataforma")" asp-area="Admin" asp-controller="Plataforma" asp-action="Index">Plataformas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Categoria")" asp-area="Admin" asp-controller="Categoria" asp-action="Index">Categorias</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @Ativo("Usuarios")" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">Usuários</a>
+                    </li>
                     </ul>
+                    <div class="d-flex flex-wrap align-items-center gap-2 pb-2 pb-xl-0">
+                        <a href="/" class="btn btn-dark btn-sm">Ver a loja</a>
+                        <a asp-area="" asp-controller="Conta" asp-action="Logout" class="btn btn-secondary btn-sm">Sair</a>
+                    </div>
                 </div>
             </div>
         </nav>
-    </header> *@
-        <nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="Admin" asp-controller="Home" asp-action="Index">CLOUUD </a>
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Jogo" asp-action="Index">Jogos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Produto" asp-action="Index">Produtos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Estoque" asp-action="Index">Estoque</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Pedidos" asp-action="Index">Pedidos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Cupons" asp-action="Index">Cupons</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Avaliacoes" asp-action="Index">Avaliações</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Plataforma" asp-action="Index">Plataformas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Categoria" asp-action="Index">Categorias</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">Usuários</a>
-                    </li>
-                </ul>
-                <style>
-                    .navbar-brand {
-                        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-                        font-size: 30px; /* Tamanho da fonte */
-                        font-weight: bold; /* Peso da fonte (negrito) */
-                        /* Outros estilos que você desejar */
-                    }
-                    a{
-                        font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-                        font-size: 15px; /* Tamanho da fonte */
-                        font-weight: bold; /* Peso da fonte (negrito) */
-                        color: white;
-                        margin-left: 10px;
-                    }
-                </style>
-
-            </div>
-        </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-    </footer>
+    <main role="main" class="container flex-grow-1 py-3">
+        @RenderBody()
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

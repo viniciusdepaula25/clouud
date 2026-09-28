@@ -1,7 +1,7 @@
 """Lista de desejos: coração na vitrine, página da lista, promoção, esgotado, jogo fora da loja."""
 from urllib.parse import unquote
 
-from conftest import brl, enviar
+from conftest import LOJA, brl, enviar
 
 
 def card(pagina, titulo, plataforma=None):
@@ -27,10 +27,10 @@ def test_coracao_marca_o_jogo_em_todas_as_plataformas(paginas, fabrica, banco):
     pagina = paginas.logada(cliente["email"], cliente["senha"])
     assert pagina.locator("nav a", has_text="Lista de desejos").inner_text().strip() == "Lista de desejos"
 
-    pagina.goto(f"/Cliente/Home?busca={jogo['titulo']}")
+    pagina.goto(f"{LOJA}?busca={jogo['titulo']}")
     with pagina.expect_navigation():
         card(pagina, jogo["titulo"], "Steam").locator("button.desejo").click()
-    assert unquote(pagina.url).endswith(f"/Cliente/Home?busca={jogo['titulo']}")  # volta para a mesma busca
+    assert unquote(pagina.url).endswith(f"{LOJA}?busca={jogo['titulo']}")  # volta para a mesma busca
     assert coracoes(pagina, jogo["titulo"]) == ["♥", "♥"]
     assert card(pagina, jogo["titulo"]).locator("button.desejo").first.get_attribute("aria-pressed") == "true"
     assert "Lista de desejos (1)" in pagina.locator("nav a", has_text="Lista de desejos").inner_text()
@@ -77,7 +77,7 @@ def test_lista_e_por_cliente_e_admin_ve_a_procura(paginas, fabrica, banco):
     outra = paginas.logada(bia["email"], bia["senha"])
     outra.goto("/Cliente/ListaDesejos")
     assert "Sua lista está vazia" in outra.inner_text("main")
-    outra.goto(f"/Cliente/Home?busca={jogo['titulo']}")
+    outra.goto(f"{LOJA}?busca={jogo['titulo']}")
     assert coracoes(outra, jogo["titulo"]) == ["♡"]
     assert outra.request.post("/Cliente/ListaDesejos/Alternar", form={"jogoId": str(jogo["jogo_id"])}).status == 400
 

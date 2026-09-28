@@ -121,7 +121,7 @@ A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (
         │   ├── NomesSnakeCase.cs # nomes do banco em minúsculo snake_case
         │   ├── AdminInicial.cs # cria o primeiro administrador
         │   └── Migrations/     # histórico de alterações do banco
-        ├── Views/              # páginas Razor da área pública
+        ├── Views/              # páginas Razor da área pública; Shared/_Layout.cshtml é o layout único da loja (visitante e cliente)
         └── wwwroot/
             ├── css/, js/       # estilos e scripts do site
             ├── img/            # imagens fixas do layout

@@ -14,6 +14,7 @@ import re
 import subprocess
 import time
 import uuid
+from urllib.parse import urlparse
 from pathlib import Path
 
 import psycopg
@@ -32,6 +33,9 @@ PG_PORTA = os.environ.get("CLOUUD_PG_PORTA", "5432")
 PG_USUARIO = os.environ.get("CLOUUD_PG_USUARIO", "postgres")
 PG_SENHA = os.environ.get("CLOUUD_PG_SENHA", "postgres")
 BANCO = os.environ.get("CLOUUD_BANCO_TESTE", "clouud_testes")
+
+# Endereço da loja (vitrine com busca e filtros), a mesma para visitante e cliente
+LOJA = "/"
 
 # Fuso fixo para a aplicação: o painel conta "dias" no horário local, e os testes calculam do mesmo jeito no SQL
 FUSO = "America/Sao_Paulo"
@@ -297,6 +301,11 @@ def enviar(pagina, seletor: str) -> None:
 def token(pagina) -> str:
     """Token antiforgery da página atual (para mandar POSTs direto, sem o formulário)."""
     return pagina.locator("input[name=__RequestVerificationToken]").first.get_attribute("value")
+
+
+def caminho(pagina) -> str:
+    """Só o caminho da URL atual (ex.: "/" ou "/Cliente/Pedidos"), sem o endereço do servidor e sem a busca."""
+    return urlparse(pagina.url).path
 
 
 def brl(valor) -> str:

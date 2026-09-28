@@ -1,7 +1,7 @@
 """Conta do cliente: cadastro com entrada direta, login, Minha conta e foto de perfil."""
 import re
 
-from conftest import ARQUIVOS, UPLOADS, entrar, enviar, token
+from conftest import ARQUIVOS, UPLOADS, caminho, entrar, enviar, token
 
 
 def cadastrar(pagina, nome, email, senha="segredo1"):
@@ -19,7 +19,7 @@ def test_cadastro_entra_direto_e_email_repetido_e_recusado(paginas, fabrica, ban
     email = f"carla.{fabrica.sufixo()}@teste.com"
     pagina = paginas.nova()
     cadastrar(pagina, "Carla", f"  {email.upper()} ")
-    assert pagina.url.rstrip("/").endswith(("/Cliente/Home", "/Cliente")), pagina.url
+    assert caminho(pagina) == "/", pagina.url  # entra direto na loja
     assert "Conta criada. Bem-vindo(a), Carla!" in pagina.inner_text(".alert-success")
     assert "Carla" in pagina.inner_text("nav")
     perfil, senha = banco.linhas("SELECT perfil, senha FROM usuarios WHERE email = %s", email)[0]
@@ -30,11 +30,11 @@ def test_cadastro_entra_direto_e_email_repetido_e_recusado(paginas, fabrica, ban
     outra = paginas.nova()
     cadastrar(outra, "Outra", email)
     assert "Já existe uma conta com este e-mail" in outra.inner_text("main")
-    assert outra.request.get("/Cliente/Home", max_redirects=0).status == 302  # não ficou logada
+    assert outra.request.get("/Cliente/Pedidos", max_redirects=0).status == 302  # não ficou logada
 
     terceira = paginas.nova()
     entrar(terceira, email, "segredo1")
-    assert "/Cliente" in terceira.url
+    assert caminho(terceira) == "/" and "Sair" in terceira.inner_text("nav")
 
 
 def test_login_errado_e_senha_antiga_convertida_para_hash(paginas, fabrica, banco):
@@ -43,7 +43,7 @@ def test_login_errado_e_senha_antiga_convertida_para_hash(paginas, fabrica, banc
     entrar(pagina, cliente["email"], "errada")
     assert "/conta/login" in pagina.url.lower()
     entrar(pagina, cliente["email"], cliente["senha"])
-    assert "/Cliente" in pagina.url
+    assert caminho(pagina) == "/" and "Sair" in pagina.inner_text("nav")
     assert banco.valor("SELECT senha FROM usuarios WHERE id = %s", cliente["id"]) != cliente["senha"]
 
 
@@ -51,7 +51,7 @@ def test_return_url_externo_e_ignorado(paginas, fabrica):
     cliente = fabrica.cliente()
     pagina = paginas.nova()
     entrar(pagina, cliente["email"], cliente["senha"], url="/conta/login?returnUrl=https://exemplo.com/roubo")
-    assert pagina.url.startswith(paginas.url) and "/Cliente" in pagina.url
+    assert pagina.url.startswith(paginas.url) and caminho(pagina) == "/"
 
 
 def foto_do_banco(banco, usuario_id):

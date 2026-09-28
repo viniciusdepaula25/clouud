@@ -1,5 +1,7 @@
 """Vitrine pública: filtros, selos, esgotados por último e botão de compra."""
-from conftest import brl, enviar
+from urllib.parse import unquote
+
+from conftest import brl, caminho, enviar
 
 
 def criar_vitrine(fabrica):
@@ -56,8 +58,9 @@ def test_visitante_compra_pelo_login_e_volta_para_a_loja(paginas, fabrica):
     pagina.goto(f"/?busca={rpg['titulo']}")
     with pagina.expect_navigation():
         pagina.locator(".card a", has_text="Comprar").first.click()
-    assert "returnUrl=%2FCliente%2FHome" in pagina.url
+    assert "returnUrl=%2F%3Fbusca%3D" in pagina.url  # volta para a mesma busca depois do login
     pagina.fill("input[name=Email]", cliente["email"])
     pagina.fill("input[name=Senha]", cliente["senha"])
     enviar(pagina, "form input[type=submit] >> nth=-1")
-    assert pagina.url.rstrip("/").endswith(("/Cliente/Home", "/Cliente"))
+    assert caminho(pagina) == "/" and rpg["titulo"] in unquote(pagina.url)
+    assert pagina.locator(".card button", has_text="Comprar").count() == 1  # agora já compra

@@ -1,3 +1,6 @@
+/* Estilos próprios da loja, por cima do tema Bootswatch Cyborg (mytheme.css).
+   Nada de regra global em "a" ou "span": cada ajuste tem uma classe. */
+
 html {
   font-size: 14px;
 }
@@ -8,13 +11,74 @@ html {
   }
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+/* A imagem de fundo (linhas vermelhas no preto) fica parada enquanto a página rola */
+body {
+  background-attachment: fixed;
+  background-position: center top;
 }
 
-body {
-  margin-bottom: 60px;
+/* Marca "CLOUUD" na barra e no rodapé */
+.marca,
+.marca-texto {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-weight: bold;
+  letter-spacing: .5px;
+}
+
+.marca {
+  font-size: 30px;
+  line-height: 1;
+}
+
+/* Barras (loja e admin) */
+.barra-loja .nav-link,
+.barra-admin .nav-link {
+  color: rgba(255, 255, 255, .85);
+}
+
+.barra-loja .nav-link:hover,
+.barra-loja .nav-link.active,
+.barra-admin .nav-link:hover,
+.barra-admin .nav-link.active {
+  color: #fff;
+}
+
+.barra-admin .nav-link {
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  letter-spacing: .3px;
+}
+
+.foto-barra {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+@media (min-width: 992px) {
+  .busca-barra {
+    width: 240px;
+  }
+}
+
+/* No celular o menu aberto ganha um respiro entre os itens */
+@media (max-width: 991.98px) {
+  .barra-loja .navbar-collapse,
+  .barra-admin .navbar-collapse {
+    padding-top: .5rem;
+  }
+}
+
+/* Caixa escura dos formulários de login e cadastro, legível sobre o fundo */
+.painel-form {
+  background: rgba(20, 20, 20, .88);
+  border: 1px solid #333;
+  border-radius: .5rem;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.rodape {
+  background: rgba(0, 0, 0, .7);
 }
 
 /* Estrelas das avaliações (vitrine e página do jogo) */

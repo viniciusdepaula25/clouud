@@ -10,6 +10,8 @@ import threading
 import pytest
 import requests
 
+from conftest import LOJA
+
 N_CLIENTES = 8
 RODADAS = 3
 
@@ -26,13 +28,13 @@ def sessao_logada(url, cliente) -> requests.Session:
     r = s.get(url + "/conta/login")
     s.post(url + "/conta/login", data={"Email": cliente["email"], "Senha": cliente["senha"],
                                        "__RequestVerificationToken": token_de(r.text)})
-    assert "/Cliente" in s.get(url + "/Cliente/Home").url
+    assert s.get(url + "/Cliente/Pedidos").url.endswith("/Cliente/Pedidos")  # logado
     return s
 
 
 def adicionar_ao_carrinho(url, sessao, produto_id, cupom=None) -> str:
     """Põe 1 unidade no carrinho (e o cupom, se houver). Devolve o token para finalizar."""
-    h = sessao.get(url + "/Cliente/Home").text
+    h = sessao.get(url + LOJA).text
     r = sessao.post(url + "/Cliente/Carrinho/Adicionar", allow_redirects=False,
                     data={"produtoId": produto_id, "__RequestVerificationToken": token_de(h)})
     assert "/Cliente/Carrinho" in r.headers.get("Location", "")

@@ -15,7 +15,7 @@
     {
         var (quantidade, valor) = resumo.GetValueOrDefault(status);
         <div class="col-6 col-md-3">
-            <a asp-action="Index" asp-route-status="@status" class="text-decoration-none d-block h-100" style="margin-left: 0">
+            <a asp-action="Index" asp-route-status="@status" class="text-decoration-none d-block h-100">
                 <div class="card h-100 @(filtro == status ? "border-primary" : "")">
                     <div class="card-body py-2">
                         <div class="small text-muted">@status.Descricao()</div>
@@ -36,13 +36,13 @@
             <a asp-action="Index" class="ms-2">ver todos</a>
         }
     </div>
-    <form asp-action="Index" method="get" class="d-flex">
+    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-start mb-2">
         @if (filtro.HasValue)
         {
             <input type="hidden" name="status" value="@filtro" />
         }
         <input type="search" id="txtBusca" name="busca" value="@ViewData["Busca"]" placeholder="Nº do pedido, nome ou e-mail"
-               class="form-control me-sm-2" />
+               class="form-control" />
         <input type="submit" value="Buscar" class="btn btn-secondary" />
     </form>
 </div>

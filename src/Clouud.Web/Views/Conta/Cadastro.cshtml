@@ -4,55 +4,35 @@
     ViewData["Title"] = "Cadastro";
 }
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container-fluid">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">CLOUUD </a>
-        <style>
-            .navbar-brand {
-                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-                font-size: 30px; /* Tamanho da fonte */
-                font-weight: bold; /* Peso da fonte (negrito) */
-                /* Outros estilos que você desejar */
-            }
-
-            a {
-                margin-left: 15px;
-            }
-        </style>
-
-    </div>
-</nav>
-
-<hr />
-<div class="row">
-    <div class="offset-4 col-md-4 offset-4">
-
-        <h1>Cadastro</h1>
-
-        <h4>Usuario</h4>
-        <form asp-action="Cadastro">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nome" class="control-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Senha" class="control-label"></label>
-                <input asp-for="Senha" class="form-control" />
-                <span asp-validation-for="Senha" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Criar conta" class="btn btn-primary" />
-            </div>
-        </form>
-        <div>
-            <a asp-controller="Conta" asp-action="Login">Caso já tenha cadastro, voltar para o login</a>
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <div class="painel-form">
+            <h2>Criar conta</h2>
+            <p class="text-muted">Depois de criar a conta você já entra na loja.</p>
+            <form asp-action="Cadastro">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="mb-3">
+                    <label asp-for="Nome" class="form-label"></label>
+                    <input asp-for="Nome" class="form-control" autocomplete="name" />
+                    <span asp-validation-for="Nome" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Senha" class="form-label"></label>
+                    <input asp-for="Senha" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Senha" class="text-danger"></span>
+                </div>
+                <div class="text-center py-2">
+                    <input type="submit" value="Criar conta" class="btn btn-primary" />
+                </div>
+                <p class="text-center mt-3 mb-0">
+                    <a asp-controller="Conta" asp-action="Login">Já tem conta? Entrar</a>
+                </p>
+            </form>
         </div>
     </div>
 </div>

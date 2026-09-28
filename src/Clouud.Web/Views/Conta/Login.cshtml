@@ -1,53 +1,36 @@
 @model Clouud.Web.ViewModels.LoginViewModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Entrar";
 }
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger">
-    <div class="container-fluid">
-        <a class="navbar-brand" asp-controller="Home" asp-action="Index">CLOUUD </a>
-        <style>
-            .navbar-brand {
-                font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-                font-size: 30px; /* Tamanho da fonte */
-                font-weight: bold; /* Peso da fonte (negrito) */
-                /* Outros estilos que você desejar */
-            }
-
-            a {
-                margin-left: 15px;
-            }
-        </style>
-       
-    </div>
-</nav>
-<div class="row">
-    <div class="offset-4 col-md-4 offset-4">
-        <h2>Login</h2>
-        <h3>Entre com sua conta de usuário</h3>
-        <hr />
-        <form asp-action="Login">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ReturnUrl" />
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Senha" class="control-label"></label>
-                <input asp-for="Senha" class="form-control" />
-                <span asp-validation-for="Senha" class="text-danger"></span>
-            </div>
-            <div class="form-group text-center p-4">
-                <input type="submit" value="Entrar" class="btn btn-primary" />
-                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar</a>
-            </div>
-            <div class="form-group text-center p-2">
-                <a asp-action="Cadastro" class="btn-link">Não tem conta? Cadastre-se</a>
-            </div>
-        </form>
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <div class="painel-form">
+            <h2>Entrar</h2>
+            <p class="text-muted">Entre com sua conta para comprar e ver suas chaves.</p>
+            <form asp-action="Login">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="ReturnUrl" />
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div class="mb-3">
+                    <label asp-for="Senha" class="form-label"></label>
+                    <input asp-for="Senha" class="form-control" autocomplete="current-password" />
+                    <span asp-validation-for="Senha" class="text-danger"></span>
+                </div>
+                <div class="d-flex flex-wrap gap-2 justify-content-center py-2">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar</a>
+                    <input type="submit" value="Entrar" class="btn btn-primary" />
+                </div>
+                <p class="text-center mt-3 mb-0">
+                    <a asp-action="Cadastro">Não tem conta? Cadastre-se</a>
+                </p>
+            </form>
+        </div>
     </div>
 </div>
 

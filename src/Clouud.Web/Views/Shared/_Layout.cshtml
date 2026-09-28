@@ -1,45 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CLOUUD</title>
-    
+    <link rel="icon" type="image/png" href="~/img/logo.png" />
     <link rel="stylesheet" href="~/css/mytheme.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Clouud.Web.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Estilos", required: false)
 </head>
-<body>
-     <header> 
-    @* <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CLOUUD</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header> *@
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+@* Layout único da loja: visitante e cliente veem a mesma estrutura; só a barra muda conforme o login *@
+<body class="d-flex flex-column min-vh-100">
+    <header>
+        <partial name="_Navbar" />
+    </header>
 
-    <footer class="border-top footer text-muted">
+    <main role="main" class="container flex-grow-1 py-3">
+        @RenderBody()
+    </main>
+
+    <footer class="rodape border-top border-secondary py-3 mt-4">
+        <div class="container d-flex flex-wrap justify-content-between gap-2 small text-muted">
+            <span><strong class="marca-texto">CLOUUD</strong> · chaves de ativação para Steam, Epic Games, Battle.net e mais</span>
+            <span>Projeto de estudo: pagamento simulado, nenhuma cobrança real.</span>
+        </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

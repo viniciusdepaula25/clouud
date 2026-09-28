@@ -10,20 +10,8 @@
     var total = Model.Avaliacoes.Count;
 }
 
-@if (Model.Logado)
-{
-    <partial name="~/Areas/Cliente/Views/Shared/_NavbarCliente.cshtml" />
-}
-else
-{
-    <partial name="_NavbarPublica" />
-}
-
 <style>
-    .pagina-jogo a { margin-left: 0; }
     .pagina-jogo .card { background: #282828; border: 0; }
-    .estrelas { color: #f80; letter-spacing: 1px; }
-    .estrelas-vazias { color: #555; }
     .pagina-jogo .muted { color: #adafae; }
     .distribuicao .progress { height: .6rem; background: #3a3a3a; }
     .distribuicao .progress-bar { background: #2a9fd6; }
@@ -35,7 +23,7 @@ else
     .miniatura.ativa img, .miniatura:hover img, .miniatura:focus-visible img { opacity: 1; outline-color: #2a9fd6; }
 </style>
 
-<div class="container pagina-jogo mt-3 mb-5">
+<div class="pagina-jogo mb-4">
     @if (TempData["Mensagem"] is string mensagem)
     {
         <div class="alert alert-success">@mensagem</div>

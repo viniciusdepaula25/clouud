@@ -1,9 +1,9 @@
 """Compra: carrinho, pedido, pagamento simulado, entrega das chaves, cancelamento, prazo, reembolso."""
-from conftest import brl, enviar, token
+from conftest import LOJA, brl, enviar, token
 
 
 def comprar_pela_vitrine(pagina, titulo):
-    pagina.goto(f"/Cliente/Home?busca={titulo}")
+    pagina.goto(f"{LOJA}?busca={titulo}")
     with pagina.expect_navigation():
         pagina.locator(".card", has=pagina.locator(".card-header", has_text=titulo)).locator("button", has_text="Comprar").click()
 
@@ -65,10 +65,10 @@ def test_esgotado_nao_entra_no_carrinho(paginas, fabrica):
     jogo = fabrica.jogo(chaves=0)
     cliente = fabrica.cliente()
     pagina = paginas.logada(cliente["email"], cliente["senha"])
-    pagina.goto(f"/Cliente/Home?busca={jogo['titulo']}")
+    pagina.goto(f"{LOJA}?busca={jogo['titulo']}")
     assert pagina.locator(".card button[disabled]", has_text="Esgotado").count() == 1
     resposta = pagina.request.post("/Cliente/Carrinho/Adicionar", form={
-        "produtoId": str(jogo["produto_id"]), "voltarPara": "/Cliente/Home", "__RequestVerificationToken": token(pagina)})
+        "produtoId": str(jogo["produto_id"]), "voltarPara": LOJA, "__RequestVerificationToken": token(pagina)})
     assert "esgotado" in resposta.text().lower()
 
 

@@ -74,7 +74,7 @@ namespace Clouud.Web.Controllers
                 // Já entra com a conta nova: não precisa fazer login logo depois de se cadastrar
                 await autenticacao.EntrarAsync(usuario);
                 TempData["Mensagem"] = $"Conta criada. Bem-vindo(a), {usuario.Name}!";
-                return RedirectToAction("Index", "Home", new { area = "Cliente" });
+                return RedirectToAction("Index", "Home", new { area = "" });
             }
 
             return View(conta);
@@ -116,7 +116,7 @@ namespace Clouud.Web.Controllers
                     }
 
                     return usuario.Perfil == PerfilUsuario.Cliente
-                        ? RedirectToAction("Index", "Home", new { area = "Cliente" })
+                        ? RedirectToAction("Index", "Home", new { area = "" })
                         : RedirectToAction("Index", "Home", new { area = "Admin" });
                 }
                 else
