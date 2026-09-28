@@ -251,12 +251,19 @@ namespace Clouud.Web.Controllers
         /// <summary>O endereço da página tem o código do link: não manda para outros sites (cabeçalho Referer).</summary>
         private void NaoRepassarEndereco() => Response.Headers["Referrer-Policy"] = "no-referrer";
 
-        [HttpGet]
-        public async Task<IActionResult> Logout()
+        /// <summary>
+        /// Sair é sempre por POST (com token antiforgery): um link ou imagem em outro site não consegue
+        /// deslogar ninguém. O GET, de links antigos, só mostra o botão.
+        /// </summary>
+        [HttpGet("/conta/logout")]
+        public IActionResult Logout() => User.Identity?.IsAuthenticated == true ? View() : Redirect("/");
+
+        [HttpPost("/conta/logout")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogoutConfirmar()
         {
-            //desabilita a autenticacao do usuario
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Index", "Home");
+            await autenticacao.SairAsync();
+            return Redirect("/");
         }
 
         [HttpGet]

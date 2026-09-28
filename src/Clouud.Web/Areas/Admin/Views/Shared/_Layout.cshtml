@@ -56,7 +56,9 @@
                     </ul>
                     <div class="d-flex flex-wrap align-items-center gap-2 pb-2 pb-xl-0">
                         <a href="/" class="btn btn-dark btn-sm">Ver a loja</a>
-                        <a asp-area="" asp-controller="Conta" asp-action="Logout" class="btn btn-secondary btn-sm">Sair</a>
+                        <form method="post" action="/conta/logout" asp-antiforgery="true" class="m-0">
+                            <button type="submit" class="btn btn-secondary btn-sm" id="botaoSair">Sair</button>
+                        </form>
                     </div>
                 </div>
             </div>

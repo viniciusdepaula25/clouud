@@ -45,6 +45,17 @@ namespace Clouud.Web.Models
         [Display(Name = "Receber avisos da lista de desejos")]
         public bool ReceberAvisos { get; set; } = true;
 
+        /// <summary>
+        /// "Selo de segurança": valor aleatório gravado também no cookie de login. Trocar o selo (nova senha,
+        /// novo e-mail, mudança de perfil, "sair de todos os aparelhos") derruba todas as sessões abertas.
+        /// </summary>
+        [StringLength(32)]
+        public string SeloSeguranca { get; set; } = NovoSelo();
+
+        public static string NovoSelo() => Guid.NewGuid().ToString("N");
+
+        public void TrocarSelo() => SeloSeguranca = NovoSelo();
+
         /// <summary>Senhas erradas seguidas (volta a zero no login certo ou quando a conta é bloqueada).</summary>
         public int FalhasLogin { get; set; }
 

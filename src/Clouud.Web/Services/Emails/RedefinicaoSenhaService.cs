@@ -78,6 +78,7 @@ namespace Clouud.Web.Services.Emails
             var usuario = pedido.Usuario;
             usuario.Senha = senhas.GerarHash(usuario, novaSenha);
             ProtecaoLogin.Liberar(usuario); // quem provou ser dono do e-mail pode entrar de novo
+            usuario.TrocarSelo();           // e quem estava com a conta aberta em outro aparelho sai
 
             var agora = DateTime.UtcNow;
             foreach (var aberto in bancoDados.RedefinicoesSenha.Where(r => r.UsuarioId == usuario.ID && r.UsadaEm == null))

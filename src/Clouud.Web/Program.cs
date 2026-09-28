@@ -2,6 +2,7 @@ using System.Globalization;
 using Clouud.Web.Data;
 using Clouud.Web.Infraestrutura;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
 using Clouud.Web.Services.Emails;
@@ -15,8 +16,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
+{
     // Campos de valor aceitam "59,90" e "59.90" (ver Infraestrutura/Dinheiro.cs)
-    options.ModelBinderProviders.Insert(0, new ModeloDecimalBrasileiroProvider()));
+    options.ModelBinderProviders.Insert(0, new ModeloDecimalBrasileiroProvider());
+    // Todo POST exige o token antiforgery, mesmo se alguém esquecer o [ValidateAntiForgeryToken]
+    options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+});
+builder.Services.AddAntiforgery(options =>
+{
+    options.Cookie.Name = "clouud.antiforgery";
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+});
 
 // Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers.
 // A senha não fica no appsettings: vem de "Banco:Senha" (variável de ambiente Banco__Senha ou user-secrets)
@@ -66,8 +76,17 @@ builder.Services
     .AddCookie(options =>
     {
         options.LoginPath = "/conta/login";
-        options.LogoutPath = "/";
+        options.LogoutPath = "/conta/logout";
         options.AccessDeniedPath = "/Conta/AcessoNegado";
+        options.Cookie.Name = "clouud.sessao";
+        options.Cookie.HttpOnly = true;                 // JavaScript não lê o cookie (protege contra XSS)
+        options.Cookie.SameSite = SameSiteMode.Lax;     // não vai em POSTs vindos de outros sites
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // em HTTPS, só trafega por HTTPS
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.SlidingExpiration = true;
+        // Cada requisição confere o selo de segurança do usuário: nova senha, novo perfil ou conta
+        // excluída derrubam as sessões abertas em outros aparelhos
+        options.Events.OnValidatePrincipal = AutenticacaoService.ValidarSessaoAsync;
     });
 
 // Adiciona o serviço de envio de arquivos

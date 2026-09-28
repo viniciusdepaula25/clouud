@@ -97,6 +97,11 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             {
                 usuario.Senha = senhas.GerarHash(usuario, conta.NovaSenha!);
             }
+            if (trocouSenha || trocouEmail)
+            {
+                // Derruba as sessões abertas em outros aparelhos (esta continua: o cookie é refeito abaixo)
+                usuario.TrocarSelo();
+            }
             if (trocouEmail)
             {
                 // E-mail novo precisa ser confirmado de novo
@@ -112,6 +117,23 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             TempData["Mensagem"] = trocouEmail
                 ? $"Seus dados foram atualizados. Enviamos um link para {usuario.Email} confirmar o novo e-mail."
                 : "Seus dados foram atualizados.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>Encerra a sessão em todos os aparelhos (menos neste), trocando o selo de segurança.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SairDeTodos()
+        {
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == UsuarioLogadoId());
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+            usuario.TrocarSelo();
+            bancoDados.SaveChanges();
+            await autenticacao.EntrarAsync(usuario);
+            TempData["Mensagem"] = "Pronto: sua conta foi desconectada dos outros aparelhos.";
             return RedirectToAction(nameof(Index));
         }
 

@@ -66,6 +66,8 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2), com pelo menos 8 car
 
 **Proteção do login:** depois de 5 senhas erradas seguidas a conta fica 15 minutos sem poder entrar (o "Esqueci minha senha" libera antes), e cada IP pode tentar no máximo 10 logins por minuto. Cadastro, "esqueci minha senha" e reenvio de confirmação também têm limite por IP (10 a cada 15 minutos), e aplicar cupom e finalizar a compra, por cliente (30 por minuto). Passou do limite, aparece a página "Muitas tentativas" (HTTP 429). Os números ficam em `Seguranca` no `appsettings.json`.
 
+**Sessão:** o cookie de login é `HttpOnly` e `SameSite=Lax` e expira após 30 minutos sem uso. Cada conta tem um "selo de segurança" gravado também no cookie; trocar a senha, o e-mail ou o perfil (inclusive pelo admin) troca o selo e derruba as sessões abertas em outros aparelhos, e em **Minha conta** há "Sair de todos os outros aparelhos". Sair da conta é só por POST, e todo POST exige o token antiforgery.
+
 ## Catálogo
 
 Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e de cupom dá para digitar com vírgula ou ponto: `59,90`, `59.90`, `1.234,50` e `R$ 1.234,50` valem; um ponto seguido de três dígitos é milhar (`1.500` = mil e quinhentos). A regra fica em `Infraestrutura/Dinheiro.cs` e vale no navegador e no servidor.

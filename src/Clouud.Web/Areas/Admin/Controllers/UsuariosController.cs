@@ -136,13 +136,26 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return View(form);
             }
 
+            var trocouEmail = email != usuario.Email;
+            var trocouPerfil = form.Perfil != usuario.Perfil;
+            var trocouSenha = !string.IsNullOrWhiteSpace(form.Senha);
+
             usuario.Name = form.Nome.Trim();
             usuario.Email = email;
             usuario.Perfil = form.Perfil;
-            if (!string.IsNullOrWhiteSpace(form.Senha))
+            if (trocouSenha)
             {
-                usuario.Senha = senhas.GerarHash(usuario, form.Senha); // senha nova: gera o hash
+                usuario.Senha = senhas.GerarHash(usuario, form.Senha!); // senha nova: gera o hash
                 ProtecaoLogin.Liberar(usuario);
+            }
+            if (trocouEmail)
+            {
+                usuario.EmailConfirmadoEm = null; // o novo endereço ainda não foi confirmado pelo dono
+            }
+            if (trocouEmail || trocouPerfil || trocouSenha)
+            {
+                // As sessões abertas desse usuário caem: ele entra de novo com o perfil e a senha novos
+                usuario.TrocarSelo();
             }
 
             bancoDados.SaveChanges();
