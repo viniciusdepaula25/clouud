@@ -65,6 +65,10 @@ Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e d
 
 No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço → importar as chaves de cada produto em **Estoque** (colando uma por linha). Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
 
+## Loja
+
+A loja fica em `/loja`, a mesma para visitante e cliente: busca pelo nome, filtros de plataforma, categoria, faixa de preço (sobre o preço de agora, já com a promoção) e "só promoções", e ordenação por destaques, menor ou maior preço, lançamentos (data de lançamento) ou mais vendidos (unidades em pedidos pagos). Mostra 24 produtos por página; os esgotados ficam sempre no fim. Tudo vai na URL (ex.: `/loja?categoria=rpg&ordem=menor-preco&pagina=2`), então dá para compartilhar uma busca.
+
 ## Compra
 
 1. O cliente clica em **Comprar** na vitrine e o produto vai para o **carrinho** (até 10 unidades por produto, limitado ao estoque).

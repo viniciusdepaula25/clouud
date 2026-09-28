@@ -15,47 +15,77 @@ namespace Clouud.Web.Services
             this.bancoDados = bancoDados;
         }
 
-        public VitrineViewModel MontarVitrine(string? busca, string? plataforma, string? categoria, bool somentePromocoes)
+        /// <summary>Produtos à venda: ativos, de jogos ativos, em plataformas ativas.</summary>
+        private IQueryable<Produto> AVenda() =>
+            bancoDados.Produtos.Where(p => p.Ativo && p.Jogo.Ativo && p.Plataforma.Ativa);
+
+        public VitrineViewModel MontarVitrine(FiltroVitrine filtro)
         {
             var hoje = DateOnly.FromDateTime(DateTime.Now);
+            var consulta = AVenda();
 
-            // Só produtos ativos, de jogos ativos, em plataformas ativas
-            var consulta = bancoDados.Produtos
-                .Where(p => p.Ativo && p.Jogo.Ativo && p.Plataforma.Ativa);
-
-            if (!string.IsNullOrWhiteSpace(busca))
+            if (!string.IsNullOrWhiteSpace(filtro.Busca))
             {
-                consulta = consulta.Where(p => EF.Functions.ILike(p.Jogo.Titulo, $"%{busca.Trim()}%"));
+                consulta = consulta.Where(p => EF.Functions.ILike(p.Jogo.Titulo, $"%{filtro.Busca.Trim()}%"));
             }
-            if (!string.IsNullOrWhiteSpace(plataforma))
+            if (!string.IsNullOrWhiteSpace(filtro.Plataforma))
             {
-                consulta = consulta.Where(p => p.Plataforma.Slug == plataforma);
+                consulta = consulta.Where(p => p.Plataforma.Slug == filtro.Plataforma);
             }
-            if (!string.IsNullOrWhiteSpace(categoria))
+            if (!string.IsNullOrWhiteSpace(filtro.Categoria))
             {
-                consulta = consulta.Where(p => p.Jogo.Categorias.Any(c => c.Slug == categoria));
+                consulta = consulta.Where(p => p.Jogo.Categorias.Any(c => c.Slug == filtro.Categoria));
             }
-            if (somentePromocoes)
+            if (filtro.Promocoes)
             {
                 consulta = consulta.Where(p => p.PrecoPromocional != null && p.PrecoPromocional < p.Preco
                                                && (p.PromocaoAte == null || p.PromocaoAte >= hoje));
             }
 
-            // Esgotados vão para o fim da lista
-            var produtos = Projetar(consulta
-                .OrderByDescending(p => p.Chaves.Any(c => c.Status == StatusChave.Disponivel))
-                .ThenByDescending(p => p.Jogo.Destaque)
-                .ThenBy(p => p.Jogo.Titulo)
-                .ThenBy(p => p.Plataforma.Nome), hoje)
-                .ToList();
+            // Faixa de preço sobre o preço de agora (com a promoção); "de 100 até 50" é lido como "de 50 até 100"
+            if (filtro.PrecoMin.HasValue && filtro.PrecoMax.HasValue && filtro.PrecoMin > filtro.PrecoMax)
+            {
+                (filtro.PrecoMin, filtro.PrecoMax) = (filtro.PrecoMax, filtro.PrecoMin);
+            }
+            var produtos = Projetar(consulta, hoje);
+            if (filtro.PrecoMin.HasValue)
+            {
+                var minimo = filtro.PrecoMin.Value;
+                produtos = produtos.Where(p => p.PrecoAtual >= minimo);
+            }
+            if (filtro.PrecoMax.HasValue)
+            {
+                var maximo = filtro.PrecoMax.Value;
+                produtos = produtos.Where(p => p.PrecoAtual <= maximo);
+            }
+
+            // Esgotados sempre no fim; dentro de cada grupo, a ordem escolhida
+            var comEstoquePrimeiro = produtos.OrderByDescending(p => p.Disponiveis > 0);
+            var ordenados = filtro.OrdemEfetiva switch
+            {
+                "menor-preco" => comEstoquePrimeiro.ThenBy(p => p.PrecoAtual).ThenBy(p => p.Titulo),
+                "maior-preco" => comEstoquePrimeiro.ThenByDescending(p => p.PrecoAtual).ThenBy(p => p.Titulo),
+                "lancamentos" => comEstoquePrimeiro.ThenByDescending(p => p.DataLancamento.HasValue)
+                                                   .ThenByDescending(p => p.DataLancamento).ThenBy(p => p.Titulo),
+                "mais-vendidos" => comEstoquePrimeiro.ThenByDescending(p => p.Vendidos).ThenBy(p => p.Titulo),
+                _ => comEstoquePrimeiro.ThenByDescending(p => p.Destaque).ThenBy(p => p.Titulo),
+            };
+
+            var total = ordenados.Count();
+            var totalPaginas = Math.Max(1, (int)Math.Ceiling(total / (double)FiltroVitrine.TamanhoPagina));
+            var pagina = Math.Clamp(filtro.Pagina, 1, totalPaginas);
+            filtro.Pagina = pagina;
 
             return new VitrineViewModel
             {
-                Busca = busca,
-                Plataforma = plataforma,
-                Categoria = categoria,
-                SomentePromocoes = somentePromocoes,
-                Produtos = produtos,
+                Filtro = filtro,
+                TotalProdutos = total,
+                Pagina = pagina,
+                Produtos = ordenados
+                    .ThenBy(p => p.Plataforma).ThenBy(p => p.ProdutoId)
+                    .Skip((pagina - 1) * FiltroVitrine.TamanhoPagina)
+                    .Take(FiltroVitrine.TamanhoPagina)
+                    .ToList(),
                 Plataformas = bancoDados.Plataformas
                     .Where(p => p.Ativa && p.Produtos.Any(x => x.Ativo))
                     .OrderBy(p => p.Nome).ToList(),
@@ -151,7 +181,7 @@ namespace Clouud.Web.Services
             bancoDados.PedidoItens.Any(i => i.Pedido.UsuarioId == usuarioId && i.Pedido.Status == StatusPedido.Pago
                                             && i.Produto.JogoId == jogoId);
 
-        private static IQueryable<ProdutoVitrineViewModel> Projetar(IQueryable<Produto> consulta, DateOnly hoje)
+        private IQueryable<ProdutoVitrineViewModel> Projetar(IQueryable<Produto> consulta, DateOnly hoje)
         {
             return consulta
                 .Select(p => new ProdutoVitrineViewModel
@@ -165,6 +195,11 @@ namespace Clouud.Web.Services
                     Edicao = p.Edicao,
                     Categorias = p.Jogo.Categorias.OrderBy(c => c.Nome).Select(c => c.Nome).ToList(),
                     Desenvolvedora = p.Jogo.Desenvolvedora != null ? p.Jogo.Desenvolvedora.Nome : null,
+                    DataLancamento = p.Jogo.DataLancamento,
+                    Destaque = p.Jogo.Destaque,
+                    Vendidos = bancoDados.PedidoItens
+                        .Where(i => i.ProdutoId == p.Id && i.Pedido.Status == StatusPedido.Pago)
+                        .Sum(i => (int?)i.Quantidade) ?? 0,
                     Preco = p.Preco,
                     PrecoAtual = p.PrecoPromocional != null && p.PrecoPromocional < p.Preco
                                  && (p.PromocaoAte == null || p.PromocaoAte >= hoje)

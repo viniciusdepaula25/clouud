@@ -1,5 +1,5 @@
 """Admin > Estoque: importar chaves, duplicadas, inativar, reativar, excluir e o que não pode ser mexido."""
-from conftest import enviar, token
+from conftest import LOJA, enviar, token
 
 
 def importar(admin, produto_id, texto):
@@ -93,5 +93,5 @@ def test_vitrine_mostra_esgotado_e_estoque_no_admin(paginas, fabrica):
     assert "Esgotado" in admin.inner_text("tbody")
     importar(admin, jogo["produto_id"], f"K-{fabrica.sufixo()}")
     vitrine = paginas.nova()
-    vitrine.goto(f"/?busca={jogo['titulo']}")
+    vitrine.goto(f"{LOJA}?busca={jogo['titulo']}")
     assert vitrine.locator(".card a", has_text="Comprar").count() == 1

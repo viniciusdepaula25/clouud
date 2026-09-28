@@ -35,7 +35,7 @@ PG_SENHA = os.environ.get("CLOUUD_PG_SENHA", "postgres")
 BANCO = os.environ.get("CLOUUD_BANCO_TESTE", "clouud_testes")
 
 # Endereço da loja (vitrine com busca e filtros), a mesma para visitante e cliente
-LOJA = "/"
+LOJA = "/loja"
 
 # Fuso fixo para a aplicação: o painel conta "dias" no horário local, e os testes calculam do mesmo jeito no SQL
 FUSO = "America/Sao_Paulo"

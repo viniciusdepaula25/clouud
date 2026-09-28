@@ -21,15 +21,18 @@ namespace Clouud.Web.Controllers
             this.desejos = desejos;
         }
 
-        public IActionResult Index(string? busca, string? plataforma, string? categoria, bool promocoes = false)
+        public IActionResult Index(FiltroVitrine filtro) => Loja(filtro);
+
+        /// <summary>Loja completa: busca, filtros, ordenação e páginas. A mesma para visitante e cliente.</summary>
+        [HttpGet("loja")]
+        public IActionResult Loja(FiltroVitrine filtro)
         {
-            // produtos à venda, com os filtros de busca, plataforma, categoria e promoção
-            var vitrine = catalogo.MontarVitrine(busca, plataforma, categoria, promocoes);
+            var vitrine = catalogo.MontarVitrine(filtro);
             if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
             {
                 vitrine.JogosDesejados = desejos.JogosDoUsuario(usuarioId);
             }
-            return View(vitrine);
+            return View("Loja", vitrine);
         }
 
         public IActionResult Privacy()

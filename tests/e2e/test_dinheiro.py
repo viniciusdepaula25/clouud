@@ -1,7 +1,7 @@
 """Dinheiro no padrão brasileiro: exibição "R$ 1.234,50" e campos que aceitam vírgula ou ponto."""
 import pytest
 
-from conftest import brl, enviar
+from conftest import LOJA, brl, enviar
 
 
 @pytest.mark.parametrize("digitado, esperado", [
@@ -48,7 +48,7 @@ def test_exibicao_e_formulario_de_alteracao(paginas, fabrica):
     jogo = fabrica.jogo(preco=1234.5, promocional=999.9, chaves=1)
     assert brl(1234.5) == "R$ 1.234,50"
     vitrine = paginas.nova()
-    vitrine.goto(f"/?busca={jogo['titulo']}")
+    vitrine.goto(f"{LOJA}?busca={jogo['titulo']}")
     card = vitrine.locator(".card", has_text=jogo["titulo"]).first.inner_text()
     assert "R$ 1.234,50" in card and "R$ 999,90" in card
 

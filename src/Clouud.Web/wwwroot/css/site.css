@@ -81,6 +81,27 @@ body {
   background: rgba(0, 0, 0, .7);
 }
 
+/* Cards de produto (loja e página inicial) */
+.capa-card {
+  height: 200px;
+  object-fit: cover;
+}
+
+@media (max-width: 575.98px) {
+  .capa-card {
+    height: 130px;
+  }
+
+  .card-produto .card-header {
+    font-size: 1rem;
+  }
+
+  .card-produto .card-body,
+  .card-produto .list-group-item {
+    padding: .5rem;
+  }
+}
+
 /* Estrelas das avaliações (vitrine e página do jogo) */
 .estrelas { color: #f80; letter-spacing: 1px; }
 .estrelas-vazias { color: #555; }

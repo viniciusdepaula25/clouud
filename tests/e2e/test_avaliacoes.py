@@ -24,7 +24,7 @@ def avaliar(pagina, nota, comentario=None, botao="Enviar avaliação"):
 def test_pagina_do_jogo_para_visitante(paginas, fabrica, banco, cenario):
     jogo, url = cenario
     pagina = paginas.nova()
-    pagina.goto(f"/?busca={jogo['titulo']}")
+    pagina.goto(f"{LOJA}?busca={jogo['titulo']}")
     link = pagina.locator(".card-header a", has_text=jogo["titulo"])
     assert link.get_attribute("href") == url
     enviar(pagina, f".card-header a:has-text('{jogo['titulo']}')")

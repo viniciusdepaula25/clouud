@@ -1,5 +1,5 @@
 """Admin: categorias, plataformas, jogos (com capa) e produtos (com promoção)."""
-from conftest import ARQUIVOS, brl, enviar
+from conftest import ARQUIVOS, LOJA, brl, enviar
 
 
 def test_categorias_incluir_renomear_duplicada_e_excluir(paginas, fabrica):
@@ -107,7 +107,7 @@ def test_jogo_com_capa_categorias_e_produto_com_promocao(paginas, fabrica, banco
 
     # vitrine: selo de desconto e preço promocional
     vitrine = paginas.nova()
-    vitrine.goto(f"/?busca={titulo}")
+    vitrine.goto(f"{LOJA}?busca={titulo}")
     card = vitrine.locator(".card").first
     assert "-50%" in card.inner_text() and brl(30) in card.inner_text()
 

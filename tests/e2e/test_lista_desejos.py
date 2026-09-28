@@ -16,7 +16,7 @@ def coracoes(pagina, titulo):
 def test_visitante_e_levado_ao_login(paginas, fabrica):
     jogo = fabrica.jogo(chaves=1)
     pagina = paginas.nova()
-    pagina.goto(f"/?busca={jogo['titulo']}")
+    pagina.goto(f"{LOJA}?busca={jogo['titulo']}")
     assert card(pagina, jogo["titulo"]).locator("a[aria-label='Entre para usar a lista de desejos']").count() == 1
 
 

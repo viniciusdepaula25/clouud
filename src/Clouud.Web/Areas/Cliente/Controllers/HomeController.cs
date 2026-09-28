@@ -9,6 +9,6 @@ namespace Clouud.Web.Areas.Cliente.Controllers
     [Area("Cliente")]
     public class HomeController : Controller
     {
-        public IActionResult Index() => Redirect("/" + Request.QueryString);
+        public IActionResult Index() => Redirect("/loja" + Request.QueryString);
     }
 }

@@ -1,0 +1,78 @@
+@model Clouud.Web.ViewModels.CardProdutoViewModel
+@* Card de um produto (jogo + plataforma + edição), usado na loja e nas prateleiras da página inicial *@
+@{
+    var item = Model.Produto;
+}
+<div class="card card-produto h-100 text-center">
+    <h5 class="card-header text-truncate" title="@item.Titulo"><a href="/jogo/@item.Slug" class="text-reset text-decoration-none">@item.Titulo</a></h5>
+    <div class="card-body flex-grow-0">
+        <h6 class="card-title mb-1">@item.Plataforma @(item.Edicao != "Standard" ? $"· {item.Edicao}" : "")</h6>
+        <small class="card-subtitle text-muted">@string.Join(", ", item.Categorias)</small>
+        @if (item.MediaAvaliacoes.HasValue)
+        {
+            <div class="small mt-1">
+                <partial name="_Estrelas" model="item.MediaAvaliacoes.Value" />
+                <span class="text-muted">@item.MediaAvaliacoes.Value.ToString("0.0") (@item.TotalAvaliacoes)</span>
+            </div>
+        }
+    </div>
+    <div class="position-relative">
+        <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content($"~/uploads/{item.Capa}"))"
+             class="card-img-top capa-card" alt="@item.Titulo" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'">
+        @if (item.EmPromocao)
+        {
+            <span class="badge bg-danger position-absolute top-0 start-0 m-2 fs-6">-@item.PercentualDesconto%</span>
+        }
+        @if (item.Esgotado)
+        {
+            <span class="badge bg-dark position-absolute top-0 end-0 m-2 fs-6">Esgotado</span>
+        }
+    </div>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">@(item.Desenvolvedora ?? "—")</li>
+        <li class="list-group-item">
+            @if (item.EmPromocao)
+            {
+                <s class="text-muted me-1">@item.Preco.ToString("C")</s>
+            }
+            <strong>@item.PrecoAtual.ToString("C")</strong>
+        </li>
+    </ul>
+    <div class="card-body flex-grow-0 mt-auto d-flex justify-content-center align-items-center gap-2">
+        @if (item.Esgotado)
+        {
+            <button class="button-24 btn btn-outline-secondary" type="button" disabled>Esgotado</button>
+        }
+        else if (Model.ModoCarrinho)
+        {
+            <form asp-area="Cliente" asp-controller="Carrinho" asp-action="Adicionar" method="post">
+                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                <input type="hidden" name="voltarPara" value="@Model.VoltarPara" />
+                <button class="button-24 btn btn-outline-danger" type="submit">Comprar</button>
+            </form>
+        }
+        else
+        {
+            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@Model.VoltarPara"
+               class="button-24 btn btn-outline-danger" role="button">Comprar</a>
+        }
+        @* Coração: põe ou tira o jogo da lista de desejos *@
+        @if (Model.ModoCarrinho)
+        {
+            <form asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Alternar" method="post" class="m-0">
+                <input type="hidden" name="jogoId" value="@item.JogoId" />
+                <input type="hidden" name="voltarPara" value="@Model.VoltarPara" />
+                <button type="submit" class="btn btn-link text-danger fs-4 p-0 text-decoration-none desejo"
+                        title="@(Model.Desejado ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
+                        aria-label="@(Model.Desejado ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
+                        aria-pressed="@(Model.Desejado ? "true" : "false")">@(Model.Desejado ? "♥" : "♡")</button>
+            </form>
+        }
+        else
+        {
+            <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@Model.VoltarPara"
+               class="text-danger fs-4 text-decoration-none"
+               title="Entre para usar a lista de desejos" aria-label="Entre para usar a lista de desejos">♡</a>
+        }
+    </div>
+</div>

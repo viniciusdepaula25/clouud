@@ -12,7 +12,7 @@
 @if (Model.Count == 0)
 {
     <p>Sua lista está vazia. Na loja, clique no <span class="text-danger">♡</span> de um jogo para acompanhá-lo aqui.</p>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Ver jogos</a>
+    <a href="/loja" class="btn btn-secondary">Ver jogos</a>
 }
 @foreach (var desejo in Model)
 {
