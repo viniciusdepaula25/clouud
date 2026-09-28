@@ -1,0 +1,35 @@
+@model Clouud.Web.Models.Usuario?
+@{
+    ViewData["Title"] = "Avisos da lista de desejos";
+    var parou = ViewData["Parou"] as bool? == true;
+}
+
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <div class="painel-form text-center" id="pararAvisos">
+            @if (Model == null)
+            {
+                <h2>Link inválido</h2>
+                <p>Não encontramos a conta deste link. Você pode desligar os avisos em <strong>Minha conta</strong>.</p>
+                <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" class="btn btn-primary">Minha conta</a>
+            }
+            else if (parou)
+            {
+                <h2>Pronto</h2>
+                <p><strong class="text-white">@Model.Email</strong> não vai mais receber os avisos da lista de desejos.
+                    Os e-mails de pedidos e de senha continuam. Para voltar a receber, marque a opção em <strong>Minha conta</strong>.</p>
+                <a href="/" class="btn btn-secondary">Ir para a loja</a>
+            }
+            else
+            {
+                <h2>Parar de receber avisos?</h2>
+                <p>Os avisos de promoção e de volta ao estoque dos jogos da sua lista de desejos deixam de ir para
+                    <strong class="text-white">@Model.Email</strong>.</p>
+                <form method="post" action="/conta/parar-avisos" asp-antiforgery="true">
+                    <input type="hidden" name="codigo" value="@ViewData["Codigo"]" />
+                    <input type="submit" value="Parar de receber" class="btn btn-danger" />
+                </form>
+            }
+        </div>
+    </div>
+</div>

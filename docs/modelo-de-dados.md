@@ -87,6 +87,8 @@ erDiagram
     usuarios ||--o{ avaliacoes : escreve
     jogos ||--o{ avaliacoes : recebe
     jogos ||--o{ jogo_imagens : galeria
+    usuarios |o--o{ emails : recebe
+    usuarios ||--o{ redefinicoes_senha : pede
 
     usuarios {
         int id PK
@@ -95,6 +97,27 @@ erDiagram
         string senha "hash"
         int perfil "0 = Cliente, 1 = Admin"
         string foto
+        datetime email_confirmado_em
+        bool receber_avisos
+    }
+    emails {
+        int id PK
+        int usuario_id FK
+        string para
+        string assunto
+        string tipo "BoasVindas | ConfirmarEmail | RedefinirSenha | SenhaAlterada | PedidoPago | ListaDesejos"
+        string html "apagado depois do envio"
+        datetime criado_em
+        datetime enviado_em
+        int tentativas
+        string ultimo_erro
+    }
+    redefinicoes_senha {
+        int id PK
+        int usuario_id FK
+        string token_hash UK "SHA-256 do código do link"
+        datetime expira_em
+        datetime usada_em
     }
     plataformas {
         int id PK
@@ -157,6 +180,9 @@ erDiagram
         int usuario_id PK,FK
         int jogo_id PK,FK
         datetime adicionado_em
+        datetime aviso_conferido_em
+        bool aviso_disponivel "situação na última conferência"
+        numeric aviso_preco_promocao
     }
     pedidos {
         int id PK
@@ -234,6 +260,8 @@ erDiagram
 | **pagamentos** | Tentativas de pagamento do pedido (simulado no início) | FK para o pedido |
 | **jogo_imagens** | Galeria de telas do jogo, na ordem escolhida pelo admin | Apagar o jogo apaga a galeria |
 | **avaliacoes** | Nota e comentário de quem comprou o jogo | Uma por cliente e jogo (pode ser editada); nota de 1 a 5 |
+| **emails** | Fila e registro dos e-mails automáticos | Apagar o usuário mantém o registro (sem o vínculo); o conteúdo é apagado depois do envio |
+| **redefinicoes_senha** | Pedidos de "esqueci minha senha" | Só o hash do código; vale 1 hora e uma vez; apagar o usuário apaga os pedidos |
 | **cupons** | Cupons de desconto (% ou valor fixo), com pedido mínimo, validade e limites de uso | Código único e em maiúsculas; % até 100; no pedido, `total = subtotal - desconto` e o desconto nunca passa do subtotal |
 
 ### Decisões importantes
@@ -280,5 +308,7 @@ Depois das quatro etapas:
 - ✅ **Cupons de desconto** (migration `Cupons`): tabela `cupons`; pedidos ganham `subtotal`, `desconto` e `cupom_id` (os antigos ficam com desconto zero). O uso do cupom é conferido com a linha do cupom travada, então compras simultâneas não passam do limite. Pedidos cancelados ou reembolsados devolvem o uso.
 - ✅ **Página do jogo e avaliações** (migration `Avaliacoes`): página pública `/jogo/{slug}` e tabela `avaliacoes`. Só avalia quem tem um pedido pago com o jogo; a média aparece na vitrine.
 - ✅ **Galeria de imagens** (migration `Galeria`): tabela `jogo_imagens`; o admin envia até 12 imagens por jogo e elas aparecem na página do jogo.
+
+- ✅ **E-mails** (migrations `Emails`, `RedefinicaoSenha` e `AvisosListaDesejos`): fila `emails`, confirmação do e-mail no cadastro (`usuarios.email_confirmado_em`), "esqueci minha senha" (`redefinicoes_senha`), e-mail do pedido pago com as chaves e avisos da lista de desejos (`usuarios.receber_avisos` e a situação guardada em `lista_desejos`).
 
 Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.

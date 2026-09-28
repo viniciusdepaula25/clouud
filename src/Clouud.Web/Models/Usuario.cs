@@ -41,6 +41,10 @@ namespace Clouud.Web.Models
         [Display(Name = "E-mail confirmado em")]
         public DateTime? EmailConfirmadoEm { get; set; }
 
+        /// <summary>Quer receber por e-mail os avisos da lista de desejos (promoção e volta ao estoque)?</summary>
+        [Display(Name = "Receber avisos da lista de desejos")]
+        public bool ReceberAvisos { get; set; } = true;
+
         [ValidateNever]
         public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 

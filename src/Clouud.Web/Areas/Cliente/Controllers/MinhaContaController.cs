@@ -43,7 +43,8 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 Nome = usuario.Name,
                 Email = usuario.Email,
                 Foto = usuario.Foto,
-                EmailConfirmado = usuario.EmailConfirmadoEm != null
+                EmailConfirmado = usuario.EmailConfirmadoEm != null,
+                ReceberAvisos = usuario.ReceberAvisos
             });
         }
 
@@ -89,6 +90,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
 
             usuario.Name = conta.Nome.Trim();
             usuario.Email = email;
+            usuario.ReceberAvisos = conta.ReceberAvisos;
             if (trocouSenha)
             {
                 usuario.Senha = senhas.GerarHash(usuario, conta.NovaSenha!);

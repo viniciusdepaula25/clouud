@@ -71,6 +71,7 @@ namespace Clouud.Web.Services.Emails
         public static string ParaTexto(string html)
         {
             var t = Regex.Replace(html, @"<(style|head|script)[^>]*>.*?</\1>", "", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            t = Regex.Replace(t, @"\s+", " "); // no HTML a quebra de linha do código não conta; quem quebra são as tags abaixo
             t = Regex.Replace(t, @"<a\s[^>]*href=""([^""]+)""[^>]*>(.*?)</a>", m =>
             {
                 var texto = Regex.Replace(m.Groups[2].Value, "<[^>]+>", "").Trim();

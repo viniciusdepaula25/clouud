@@ -44,6 +44,9 @@ builder.Services.AddScoped<FilaEmails>();
 builder.Services.AddScoped<ConfirmacaoEmail>();
 builder.Services.AddScoped<RedefinicaoSenhaService>();
 builder.Services.AddScoped<EmailPedidoPago>();
+builder.Services.AddScoped<DescadastroAvisos>();
+builder.Services.AddScoped<ConferenciaListaDesejos>();
+builder.Services.AddHostedService<AvisosListaDesejos>();
 builder.Services.AddHostedService<EnvioEmails>();
 builder.Services.AddHttpContextAccessor();
 

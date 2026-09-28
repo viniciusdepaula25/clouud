@@ -196,6 +196,35 @@ namespace Clouud.Web.Controllers
             return Redirect("/conta/login");
         }
 
+        /// <summary>Link "parar de receber" dos avisos da lista de desejos: confirma com um botão (sem login).</summary>
+        [HttpGet("/conta/parar-avisos")]
+        public IActionResult PararAvisos(string? codigo, [FromServices] DescadastroAvisos descadastro)
+        {
+            var usuario = BuscarPeloCodigo(codigo, descadastro);
+            ViewData["Codigo"] = codigo;
+            return View(usuario);
+        }
+
+        [HttpPost("/conta/parar-avisos")]
+        [ValidateAntiForgeryToken]
+        public IActionResult PararAvisosConfirmar(string? codigo, [FromServices] DescadastroAvisos descadastro)
+        {
+            var usuario = BuscarPeloCodigo(codigo, descadastro);
+            if (usuario != null)
+            {
+                usuario.ReceberAvisos = false;
+                bancoDados.SaveChanges();
+                ViewData["Parou"] = true;
+            }
+            return View("PararAvisos", usuario);
+        }
+
+        private Usuario? BuscarPeloCodigo(string? codigo, DescadastroAvisos descadastro)
+        {
+            var id = descadastro.LerUsuario(codigo);
+            return id == null ? null : bancoDados.Usuarios.FirstOrDefault(u => u.ID == id);
+        }
+
         /// <summary>O endereço da página tem o código do link: não manda para outros sites (cabeçalho Referer).</summary>
         private void NaoRepassarEndereco() => Response.Headers["Referrer-Policy"] = "no-referrer";
 

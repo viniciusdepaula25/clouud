@@ -24,5 +24,18 @@ namespace Clouud.Web.Models
 
         [Display(Name = "Adicionado em")]
         public DateTime AdicionadoEm { get; set; } = DateTime.UtcNow;
+
+        // Situação do jogo na última conferência dos avisos (serviço AvisosListaDesejos).
+        // Serve para mandar o e-mail só quando algo muda: voltou ao estoque ou baixou o preço da promoção.
+
+        /// <summary>Quando o serviço de avisos conferiu este jogo pela primeira vez (nulo: ainda não conferiu).</summary>
+        public DateTime? AvisoConferidoEm { get; set; }
+
+        /// <summary>Tinha chave disponível na última conferência?</summary>
+        public bool AvisoDisponivel { get; set; }
+
+        /// <summary>Menor preço promocional na última conferência (nulo: sem promoção).</summary>
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal? AvisoPrecoPromocao { get; set; }
     }
 }

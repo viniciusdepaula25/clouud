@@ -1,0 +1,46 @@
+@model Clouud.Web.Services.Emails.EmailAvisoViewModel
+@{
+    ViewData["Title"] = Model.Jogo;
+    ViewData["Descadastro"] = Model.LinkDescadastro;
+    var botao = (Model.VoltouAoEstoque ? "Comprar agora" : "Ver a promoção", Model.LinkJogo);
+}
+<p style="margin:0 0 6px;color:#aaaaaa;font-size:13px;">Aviso da sua lista de desejos</p>
+<h1 style="margin:0 0 12px;color:#ffffff;font-size:22px;">
+    @if (Model.VoltouAoEstoque && Model.PrecoPromocional.HasValue)
+    {
+        @($"{Model.Jogo} voltou ao estoque e está em promoção!")
+    }
+    else if (Model.VoltouAoEstoque)
+    {
+        @($"{Model.Jogo} voltou ao estoque!")
+    }
+    else
+    {
+        @($"{Model.Jogo} entrou em promoção!")
+    }
+</h1>
+@if (Model.Capa != null)
+{
+    <img src="@Model.Capa" alt="@Model.Jogo" width="552" style="display:block;width:100%;max-width:552px;height:auto;border-radius:6px;margin:0 0 14px;" />
+}
+<p style="margin:0 0 10px;">Olá, @Model.Nome! Um jogo que você está acompanhando mudou@(Model.PrecoPromocional.HasValue ? $": agora a partir de {Model.PrecoPromocional.Value.ToString("C")}" : " e já tem chave disponível").</p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;font-size:14px;background:#262626;border:1px solid #333;border-radius:6px;">
+    @foreach (var produto in Model.Produtos)
+    {
+        <tr>
+            <td style="padding:8px 12px;border-bottom:1px solid #333;">@produto.Plataforma@(produto.Edicao != "Standard" ? $" · {produto.Edicao}" : "")</td>
+            <td align="right" style="padding:8px 12px;border-bottom:1px solid #333;white-space:nowrap;">
+                @if (produto.PrecoPromocional.HasValue)
+                {
+                    <span style="background:#cc0000;color:#ffffff;border-radius:4px;padding:1px 6px;font-size:12px;">-@produto.PercentualDesconto%</span>
+                    <s style="color:#888888;">@produto.Preco.ToString("C")</s>
+                }
+                <strong style="color:#ffffff;">@produto.PrecoAtual.ToString("C")</strong>
+            </td>
+        </tr>
+    }
+</table>
+
+<partial name="~/Views/Emails/_Botao.cshtml" model="botao" />
+<p style="margin:0;font-size:13px;color:#aaaaaa;">Os preços e o estoque podem mudar a qualquer momento. Veja todos os jogos que você acompanha na sua <a href="@Model.LinkLista" style="color:#2a9fd6;">lista de desejos</a>.</p>

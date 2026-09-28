@@ -62,6 +62,15 @@
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
+            <div class="form-check mt-3">
+                <input asp-for="ReceberAvisos" class="form-check-input" />
+                <label asp-for="ReceberAvisos" class="form-check-label"></label>
+                @if (!Model.EmailConfirmado)
+                {
+                    <small class="d-block text-muted">Os avisos só vão depois que você confirmar o e-mail.</small>
+                }
+            </div>
+
             <h5 class="mt-4">Trocar senha <small class="text-muted">(opcional)</small></h5>
             <div class="form-group">
                 <label asp-for="NovaSenha" class="control-label"></label>

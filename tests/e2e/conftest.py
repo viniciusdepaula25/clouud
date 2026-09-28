@@ -126,6 +126,7 @@ def app():
         "Email__Modo": "Pasta",
         "Email__Pasta": str(PASTA_EMAILS),
         "Email__IntervaloSegundos": "1",
+        "Loja__AvisosIntervaloSegundos": "1",
         "Loja__UrlPublica": URL,
     })
     processo = subprocess.Popen(["dotnet", str(encontrar_dll()), "--urls", URL],
