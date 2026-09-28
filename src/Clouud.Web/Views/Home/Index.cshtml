@@ -1,0 +1,102 @@
+@model Clouud.Web.ViewModels.PaginaInicialViewModel
+
+@{
+    ViewData["Title"] = "Chaves de jogos";
+    var modoCarrinho = User.Identity?.IsAuthenticated == true;
+    string Capa(string? capa) => string.IsNullOrEmpty(capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content($"~/uploads/{capa}");
+}
+
+@* Topo: carrossel com os jogos em destaque; sem destaques, a marca da loja *@
+@if (Model.Destaques.Count > 0)
+{
+    <section id="destaques" class="carousel slide destaques mb-4" data-bs-ride="carousel" aria-label="Jogos em destaque">
+        @if (Model.Destaques.Count > 1)
+        {
+            <div class="carousel-indicators">
+                @for (var i = 0; i < Model.Destaques.Count; i++)
+                {
+                    <button type="button" data-bs-target="#destaques" data-bs-slide-to="@i" class="@(i == 0 ? "active" : null)"
+                            aria-current="@(i == 0 ? "true" : null)" aria-label="Destaque @(i + 1)"></button>
+                }
+            </div>
+        }
+        <div class="carousel-inner rounded">
+            @for (var i = 0; i < Model.Destaques.Count; i++)
+            {
+                var d = Model.Destaques[i];
+                <div class="carousel-item @(i == 0 ? "active" : null)">
+                    <img src="@Capa(d.Capa)" class="d-block w-100 destaque-imagem" alt="" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'">
+                    <div class="destaque-legenda">
+                        <span class="badge bg-danger mb-2">Destaque</span>
+                        <h2 class="h1 mb-1">@d.Titulo</h2>
+                        <p class="mb-2 text-white-50">@d.Plataforma @(d.Edicao != "Standard" ? $"· {d.Edicao}" : "")</p>
+                        <p class="fs-4 mb-3">
+                            @if (d.EmPromocao)
+                            {
+                                <span class="badge bg-danger me-2">-@d.PercentualDesconto%</span>
+                                <s class="text-white-50 fs-6 me-1">@d.Preco.ToString("C")</s>
+                            }
+                            <strong>@d.PrecoAtual.ToString("C")</strong>
+                        </p>
+                        <a href="/jogo/@d.Slug" class="btn btn-danger">Ver jogo</a>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (Model.Destaques.Count > 1)
+        {
+            <button class="carousel-control-prev" type="button" data-bs-target="#destaques" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#destaques" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Próximo</span>
+            </button>
+        }
+    </section>
+}
+else
+{
+    <section class="text-center py-4 mb-3">
+        <img src="~/img/nuuvem.png" alt="CLOUUD" style="width:220px" />
+        <p class="lead mt-2">Chaves de ativação para Steam, Epic Games, Battle.net e mais, entregues na hora.</p>
+    </section>
+}
+
+<partial name="_Alertas" />
+
+@if (Model.Plataformas.Count > 0)
+{
+    <nav class="atalhos-plataformas d-flex flex-wrap gap-2 mb-4" aria-label="Compre por plataforma">
+        @foreach (var (plataforma, produtos) in Model.Plataformas)
+        {
+            <a href="/loja?plataforma=@plataforma.Slug" class="btn btn-sm rounded-pill chip-plataforma">@plataforma.Nome <span class="text-white-50">(@produtos)</span></a>
+        }
+    </nav>
+}
+
+@{
+    var prateleiras = new[]
+    {
+        new PrateleiraViewModel("promocoes", "Promoções", "Os maiores descontos de agora", Model.Promocoes,
+            "/loja?promocoes=true", "Ver todas", modoCarrinho, Model.JogosDesejados),
+        new PrateleiraViewModel("mais-vendidos", "Mais vendidos", "O que os clientes mais compram", Model.MaisVendidos,
+            "/loja?ordem=mais-vendidos", "Ver todos", modoCarrinho, Model.JogosDesejados),
+        new PrateleiraViewModel("lancamentos", "Lançamentos", "Os jogos lançados mais recentemente", Model.Lancamentos,
+            "/loja?ordem=lancamentos", "Ver todos", modoCarrinho, Model.JogosDesejados),
+    };
+}
+@foreach (var prateleira in prateleiras)
+{
+    <partial name="_Prateleira" model="prateleira" />
+}
+
+@if (Model.LojaVazia)
+{
+    <p class="text-muted text-center my-5">A loja ainda não tem jogos à venda.</p>
+}
+
+<div class="text-center my-4">
+    <a href="/loja" class="btn btn-outline-danger btn-lg">Ver todos os jogos</a>
+</div>

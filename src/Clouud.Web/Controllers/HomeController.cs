@@ -21,7 +21,16 @@ namespace Clouud.Web.Controllers
             this.desejos = desejos;
         }
 
-        public IActionResult Index(FiltroVitrine filtro) => Loja(filtro);
+        /// <summary>Página inicial: destaques e prateleiras (promoções, mais vendidos, lançamentos).</summary>
+        public IActionResult Index()
+        {
+            var inicio = catalogo.MontarInicio();
+            if (int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
+            {
+                inicio.JogosDesejados = desejos.JogosDoUsuario(usuarioId);
+            }
+            return View(inicio);
+        }
 
         /// <summary>Loja completa: busca, filtros, ordenação e páginas. A mesma para visitante e cliente.</summary>
         [HttpGet("loja")]

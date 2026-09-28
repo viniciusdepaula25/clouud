@@ -35,7 +35,7 @@ def vendas(fabrica):
     cliente = fabrica.cliente()
     campeao = fabrica.jogo(preco=10, chaves=0)  # esgotado e muito vendido: aparece nas duas listas
     outro = fabrica.jogo(preco=80, chaves=1)
-    fabrica.pedido_pago(cliente["id"], campeao["produto_id"], quantidade=50, preco=10)
+    fabrica.pedido_pago(cliente["id"], campeao["produto_id"], quantidade=5000, preco=10)  # mais que qualquer outro teste
     for _ in range(3):  # o mais desejado: vai para o topo da lista "repor primeiro" (que mostra só 8)
         fabrica.banco.executar("INSERT INTO lista_desejos (usuario_id, jogo_id, adicionado_em) VALUES (%s, %s, now())",
                                fabrica.cliente()["id"], campeao["jogo_id"])
@@ -94,7 +94,7 @@ def test_grafico_dica_tabela_e_listas(paginas, banco, vendas):
     assert admin.locator("details table tbody tr").count() == dias_com_venda
 
     assert campeao["titulo"] in admin.locator("#tabelaMaisVendidos tbody tr").first.inner_text()
-    assert "50" in admin.locator("#tabelaMaisVendidos tbody tr").first.inner_text()
+    assert "5000" in admin.locator("#tabelaMaisVendidos tbody tr").first.inner_text()
     assert campeao["titulo"] in admin.locator("#tabelaRepor tbody tr").first.inner_text()
 
     assert admin.inner_text("#aguardando") == str(

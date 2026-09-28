@@ -102,6 +102,75 @@ body {
   }
 }
 
+/* Página inicial */
+.destaques .carousel-item {
+  position: relative;
+  background: #111;
+}
+
+.destaque-imagem {
+  height: 380px;
+  object-fit: cover;
+  filter: brightness(.55);
+}
+
+/* Legenda do destaque à esquerda, sobre um degradê para o texto ler bem em qualquer capa */
+.destaque-legenda {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-start;
+  /* espaço dos lados para as setas do carrossel não ficarem em cima do texto */
+  padding: 2rem 15% 3rem;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .85) 0%, rgba(0, 0, 0, .4) 55%, rgba(0, 0, 0, 0) 100%);
+  color: #fff;
+}
+
+@media (max-width: 575.98px) {
+  .destaque-imagem {
+    height: 240px;
+  }
+
+  .destaque-legenda {
+    padding: 1rem 15% 2rem;
+  }
+
+  .destaque-legenda .h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Atalhos "compre por plataforma" (no Cyborg o "light" é escuro, então a cor é definida aqui) */
+.chip-plataforma {
+  color: #fff;
+  border: 1px solid #555;
+  background: rgba(0, 0, 0, .55);
+}
+
+.chip-plataforma:hover,
+.chip-plataforma:focus-visible {
+  color: #fff;
+  border-color: var(--bs-red, #c00);
+  background: rgba(204, 0, 0, .25);
+}
+
+.titulo-secao {
+  border-left: 4px solid var(--bs-red, #c00);
+  padding-left: .6rem;
+}
+
+.ver-todos {
+  color: #fff;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ver-todos:hover {
+  color: var(--bs-red, #c00);
+}
+
 /* Estrelas das avaliações (vitrine e página do jogo) */
 .estrelas { color: #f80; letter-spacing: 1px; }
 .estrelas-vazias { color: #555; }

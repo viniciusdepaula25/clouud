@@ -95,6 +95,47 @@ namespace Clouud.Web.Services
             };
         }
 
+        /// <summary>Prateleiras da página inicial. Só entram produtos com chave disponível, um por jogo em cada prateleira.</summary>
+        public PaginaInicialViewModel MontarInicio()
+        {
+            var hoje = DateOnly.FromDateTime(DateTime.Now);
+            var n = PaginaInicialViewModel.ItensPorPrateleira;
+            var comEstoque = Projetar(AVenda(), hoje).Where(p => p.Disponiveis > 0);
+
+            // Busca alguns a mais e fica com o primeiro produto de cada jogo (o mesmo jogo pode estar em várias plataformas)
+            static List<ProdutoVitrineViewModel> UmPorJogo(IEnumerable<ProdutoVitrineViewModel> lista, int quantos) =>
+                lista.GroupBy(p => p.JogoId).Select(g => g.First()).Take(quantos).ToList();
+
+            var destaques = comEstoque.Where(p => p.Destaque)
+                .OrderByDescending(p => p.JogoId).ThenBy(p => p.PrecoAtual)
+                .Take(20).ToList();
+            var promocoes = comEstoque.Where(p => p.PrecoAtual < p.Preco)
+                .OrderBy(p => p.PrecoAtual / p.Preco).ThenBy(p => p.Titulo)   // maior desconto primeiro
+                .Take(n * 4).ToList();
+            var maisVendidos = comEstoque.Where(p => p.Vendidos > 0)
+                .OrderByDescending(p => p.Vendidos).ThenBy(p => p.Titulo)
+                .Take(n * 4).ToList();
+            var lancamentos = comEstoque.Where(p => p.DataLancamento != null && p.DataLancamento <= hoje)
+                .OrderByDescending(p => p.DataLancamento).ThenBy(p => p.Titulo)
+                .Take(n * 4).ToList();
+
+            return new PaginaInicialViewModel
+            {
+                Destaques = UmPorJogo(destaques, 5),
+                Promocoes = UmPorJogo(promocoes, n),
+                MaisVendidos = UmPorJogo(maisVendidos, n),
+                Lancamentos = UmPorJogo(lancamentos, n),
+                Plataformas = bancoDados.Plataformas
+                    .Where(p => p.Ativa)
+                    .Select(p => new { Plataforma = p, Produtos = p.Produtos.Count(x => x.Ativo && x.Jogo.Ativo) })
+                    .Where(x => x.Produtos > 0)
+                    .OrderByDescending(x => x.Produtos).ThenBy(x => x.Plataforma.Nome)
+                    .AsEnumerable()
+                    .Select(x => (x.Plataforma, x.Produtos))
+                    .ToList()
+            };
+        }
+
         /// <summary>Jogos da lista de desejos do usuário, com os produtos à venda de cada um.</summary>
         public List<DesejoViewModel> MontarListaDesejos(int usuarioId)
         {

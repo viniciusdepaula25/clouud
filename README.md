@@ -65,6 +65,10 @@ Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e d
 
 No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam, Epic Games...) com o preço → importar as chaves de cada produto em **Estoque** (colando uma por linha). Jogos e produtos que já tiveram vendas não podem ser excluídos; desmarque **Ativo** para tirá-los da loja.
 
+## Página inicial
+
+A página inicial segue o modelo das lojas de chaves: no topo, um carrossel com os jogos marcados como **Destaque** no admin; depois, atalhos por plataforma e as prateleiras **Promoções** (maiores descontos), **Mais vendidos** e **Lançamentos**, cada uma com quatro jogos e um link para ver tudo na loja já filtrado. Só aparecem produtos com chave disponível, e cada jogo entra uma vez por prateleira.
+
 ## Loja
 
 A loja fica em `/loja`, a mesma para visitante e cliente: busca pelo nome, filtros de plataforma, categoria, faixa de preço (sobre o preço de agora, já com a promoção) e "só promoções", e ordenação por destaques, menor ou maior preço, lançamentos (data de lançamento) ou mais vendidos (unidades em pedidos pagos). Mostra 24 produtos por página; os esgotados ficam sempre no fim. Tudo vai na URL (ex.: `/loja?categoria=rpg&ordem=menor-preco&pagina=2`), então dá para compartilhar uma busca.
