@@ -3,6 +3,9 @@
 # Depois abra http://localhost:8080 (admin: admin@clouud.com / Admin@123).
 # Os e-mails da loja caem no Mailpit, uma caixa de entrada de teste: http://localhost:8025
 # O banco fica dentro do Docker (não usa nem ocupa a porta 5432 do seu computador).
+#
+# Senhas: vêm de variáveis de ambiente ou de um arquivo .env nesta pasta (modelo em .env.example).
+# Sem .env, valem os valores de exemplo abaixo, bons só para testar no seu computador.
 
 name: clouud
 
@@ -11,7 +14,7 @@ services:
     image: postgres:17
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: ${BANCO_SENHA:-postgres}
       POSTGRES_DB: lojajogos
     volumes:
       - banco:/var/lib/postgresql/data
@@ -26,7 +29,8 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     ports:
-      - "8025:8025"
+      # Só neste computador: a caixa de teste não tem senha e mostra links de senha e chaves
+      - "127.0.0.1:8025:8025"
     restart: unless-stopped
 
   app:
@@ -37,12 +41,13 @@ services:
       mailpit:
         condition: service_started
     environment:
-      ConnectionStrings__LojaJogos: "Host=banco;Port=5432;Database=lojajogos;Username=postgres;Password=postgres"
+      ConnectionStrings__LojaJogos: "Host=banco;Port=5432;Database=lojajogos;Username=postgres"
+      Banco__Senha: ${BANCO_SENHA:-postgres}
       # Cria/atualiza as tabelas ao iniciar (no dia a dia, fora do Docker, continua sendo "dotnet ef database update")
       Banco__AplicarMigrations: "true"
       # Primeiro administrador (criado só se ainda não existir nenhum). Troque a senha depois de entrar.
       AdminInicial__Email: "admin@clouud.com"
-      AdminInicial__Senha: "Admin@123"
+      AdminInicial__Senha: ${ADMIN_SENHA:-Admin@123}
       TZ: "America/Sao_Paulo"
       # Links dos e-mails (confirmação, senha) apontam para cá
       Loja__UrlPublica: "http://localhost:8080"

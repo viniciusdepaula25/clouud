@@ -11,6 +11,9 @@ namespace Clouud.Web.Services
     /// </summary>
     public class SenhaService
     {
+        /// <summary>Tamanho mínimo de senha (cadastro, troca, "esqueci minha senha" e admin inicial).</summary>
+        public const int TamanhoMinimo = 8;
+
         private readonly IPasswordHasher<Usuario> hasher;
 
         public SenhaService(IPasswordHasher<Usuario> hasher)

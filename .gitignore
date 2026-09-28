@@ -26,3 +26,6 @@ tests/e2e/.saida/
 
 # E-mails gravados em arquivo no modo "Pasta" (desenvolvimento)
 src/Clouud.Web/emails-enviados/
+
+# Senhas do docker compose (modelo em .env.example)
+.env

@@ -13,3 +13,4 @@ docs/
 # Imagens enviadas no computador de quem gerou a imagem não entram nela
 src/Clouud.Web/wwwroot/uploads/*
 !src/Clouud.Web/wwwroot/uploads/.gitkeep
+.env

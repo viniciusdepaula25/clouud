@@ -1,6 +1,7 @@
 using System.Globalization;
 using Clouud.Web.Data;
 using Clouud.Web.Infraestrutura;
+using Microsoft.AspNetCore.DataProtection;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
 using Clouud.Web.Services.Emails;
@@ -17,9 +18,11 @@ builder.Services.AddControllersWithViews(options =>
     // Campos de valor aceitam "59,90" e "59.90" (ver Infraestrutura/Dinheiro.cs)
     options.ModelBinderProviders.Insert(0, new ModeloDecimalBrasileiroProvider()));
 
-// Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers
-builder.Services.AddDbContext<BancoDados>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("LojaJogos")));
+// Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers.
+// A senha não fica no appsettings: vem de "Banco:Senha" (variável de ambiente Banco__Senha ou user-secrets)
+// ou da connection string inteira em ConnectionStrings__LojaJogos.
+var conexaoBanco = Segredos.MontarConexaoBanco(builder.Configuration);
+builder.Services.AddDbContext<BancoDados>(options => options.UseNpgsql(conexaoBanco));
 
 // Hash das senhas dos usuários
 builder.Services.AddScoped<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
@@ -72,7 +75,13 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
     Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
 
 
+// Chaves que assinam os cookies de login e os links dos e-mails: nome fixo da aplicação,
+// para continuarem valendo depois de mudar a pasta de instalação ou a versão
+builder.Services.AddDataProtection().SetApplicationName("Clouud");
+
 var app = builder.Build();
+
+Segredos.ConferirAoIniciar(app.Configuration, app.Environment, app.Logger);
 
 // Dinheiro no padrão brasileiro: "R$ 1.234,50" (ToString("C") e [DataType(Currency)]).
 // Os demais números continuam com ponto (59.90), que é o que o HTML, o SVG e o JavaScript esperam.

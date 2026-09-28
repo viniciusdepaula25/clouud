@@ -19,7 +19,7 @@ Com o [Docker](https://docs.docker.com/engine/install/) instalado, na pasta do p
 docker compose up --build
 ```
 
-Abra http://localhost:8080 e entre com `admin@clouud.com` / `Admin@123`. O Compose sobe a aplicação e um PostgreSQL 17 próprio (não usa a porta 5432 do seu computador), cria as tabelas e o primeiro administrador. Os dados do banco, as imagens enviadas e as chaves dos cookies de login ficam em volumes do Docker, então sobrevivem a `docker compose down`; para apagar tudo e começar do zero use `docker compose down -v`.
+Abra http://localhost:8080 e entre com `admin@clouud.com` / `Admin@123`. Essas senhas de exemplo servem só para testar no seu computador: para qualquer outro uso, copie `.env.example` para `.env` e troque os valores (o `.env` não vai para o Git). O Compose sobe a aplicação e um PostgreSQL 17 próprio (não usa a porta 5432 do seu computador), cria as tabelas e o primeiro administrador. Os dados do banco, as imagens enviadas e as chaves dos cookies de login ficam em volumes do Docker, então sobrevivem a `docker compose down`; para apagar tudo e começar do zero use `docker compose down -v`.
 
 Na primeira vez o log mostra um erro de `__EFMigrationsHistory` não existir: é o Entity Framework conferindo o banco vazio antes de criar as tabelas.
 
@@ -27,12 +27,12 @@ Na primeira vez o log mostra um erro de `__EFMigrationsHistory` não existir: é
 
 **Pré-requisitos:** [.NET SDK 10](https://dotnet.microsoft.com/download) e um PostgreSQL rodando em `localhost:5432`.
 
-1. Ajuste usuário e senha do banco em `src/Clouud.Web/appsettings.json`:
-   ```json
-   "ConnectionStrings": {
-     "LojaJogos": "Host=localhost;Port=5432;Database=lojajogos;Username=postgres;Password=postgres"
-   }
+1. Guarde as senhas no *user-secrets* do .NET (uma vez só, por computador). Elas ficam na sua pasta de usuário, fora do projeto e do Git:
+   ```bash
+   dotnet user-secrets --project src/Clouud.Web set "Banco:Senha" "postgres"
+   dotnet user-secrets --project src/Clouud.Web set "AdminInicial:Senha" "uma-senha-forte"
    ```
+   Servidor, banco e usuário do PostgreSQL ficam em `src/Clouud.Web/appsettings.json` (`ConnectionStrings:LojaJogos`), sem a senha.
 2. Restaure as ferramentas e crie o banco:
    ```bash
    dotnet tool restore
@@ -44,13 +44,19 @@ Na primeira vez o log mostra um erro de `__EFMigrationsHistory` não existir: é
    ```
 4. Abra http://localhost:5093
 
+### Senhas e configurações secretas
+
+Nenhuma senha fica nos arquivos `appsettings*.json`. Cada uma vem de uma variável de ambiente (em produção, no Docker e no CI) ou do *user-secrets* (no desenvolvimento). No nome da variável, os dois-pontos viram dois sublinhados:
+
+| Configuração | Variável de ambiente | Para que serve |
+|---|---|---|
+| `Banco:Senha` | `Banco__Senha` | Senha do PostgreSQL (ou passe a connection string inteira em `ConnectionStrings__LojaJogos`) |
+| `AdminInicial:Senha` | `AdminInicial__Senha` | Senha do primeiro administrador, criado só se ainda não existir nenhum (mínimo de 8 caracteres) |
+| `Email:Smtp:Senha` | `Email__Smtp__Senha` | Senha do servidor de e-mail, se usar SMTP |
+
 ### Primeiro acesso
 
-O cadastro pelo site cria apenas contas de **cliente**. Ao iniciar em modo de desenvolvimento, a aplicação cria um **administrador** se ainda não existir nenhum, usando a seção `AdminInicial` do `src/Clouud.Web/appsettings.Development.json`:
-
-| E-mail | Senha |
-|---|---|
-| `admin@clouud.com` | `Admin@123` |
+O cadastro pelo site cria apenas contas de **cliente**. Ao iniciar, a aplicação cria um **administrador** se ainda não existir nenhum: o e-mail vem de `AdminInicial:Email` (em desenvolvimento, `admin@clouud.com`, no `appsettings.Development.json`) e a senha de `AdminInicial:Senha` (passo 1 acima). Sem a senha configurada, o log avisa e o admin não é criado.
 
 As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com a senha salva em texto puro, continuam funcionando: no primeiro login a senha é convertida para hash automaticamente.
 
