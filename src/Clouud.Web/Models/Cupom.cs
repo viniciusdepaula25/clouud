@@ -78,9 +78,9 @@ namespace Clouud.Web.Models
             return Math.Min(desconto, subtotal);
         }
 
-        /// <summary>"10%" ou "R$ 20.00".</summary>
+        /// <summary>"12,5%" ou "R$ 20,00".</summary>
         public string DescreverDesconto() =>
-            Tipo == TipoCupom.Percentual ? $"{Valor:0.##}%" : Valor.ToString("C");
+            Tipo == TipoCupom.Percentual ? $"{Infraestrutura.Dinheiro.Numero(Valor)}%" : Valor.ToString("C");
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

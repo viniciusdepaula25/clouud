@@ -26,13 +26,13 @@
     </div>
     <div class="form-group col-sm-6">
         <label asp-for="Valor" class="control-label"></label>
-        <input asp-for="Valor" class="form-control" placeholder="Ex: 10 ou 25.00" inputmode="decimal" />
+        <input asp-for="Valor" dinheiro class="form-control" placeholder="Ex: 10 ou 25,00" />
         <span asp-validation-for="Valor" class="text-danger"></span>
     </div>
 </div>
 <div class="form-group">
     <label asp-for="PedidoMinimo" class="control-label"></label>
-    <input asp-for="PedidoMinimo" class="form-control" placeholder="Em branco = qualquer valor" inputmode="decimal" />
+    <input asp-for="PedidoMinimo" dinheiro class="form-control" placeholder="Em branco = qualquer valor" />
     <span asp-validation-for="PedidoMinimo" class="text-danger"></span>
 </div>
 <div class="row">
@@ -64,4 +64,4 @@
     <input asp-for="Ativo" class="form-check-input" />
     <label asp-for="Ativo" class="form-check-label">Ativo (pode ser usado)</label>
 </div>
-<small class="form-text">Use ponto como separador decimal (ex.: 25.00).</small>
+<small class="form-text">Os valores aceitam vírgula ou ponto (25,00 ou 25.00).</small>

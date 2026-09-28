@@ -56,6 +56,8 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com 
 
 ## Catálogo
 
+Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e de cupom dá para digitar com vírgula ou ponto: `59,90`, `59.90`, `1.234,50` e `R$ 1.234,50` valem; um ponto seguido de três dígitos é milhar (`1.500` = mil e quinhentos). A regra fica em `Infraestrutura/Dinheiro.cs` e vale no navegador e no servidor.
+
 - **Jogo:** informações do jogo (título, descrição, capa, lançamento, classificação, desenvolvedora, publicadora e categorias).
 - **Produto:** o que a loja vende, ou seja, um jogo em uma plataforma e edição, com preço e preço promocional opcional (com data de término). O jogo só aparece na vitrine depois de ter um produto ativo.
 - **Plataformas** e **categorias** são cadastradas no admin e viram os filtros da vitrine.
@@ -112,6 +114,7 @@ A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (
         │   └── Cliente/        # área do cliente logado (loja, carrinho, pedidos, minhas chaves, lista de desejos, minha conta)
         ├── Models/             # entidades do banco (Usuario, Jogo, Produto, Chave, Pedido, Pagamento, CarrinhoItem...)
         ├── ViewModels/         # modelos das telas (vitrine, formulários, login, cadastro)
+        ├── Infraestrutura/     # peças do ASP.NET adaptadas à loja (dinheiro em reais)
         ├── Services/           # regras reutilizáveis (login, vitrine, estoque, carrinho, pedidos, lista de desejos, slugs)
         ├── Data/
         │   ├── BancoDados.cs   # DbContext do Entity Framework

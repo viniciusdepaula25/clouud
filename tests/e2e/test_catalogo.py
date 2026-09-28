@@ -83,7 +83,7 @@ def test_jogo_com_capa_categorias_e_produto_com_promocao(paginas, fabrica, banco
     admin.fill("#PromocaoAte", "2099-12-31")
     enviar(admin, "input[value=Cadastrar]")
     texto = admin.inner_text("main")
-    assert "Produto cadastrado." in texto and "R$ 60.00" in texto and "R$ 30.00" in texto and "31/12/2099" in texto
+    assert "Produto cadastrado." in texto and "R$ 60,00" in texto and "R$ 30,00" in texto and "31/12/2099" in texto
 
     # mesmo jogo + plataforma + edição não repete
     admin.goto(f"/Admin/Produto/Inclui?jogoId={jogo_id}")

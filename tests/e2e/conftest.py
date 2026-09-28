@@ -300,5 +300,5 @@ def token(pagina) -> str:
 
 
 def brl(valor) -> str:
-    """Formato de moeda que a loja usa hoje: R$ 1,234.50."""
-    return "R$ " + f"{float(valor):,.2f}"
+    """Formato de moeda da loja: R$ 1.234,50."""
+    return "R$ " + f"{float(valor):,.2f}".replace(",", "_").replace(".", ",").replace("_", ".")

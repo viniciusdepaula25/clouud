@@ -1,5 +1,6 @@
 using System.Globalization;
 using Clouud.Web.Data;
+using Clouud.Web.Infraestrutura;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +12,9 @@ using Microsoft.Extensions.FileProviders;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+    // Campos de valor aceitam "59,90" e "59.90" (ver Infraestrutura/Dinheiro.cs)
+    options.ModelBinderProviders.Insert(0, new ModeloDecimalBrasileiroProvider()));
 
 // Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers
 builder.Services.AddDbContext<BancoDados>(options =>
@@ -57,13 +60,9 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
 
 var app = builder.Build();
 
-// Números sempre com ponto decimal (ex.: 59.90), igual à validação do navegador.
-// Sem isso, em um computador com sistema em português "59.90" vira 5990.
-// A moeda é o real: valores com [DataType(Currency)] aparecem como "R$ 59.90".
-var cultura = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-cultura.NumberFormat.CurrencySymbol = "R$";
-cultura.NumberFormat.CurrencyPositivePattern = 2; // "R$ 59.90"
-cultura.NumberFormat.CurrencyNegativePattern = 9; // "-R$ 59.90"
+// Dinheiro no padrão brasileiro: "R$ 1.234,50" (ToString("C") e [DataType(Currency)]).
+// Os demais números continuam com ponto (59.90), que é o que o HTML, o SVG e o JavaScript esperam.
+var cultura = Dinheiro.CriarCultura();
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
     DefaultRequestCulture = new RequestCulture(cultura),
