@@ -23,6 +23,7 @@ namespace Clouud.Web.Data
         public DbSet<Produto> Produtos { get; set; }
         public DbSet<Chave> Chaves { get; set; }
         public DbSet<Email> Emails { get; set; }
+        public DbSet<RedefinicaoSenha> RedefinicoesSenha { get; set; }
 
 
 
@@ -149,6 +150,9 @@ namespace Clouud.Web.Data
                 email.Property(e => e.Tipo).HasConversion<string>().HasMaxLength(30);
                 email.HasOne(e => e.Usuario).WithMany().OnDelete(DeleteBehavior.SetNull);
             });
+
+            // Pedidos de nova senha somem junto com a conta
+            modelBuilder.Entity<RedefinicaoSenha>().HasOne(r => r.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
 

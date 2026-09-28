@@ -1,0 +1,7 @@
+@model Clouud.Web.Services.Emails.EmailSenhaAlteradaViewModel
+@{
+    ViewData["Title"] = "Senha alterada";
+}
+<h1 style="margin:0 0 12px;color:#ffffff;font-size:22px;">Olá, @Model.Nome!</h1>
+<p style="margin:0 0 12px;">A senha da sua conta na CLOUUD acabou de ser alterada pelo link de "esqueci minha senha".</p>
+<p style="margin:0;">Se não foi você, <a href="@Model.LinkEsqueciSenha" style="color:#2a9fd6;">peça uma nova senha agora</a> para retomar o acesso à sua conta.</p>

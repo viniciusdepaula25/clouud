@@ -18,10 +18,12 @@ namespace Clouud.Web.Controllers
         private readonly SenhaService senhas;
         private readonly AutenticacaoService autenticacao;
         private readonly ConfirmacaoEmail confirmacao;
+        private readonly RedefinicaoSenhaService redefinicao;
 
         public ContaController(BancoDados bancoDados, SenhaService senhas, AutenticacaoService autenticacao,
-            ConfirmacaoEmail confirmacao)
+            ConfirmacaoEmail confirmacao, RedefinicaoSenhaService redefinicao)
         {
+            this.redefinicao = redefinicao;
             this.bancoDados = bancoDados;
             this.senhas = senhas;
             this.autenticacao = autenticacao;
@@ -142,6 +144,60 @@ namespace Clouud.Web.Controllers
             var usuario = confirmacao.Confirmar(codigo);
             return View(usuario);
         }
+
+        [HttpGet("/conta/esqueci-senha")]
+        public IActionResult EsqueciSenha() => View(new EsqueciSenhaViewModel());
+
+        [HttpPost("/conta/esqueci-senha")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EsqueciSenha(EsqueciSenhaViewModel pedido)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(pedido);
+            }
+            await redefinicao.SolicitarAsync(pedido.Email);
+            // Mesma resposta com ou sem conta: não revela quais e-mails são cadastrados
+            ViewData["Enviado"] = pedido.Email.Trim().ToLowerInvariant();
+            return View(new EsqueciSenhaViewModel());
+        }
+
+        [HttpGet("/conta/redefinir-senha")]
+        public IActionResult RedefinirSenha(string? token)
+        {
+            NaoRepassarEndereco();
+            var pedido = redefinicao.Validar(token);
+            if (pedido == null)
+            {
+                return View("LinkSenhaInvalido");
+            }
+            ViewData["Email"] = pedido.Usuario.Email;
+            return View(new RedefinirSenhaViewModel { Token = token! });
+        }
+
+        [HttpPost("/conta/redefinir-senha")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RedefinirSenha(RedefinirSenhaViewModel form)
+        {
+            NaoRepassarEndereco();
+            var pedido = redefinicao.Validar(form.Token);
+            if (pedido == null)
+            {
+                return View("LinkSenhaInvalido");
+            }
+            if (!ModelState.IsValid)
+            {
+                ViewData["Email"] = pedido.Usuario.Email;
+                return View(form);
+            }
+
+            await redefinicao.RedefinirAsync(form.Token, form.NovaSenha);
+            TempData["Mensagem"] = "Senha alterada. Entre com a nova senha.";
+            return Redirect("/conta/login");
+        }
+
+        /// <summary>O endereço da página tem o código do link: não manda para outros sites (cabeçalho Referer).</summary>
+        private void NaoRepassarEndereco() => Response.Headers["Referrer-Policy"] = "no-referrer";
 
         [HttpGet]
         public async Task<IActionResult> Logout()
