@@ -91,6 +91,14 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Opcional (Docker e testes automatizados): aplica as migrations pendentes ao iniciar.
+// No dia a dia continua valendo "dotnet ef database update"; a opção vem desligada.
+if (app.Configuration.GetValue("Banco:AplicarMigrations", false))
+{
+    using var escopo = app.Services.CreateScope();
+    await escopo.ServiceProvider.GetRequiredService<BancoDados>().Database.MigrateAsync();
+}
+
 // Cria o primeiro administrador, se ainda não existir (seção "AdminInicial" do appsettings)
 await AdminInicial.CriarAsync(app.Services);
 
