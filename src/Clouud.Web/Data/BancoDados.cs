@@ -22,6 +22,7 @@ namespace Clouud.Web.Data
         public DbSet<Empresa> Empresas { get; set; }
         public DbSet<Produto> Produtos { get; set; }
         public DbSet<Chave> Chaves { get; set; }
+        public DbSet<Email> Emails { get; set; }
 
 
 
@@ -140,6 +141,13 @@ namespace Clouud.Web.Data
             {
                 desejo.HasOne(d => d.Usuario).WithMany().OnDelete(DeleteBehavior.Cascade);
                 desejo.HasOne(d => d.Jogo).WithMany().OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Fila de e-mails: o tipo fica como texto; apagar o usuário mantém o registro do envio, sem o vínculo
+            modelBuilder.Entity<Email>(email =>
+            {
+                email.Property(e => e.Tipo).HasConversion<string>().HasMaxLength(30);
+                email.HasOne(e => e.Usuario).WithMany().OnDelete(DeleteBehavior.SetNull);
             });
 
             base.OnModelCreating(modelBuilder);

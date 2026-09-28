@@ -1,0 +1,9 @@
+@model (string Texto, string Link)
+@* Botão vermelho dos e-mails (link com cara de botão, funciona em qualquer programa de e-mail) *@
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:18px 0;">
+    <tr>
+        <td style="background:#cc0000;border-radius:6px;">
+            <a href="@Model.Link" style="display:inline-block;padding:12px 22px;color:#ffffff;text-decoration:none;font-weight:bold;">@Model.Texto</a>
+        </td>
+    </tr>
+</table>

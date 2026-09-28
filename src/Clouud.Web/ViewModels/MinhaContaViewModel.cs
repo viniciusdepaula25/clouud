@@ -15,6 +15,9 @@ namespace Clouud.Web.ViewModels
         [Display(Name = "E-mail")]
         public string Email { get; set; } = string.Empty;
 
+        /// <summary>O e-mail atual já foi confirmado pelo link? (só para mostrar; não vem do formulário)</summary>
+        public bool EmailConfirmado { get; set; }
+
         /// <summary>Exigida para trocar a senha ou o e-mail.</summary>
         [DataType(DataType.Password)]
         [Display(Name = "Senha atual")]

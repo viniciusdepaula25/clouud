@@ -23,3 +23,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 tests/e2e/.saida/
+
+# E-mails gravados em arquivo no modo "Pasta" (desenvolvimento)
+src/Clouud.Web/emails-enviados/

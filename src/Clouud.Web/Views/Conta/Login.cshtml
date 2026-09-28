@@ -9,6 +9,7 @@
         <div class="painel-form">
             <h2>Entrar</h2>
             <p class="text-muted">Entre com sua conta para comprar e ver suas chaves.</p>
+            <partial name="_Alertas" />
             <form asp-action="Login">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" asp-for="ReturnUrl" />

@@ -11,11 +11,15 @@ Antes de rodar: dotnet build (ver o README, seção "Testes").
 """
 import os
 import re
+import shutil
 import subprocess
 import time
 import uuid
 from urllib.parse import urlparse
 from pathlib import Path
+
+from email import policy
+from email.parser import BytesParser
 
 import psycopg
 import pytest
@@ -26,6 +30,7 @@ PROJETO = RAIZ / "src" / "Clouud.Web"
 UPLOADS = PROJETO / "wwwroot" / "uploads"
 ARQUIVOS = Path(__file__).resolve().parent / "arquivos"
 SAIDA = Path(__file__).resolve().parent / ".saida"
+PASTA_EMAILS = SAIDA / "emails"
 
 URL = os.environ.get("CLOUUD_URL", "http://127.0.0.1:5095")
 PG_HOST = os.environ.get("CLOUUD_PG_HOST", "localhost")
@@ -106,6 +111,8 @@ def app():
                     f"Ele está rodando? Detalhe: {erro}", returncode=2)
     antes = arquivos_em_uploads()
     SAIDA.mkdir(exist_ok=True)
+    shutil.rmtree(PASTA_EMAILS, ignore_errors=True)
+    PASTA_EMAILS.mkdir(parents=True)
     log = open(SAIDA / "app.log", "w")
     ambiente = os.environ.copy()
     ambiente.update({
@@ -115,6 +122,11 @@ def app():
         "Banco__AplicarMigrations": "true",
         "AdminInicial__Email": ADMIN_EMAIL,
         "AdminInicial__Senha": ADMIN_SENHA,
+        # e-mails viram arquivos .eml numa pasta que os testes leem; a fila é conferida a cada segundo
+        "Email__Modo": "Pasta",
+        "Email__Pasta": str(PASTA_EMAILS),
+        "Email__IntervaloSegundos": "1",
+        "Loja__UrlPublica": URL,
     })
     processo = subprocess.Popen(["dotnet", str(encontrar_dll()), "--urls", URL],
                                 cwd=PROJETO, env=ambiente, stdout=log, stderr=subprocess.STDOUT)
@@ -223,6 +235,56 @@ def arquivo_grande(tmp_path_factory) -> Path:
     caminho = tmp_path_factory.mktemp("arquivos") / "grande.png"
     caminho.write_bytes(b"\x89PNG\r\n\x1a\n" + bytes(6 * 1024 * 1024))
     return caminho
+
+
+# ---------------------------------------------------------------- e-mails
+
+class Caixa:
+    """Lê os e-mails que a loja gravou como .eml (modo "Pasta")."""
+
+    @staticmethod
+    def todos() -> list[dict]:
+        emails = []
+        for arquivo in sorted(PASTA_EMAILS.glob("*.eml"), key=lambda a: a.stat().st_mtime):
+            mensagem = BytesParser(policy=policy.default).parsebytes(arquivo.read_bytes())
+            html = mensagem.get_body(("html",))
+            texto = mensagem.get_body(("plain",))
+            emails.append({
+                "para": str(mensagem["To"]),
+                "de": str(mensagem["From"]),
+                "assunto": str(mensagem["Subject"]),
+                "html": html.get_content() if html else "",
+                "texto": texto.get_content() if texto else "",
+            })
+        return emails
+
+    def de(self, para: str) -> list[dict]:
+        return [e for e in self.todos() if para.lower() in e["para"].lower()]
+
+    def esperar(self, para: str, assunto: str = "", quantidade: int = 1, segundos: float = 15) -> list[dict]:
+        """Espera chegarem `quantidade` e-mails para `para` com `assunto` no título (a fila roda a cada segundo)."""
+        limite = time.time() + segundos
+        while True:
+            achados = [e for e in self.de(para) if assunto.lower() in e["assunto"].lower()]
+            if len(achados) >= quantidade or time.time() > limite:
+                assert len(achados) >= quantidade, f"Esperava {quantidade} e-mail(s) '{assunto}' para {para}; chegaram: " + \
+                    str([e["assunto"] for e in self.de(para)])
+                return achados
+            time.sleep(0.3)
+
+    @staticmethod
+    def link(email: dict, contendo: str) -> str:
+        """Primeiro link do e-mail cujo endereço contém `contendo`."""
+        for url in re.findall(r'href="([^"]+)"', email["html"]):
+            url = url.replace("&amp;", "&")
+            if contendo in url:
+                return url
+        raise AssertionError(f"Link com '{contendo}' não encontrado no e-mail '{email['assunto']}'")
+
+
+@pytest.fixture(scope="session")
+def caixa(app) -> Caixa:
+    return Caixa()
 
 
 # ---------------------------------------------------------------- navegador

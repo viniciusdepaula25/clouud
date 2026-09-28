@@ -3,6 +3,7 @@ using Clouud.Web.Data;
 using Clouud.Web.Infraestrutura;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
+using Clouud.Web.Services.Emails;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -34,6 +35,14 @@ builder.Services.AddScoped<PainelService>();
 builder.Services.AddScoped<CupomService>();
 builder.Services.AddScoped<GaleriaService>();
 builder.Services.AddHostedService<CancelamentoAutomatico>();
+
+// E-mails: fila no banco + envio em segundo plano (pasta de arquivos .eml ou SMTP; seção "Email")
+builder.Services.Configure<ConfiguracaoEmail>(builder.Configuration.GetSection("Email"));
+builder.Services.AddSingleton<LinksLoja>();
+builder.Services.AddScoped<RenderizadorEmail>();
+builder.Services.AddScoped<FilaEmails>();
+builder.Services.AddScoped<ConfirmacaoEmail>();
+builder.Services.AddHostedService<EnvioEmails>();
 builder.Services.AddHttpContextAccessor();
 
 

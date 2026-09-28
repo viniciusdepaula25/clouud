@@ -1,0 +1,41 @@
+@* Layout dos e-mails: tabelas e estilos no próprio elemento, que é o que os programas de e-mail entendem.
+   Mesmo visual da loja: preto, faixa vermelha e a marca CLOUUD. *@
+@inject Clouud.Web.Services.Emails.LinksLoja Links
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+</head>
+<body style="margin:0;padding:0;background:#060606;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#060606;padding:24px 12px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#1b1b1b;border:1px solid #333;border-radius:8px;overflow:hidden;font-family:Roboto,Arial,Helvetica,sans-serif;color:#dddddd;font-size:15px;line-height:1.5;">
+                    <tr>
+                        <td style="background:#cc0000;padding:14px 24px;">
+                            <a href="@Links.Base" style="color:#ffffff;text-decoration:none;font-family:Impact,'Arial Narrow Bold',Arial,sans-serif;font-size:28px;letter-spacing:.5px;">CLOUUD</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:24px;">
+                            @RenderBody()
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:16px 24px;border-top:1px solid #333;color:#888888;font-size:12px;">
+                            @if (ViewData["Descadastro"] is string descadastro)
+                            {
+                                <p style="margin:0 0 6px;">Não quer mais receber estes avisos? <a href="@descadastro" style="color:#2a9fd6;">Parar de receber</a>.</p>
+                            }
+                            <p style="margin:0;">CLOUUD · loja de chaves de jogos (projeto de estudo: pagamentos simulados).<br />
+                                Este é um e-mail automático; não é preciso responder.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- dotnet user-secrets: senhas (ex.: SMTP) fora do Git, só na sua máquina -->
+    <UserSecretsId>clouud-web-6f1c2d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

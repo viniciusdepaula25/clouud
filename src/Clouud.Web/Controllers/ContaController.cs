@@ -1,6 +1,7 @@
 using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Clouud.Web.Services;
+using Clouud.Web.Services.Emails;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -16,12 +17,15 @@ namespace Clouud.Web.Controllers
         private readonly BancoDados bancoDados;
         private readonly SenhaService senhas;
         private readonly AutenticacaoService autenticacao;
+        private readonly ConfirmacaoEmail confirmacao;
 
-        public ContaController(BancoDados bancoDados, SenhaService senhas, AutenticacaoService autenticacao)
+        public ContaController(BancoDados bancoDados, SenhaService senhas, AutenticacaoService autenticacao,
+            ConfirmacaoEmail confirmacao)
         {
             this.bancoDados = bancoDados;
             this.senhas = senhas;
             this.autenticacao = autenticacao;
+            this.confirmacao = confirmacao;
         }
 
         public IActionResult Index()
@@ -71,9 +75,13 @@ namespace Clouud.Web.Controllers
                     return View(conta);
                 }
 
+                // E-mail de boas-vindas com o link para confirmar o endereço (vai pela fila, em segundo plano)
+                await confirmacao.AdicionarBoasVindasAsync(usuario);
+                bancoDados.SaveChanges();
+
                 // Já entra com a conta nova: não precisa fazer login logo depois de se cadastrar
                 await autenticacao.EntrarAsync(usuario);
-                TempData["Mensagem"] = $"Conta criada. Bem-vindo(a), {usuario.Name}!";
+                TempData["Mensagem"] = $"Conta criada. Bem-vindo(a), {usuario.Name}! Enviamos um e-mail para {usuario.Email} para confirmar o endereço.";
                 return RedirectToAction("Index", "Home", new { area = "" });
             }
 
@@ -125,6 +133,14 @@ namespace Clouud.Web.Controllers
                 }
             }
             return View(login);
+        }
+
+        /// <summary>Link do e-mail de confirmação (funciona mesmo sem estar logado).</summary>
+        [HttpGet("/conta/confirmar-email")]
+        public IActionResult ConfirmarEmail(string? codigo)
+        {
+            var usuario = confirmacao.Confirmar(codigo);
+            return View(usuario);
         }
 
         [HttpGet]

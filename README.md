@@ -102,6 +102,32 @@ Na vitrine, o **♡** de cada card põe o jogo na lista de desejos do cliente (v
 
 A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (só pedidos pagos; reembolsados não entram), pedidos pagos, ticket médio e chaves vendidas, cada um comparado com o período anterior, além de um gráfico de faturamento por dia e os produtos mais vendidos. Também mostra o que precisa de atenção agora: pedidos aguardando pagamento, produtos esgotados, o que repor primeiro (pela procura na lista de desejos) e os últimos pedidos.
 
+## E-mails
+
+A loja manda e-mails automáticos. Eles entram numa fila no banco (tabela `emails`) junto com a operação que os gerou e são enviados em segundo plano; se o servidor de e-mail falhar, a loja tenta de novo (até 5 vezes). Depois do envio o conteúdo é apagado, para links de senha e chaves não ficarem guardados. Em **Admin > E-mails** aparecem o que foi enviado, o que está na fila e o que falhou.
+
+- **Boas-vindas** no cadastro, com o link para **confirmar o e-mail** (vale 7 dias). A conta funciona sem confirmar; em **Minha conta** aparece se o e-mail está confirmado e dá para pedir o link de novo. Trocar o e-mail pede nova confirmação.
+
+Onde os e-mails vão parar (seção `Email` do `appsettings.json`):
+
+| Onde | Configuração | Como ver |
+|---|---|---|
+| Rodando com `dotnet run` | `"Modo": "Pasta"` (padrão) | arquivos `.eml` em `src/Clouud.Web/emails-enviados/` (abrem no Thunderbird, Outlook ou no navegador) |
+| Docker Compose | já vem com o **Mailpit** | caixa de entrada de teste em http://localhost:8025 |
+| Envio de verdade | `"Modo": "Smtp"` e os dados em `Smtp` | a caixa do destinatário |
+
+Para enviar de verdade, use um serviço SMTP (Gmail com senha de app, Outlook, Brevo, Mailgun...) e troque o remetente. Não grave a senha no `appsettings.json` (ele vai para o Git): use variáveis de ambiente ou o *user-secrets* do .NET, que guarda as configurações só no seu computador e vale no modo de desenvolvimento:
+
+```bash
+dotnet user-secrets --project src/Clouud.Web set "Email:Modo" "Smtp"
+dotnet user-secrets --project src/Clouud.Web set "Email:Smtp:Host" "smtp.gmail.com"
+dotnet user-secrets --project src/Clouud.Web set "Email:Smtp:Usuario" "seu.email@gmail.com"
+dotnet user-secrets --project src/Clouud.Web set "Email:Smtp:Senha" "senha-de-app"
+dotnet user-secrets --project src/Clouud.Web set "Email:Remetente" "seu.email@gmail.com"
+```
+
+Os links dos e-mails usam `Loja:UrlPublica` (ex.: `https://clouud.com.br`), e não o endereço que veio na requisição, para ninguém conseguir gerar um link apontando para outro site.
+
 ## Estrutura
 
 ```

@@ -37,6 +37,10 @@ namespace Clouud.Web.Models
         [DataType(DataType.ImageUrl)]
         public string? Foto { get; set; }
 
+        /// <summary>Quando o usuário clicou no link de confirmação do e-mail (nulo: ainda não confirmou).</summary>
+        [Display(Name = "E-mail confirmado em")]
+        public DateTime? EmailConfirmadoEm { get; set; }
+
         [ValidateNever]
         public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 

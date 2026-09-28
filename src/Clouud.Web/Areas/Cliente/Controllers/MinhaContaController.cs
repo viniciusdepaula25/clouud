@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Clouud.Web.Data;
 using Clouud.Web.Services;
+using Clouud.Web.Services.Emails;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,14 +16,17 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         private readonly SenhaService senhas;
         private readonly AutenticacaoService autenticacao;
         private readonly FotoPerfilService fotos;
+        private readonly ConfirmacaoEmail confirmacao;
 
         public MinhaContaController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados,
-            SenhaService senhas, AutenticacaoService autenticacao, FotoPerfilService fotos) : base(webHostEnvironment)
+            SenhaService senhas, AutenticacaoService autenticacao, FotoPerfilService fotos, ConfirmacaoEmail confirmacao)
+            : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
             this.senhas = senhas;
             this.autenticacao = autenticacao;
             this.fotos = fotos;
+            this.confirmacao = confirmacao;
         }
 
         [HttpGet]
@@ -38,7 +42,8 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             {
                 Nome = usuario.Name,
                 Email = usuario.Email,
-                Foto = usuario.Foto
+                Foto = usuario.Foto,
+                EmailConfirmado = usuario.EmailConfirmadoEm != null
             });
         }
 
@@ -78,6 +83,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             if (!ModelState.IsValid)
             {
                 conta.Foto = usuario.Foto;
+                conta.EmailConfirmado = usuario.EmailConfirmadoEm != null;
                 return View(conta);
             }
 
@@ -87,13 +93,48 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             {
                 usuario.Senha = senhas.GerarHash(usuario, conta.NovaSenha!);
             }
+            if (trocouEmail)
+            {
+                // E-mail novo precisa ser confirmado de novo
+                usuario.EmailConfirmadoEm = null;
+                await confirmacao.AdicionarConfirmacaoAsync(usuario);
+            }
 
             bancoDados.SaveChanges();
 
             // Atualiza o cookie de login para o novo nome/e-mail aparecerem no topo da página
             await autenticacao.EntrarAsync(usuario);
 
-            TempData["Mensagem"] = "Seus dados foram atualizados.";
+            TempData["Mensagem"] = trocouEmail
+                ? $"Seus dados foram atualizados. Enviamos um link para {usuario.Email} confirmar o novo e-mail."
+                : "Seus dados foram atualizados.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>Manda de novo o link de confirmação do e-mail (no máximo um a cada 2 minutos).</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReenviarConfirmacao()
+        {
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == UsuarioLogadoId());
+            if (usuario == null)
+            {
+                return NotFound();
+            }
+            if (usuario.EmailConfirmadoEm != null)
+            {
+                TempData["Mensagem"] = "Seu e-mail já está confirmado.";
+            }
+            else if (!confirmacao.PodeReenviar(usuario))
+            {
+                TempData["Erro"] = "Acabamos de enviar um link. Confira a caixa de entrada (e o spam) e tente de novo em alguns minutos.";
+            }
+            else
+            {
+                await confirmacao.AdicionarConfirmacaoAsync(usuario);
+                bancoDados.SaveChanges();
+                TempData["Mensagem"] = $"Enviamos um novo link para {usuario.Email}.";
+            }
             return RedirectToAction(nameof(Index));
         }
 

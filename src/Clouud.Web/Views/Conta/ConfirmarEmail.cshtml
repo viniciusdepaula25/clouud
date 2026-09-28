@@ -1,0 +1,24 @@
+@model Clouud.Web.Models.Usuario?
+@{
+    ViewData["Title"] = Model != null ? "E-mail confirmado" : "Link inválido";
+}
+
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <div class="painel-form text-center" id="resultadoConfirmacao">
+            @if (Model != null)
+            {
+                <h2>E-mail confirmado</h2>
+                <p>Obrigado, @Model.Name! O endereço <strong class="text-white">@Model.Email</strong> foi confirmado e você vai receber os avisos da lista de desejos.</p>
+                <a href="/" class="btn btn-primary">Ir para a loja</a>
+            }
+            else
+            {
+                <h2>Link inválido ou vencido</h2>
+                <p>O link de confirmação vale por 7 dias e deixa de valer se o e-mail da conta for trocado.
+                    Entre na sua conta e peça um novo em <strong>Minha conta</strong>.</p>
+                <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" class="btn btn-primary">Minha conta</a>
+            }
+        </div>
+    </div>
+</div>

@@ -6,8 +6,8 @@
 }
 
 
-<div class="row mt-4">
-    <div class="offset-md-4 col-md-4">
+<div class="row justify-content-center mt-2">
+    <div class="col-md-8 col-lg-6 col-xl-5">
         <h2>Minha conta</h2>
         <hr />
         <partial name="_Alertas" />
@@ -32,6 +32,21 @@
                     </form>
                 }
             </div>
+        </div>
+
+        @* Confirmação do e-mail: sem ela não vão os avisos da lista de desejos *@
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small" id="statusEmail">
+            @if (Model.EmailConfirmado)
+            {
+                <span class="badge bg-success">E-mail confirmado</span>
+            }
+            else
+            {
+                <span class="badge bg-warning text-dark">E-mail não confirmado</span>
+                <form asp-action="ReenviarConfirmacao" method="post" class="m-0">
+                    <input type="submit" value="Reenviar e-mail de confirmação" class="btn btn-link btn-sm p-0" />
+                </form>
+            }
         </div>
 
         <form asp-action="Index" method="post">
