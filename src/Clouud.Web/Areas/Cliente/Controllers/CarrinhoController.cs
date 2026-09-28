@@ -1,6 +1,8 @@
 using Clouud.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Clouud.Web.Infraestrutura;
 
 namespace Clouud.Web.Areas.Cliente.Controllers
 {
@@ -41,6 +43,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(LimitesDeUso.Compras)]
         public IActionResult AplicarCupom(string? codigo)
         {
             var subtotal = carrinho.Montar(UsuarioId).Subtotal;
@@ -115,6 +118,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         /// <summary>Fecha o pedido: reserva as chaves e leva para o pagamento.</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(LimitesDeUso.Compras)]
         public IActionResult Finalizar()
         {
             var (pedido, erro) = pedidos.CriarDoCarrinho(UsuarioId, Request.Cookies[CookieCupom]);

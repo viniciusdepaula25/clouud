@@ -57,7 +57,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Inclui(UsuarioFormViewModel form)
         {
-            var email = form.Email.Trim().ToLowerInvariant();
+            var email = (form.Email ?? "").Trim().ToLowerInvariant();
 
             if (string.IsNullOrWhiteSpace(form.Senha))
             {
@@ -115,7 +115,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            var email = form.Email.Trim().ToLowerInvariant();
+            var email = (form.Email ?? "").Trim().ToLowerInvariant();
             if (bancoDados.Usuarios.Any(e => e.Email == email && e.ID != usuario.ID))
             {
                 ModelState.AddModelError(nameof(form.Email), "Já existe uma conta com este e-mail");
@@ -142,6 +142,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
             if (!string.IsNullOrWhiteSpace(form.Senha))
             {
                 usuario.Senha = senhas.GerarHash(usuario, form.Senha); // senha nova: gera o hash
+                ProtecaoLogin.Liberar(usuario);
             }
 
             bancoDados.SaveChanges();

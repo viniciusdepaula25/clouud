@@ -62,7 +62,9 @@ Nenhuma senha fica nos arquivos `appsettings*.json`. Cada uma vem de uma variáv
 
 O cadastro pelo site cria apenas contas de **cliente**. Ao iniciar, a aplicação cria um **administrador** se ainda não existir nenhum: o e-mail vem de `AdminInicial:Email` (em desenvolvimento, `admin@clouud.com`, no `appsettings.Development.json`) e a senha de `AdminInicial:Senha` (passo 1 acima). Sem a senha configurada, o log avisa e o admin não é criado.
 
-As senhas são salvas no banco apenas como *hash* (PBKDF2). Contas antigas, com a senha salva em texto puro, continuam funcionando: no primeiro login a senha é convertida para hash automaticamente.
+As senhas são salvas no banco apenas como *hash* (PBKDF2), com pelo menos 8 caracteres e sem as senhas mais comuns ("12345678", "senha123"...). Contas do projeto original, com a senha em texto puro, têm a senha trocada pelo hash na primeira vez que a aplicação inicia; o login nunca compara texto puro.
+
+**Proteção do login:** depois de 5 senhas erradas seguidas a conta fica 15 minutos sem poder entrar (o "Esqueci minha senha" libera antes), e cada IP pode tentar no máximo 10 logins por minuto. Cadastro, "esqueci minha senha" e reenvio de confirmação também têm limite por IP (10 a cada 15 minutos), e aplicar cupom e finalizar a compra, por cliente (30 por minuto). Passou do limite, aparece a página "Muitas tentativas" (HTTP 429). Os números ficam em `Seguranca` no `appsettings.json`.
 
 ## Catálogo
 

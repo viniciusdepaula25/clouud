@@ -37,14 +37,16 @@ def test_cadastro_entra_direto_e_email_repetido_e_recusado(paginas, fabrica, ban
     assert caminho(terceira) == "/" and "Sair" in terceira.inner_text("nav")
 
 
-def test_login_errado_e_senha_antiga_convertida_para_hash(paginas, fabrica, banco):
+def test_login_errado_e_hash_antigo_regravado(paginas, fabrica, banco):
     cliente = fabrica.cliente()
+    hash_antigo = banco.valor("SELECT senha FROM usuarios WHERE id = %s", cliente["id"])
     pagina = paginas.nova()
     entrar(pagina, cliente["email"], "errada")
-    assert "/conta/login" in pagina.url.lower()
+    assert "/conta/login" in pagina.url.lower() and "Usuário ou senha inválidos" in pagina.inner_text("main")
     entrar(pagina, cliente["email"], cliente["senha"])
     assert caminho(pagina) == "/" and "Sair" in pagina.inner_text("nav")
-    assert banco.valor("SELECT senha FROM usuarios WHERE id = %s", cliente["id"]) != cliente["senha"]
+    # hash com parâmetros fracos é trocado por um novo no login certo
+    assert banco.valor("SELECT senha FROM usuarios WHERE id = %s", cliente["id"]) != hash_antigo
 
 
 def test_return_url_externo_e_ignorado(paginas, fabrica):

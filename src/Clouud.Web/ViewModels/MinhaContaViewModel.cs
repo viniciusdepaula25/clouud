@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Clouud.Web.Infraestrutura;
 
 namespace Clouud.Web.ViewModels
 {
@@ -26,7 +27,8 @@ namespace Clouud.Web.ViewModels
         [Display(Name = "Senha atual")]
         public string? SenhaAtual { get; set; }
 
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres")]
+        [StringLength(100, ErrorMessage = "A senha pode ter no máximo 100 caracteres")]
+        [SenhaForte]
         [DataType(DataType.Password)]
         [Display(Name = "Nova senha")]
         public string? NovaSenha { get; set; }

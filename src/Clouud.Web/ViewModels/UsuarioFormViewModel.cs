@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Clouud.Web.Infraestrutura;
 using Clouud.Web.Models;
 
 namespace Clouud.Web.ViewModels
@@ -25,7 +26,8 @@ namespace Clouud.Web.ViewModels
         public PerfilUsuario Perfil { get; set; }
 
         /// <summary>Obrigatória na inclusão. Na alteração, em branco = mantém a senha atual.</summary>
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres")]
+        [StringLength(100, ErrorMessage = "A senha pode ter no máximo 100 caracteres")]
+        [SenhaForte]
         [DataType(DataType.Password)]
         public string? Senha { get; set; }
     }

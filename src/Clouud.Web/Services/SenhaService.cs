@@ -1,7 +1,8 @@
 using System.Security.Cryptography;
-using System.Text;
+using Clouud.Web.Data;
 using Clouud.Web.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clouud.Web.Services
 {
@@ -16,6 +17,9 @@ namespace Clouud.Web.Services
 
         private readonly IPasswordHasher<Usuario> hasher;
 
+        /// <summary>Hash de uma senha qualquer, para o login de e-mail inexistente levar o mesmo tempo.</summary>
+        private static string? hashFalso;
+
         public SenhaService(IPasswordHasher<Usuario> hasher)
         {
             this.hasher = hasher;
@@ -27,24 +31,14 @@ namespace Clouud.Web.Services
         }
 
         /// <summary>
-        /// Confere a senha digitada com a salva no banco.
-        /// AtualizarHash = true quando o hash deve ser regravado: senha antiga salva em texto puro
-        /// (contas criadas antes desta versão) ou hash gerado com parâmetros antigos.
+        /// Confere a senha digitada com o hash salvo no banco.
+        /// AtualizarHash = true quando o hash foi gerado com parâmetros antigos e deve ser regravado.
         /// </summary>
         public (bool Valida, bool AtualizarHash) Verificar(Usuario usuario, string senhaDigitada)
         {
-            if (string.IsNullOrEmpty(usuario.Senha))
-            {
-                return (false, false);
-            }
-
             if (!EhHash(usuario.Senha))
             {
-                // Conta antiga com a senha em texto puro: compara e pede para gravar o hash
-                var valida = CryptographicOperations.FixedTimeEquals(
-                    Encoding.UTF8.GetBytes(usuario.Senha),
-                    Encoding.UTF8.GetBytes(senhaDigitada));
-                return (valida, valida);
+                return (false, false); // nunca compara com texto puro (ver ConverterSenhasLegadasAsync)
             }
 
             var resultado = hasher.VerifyHashedPassword(usuario, usuario.Senha, senhaDigitada);
@@ -52,9 +46,24 @@ namespace Clouud.Web.Services
                     resultado == PasswordVerificationResult.SuccessRehashNeeded);
         }
 
-        /// <summary>O hash do PasswordHasher é Base64 e começa com o byte 0x00 (formato v2) ou 0x01 (v3).</summary>
-        private static bool EhHash(string valor)
+        /// <summary>
+        /// Faz o mesmo trabalho de conferir uma senha, sem usuário. Assim o login com e-mail que não existe
+        /// demora o mesmo que com e-mail existente, e o tempo de resposta não revela quem tem conta.
+        /// </summary>
+        public void GastarTempoComoVerificacao(string senhaDigitada)
         {
+            var falso = new Usuario();
+            hashFalso ??= hasher.HashPassword(falso, Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)));
+            hasher.VerifyHashedPassword(falso, hashFalso, senhaDigitada);
+        }
+
+        /// <summary>O hash do PasswordHasher é Base64 e começa com o byte 0x00 (formato v2) ou 0x01 (v3).</summary>
+        public static bool EhHash(string? valor)
+        {
+            if (string.IsNullOrEmpty(valor))
+            {
+                return false;
+            }
             var bytes = new byte[valor.Length];
             if (!Convert.TryFromBase64String(valor, bytes, out var tamanho))
             {
@@ -62,6 +71,43 @@ namespace Clouud.Web.Services
             }
 
             return (bytes[0] == 0x00 && tamanho == 49) || (bytes[0] == 0x01 && tamanho >= 13);
+        }
+
+        /// <summary>
+        /// Contas do projeto original tinham a senha em texto puro no banco. Ao iniciar, a aplicação troca
+        /// cada uma pelo hash; o login nunca mais compara texto puro.
+        /// </summary>
+        public static async Task ConverterSenhasLegadasAsync(IServiceProvider servicos)
+        {
+            using var escopo = servicos.CreateScope();
+            var bancoDados = escopo.ServiceProvider.GetRequiredService<BancoDados>();
+            var senhas = escopo.ServiceProvider.GetRequiredService<SenhaService>();
+            var logger = escopo.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(SenhaService));
+            try
+            {
+                if ((await bancoDados.Database.GetPendingMigrationsAsync()).Any())
+                {
+                    return;
+                }
+                var convertidas = 0;
+                foreach (var usuario in await bancoDados.Usuarios.ToListAsync())
+                {
+                    if (!EhHash(usuario.Senha) && !string.IsNullOrEmpty(usuario.Senha))
+                    {
+                        usuario.Senha = senhas.GerarHash(usuario, usuario.Senha);
+                        convertidas++;
+                    }
+                }
+                if (convertidas > 0)
+                {
+                    await bancoDados.SaveChangesAsync();
+                    logger.LogWarning("{Quantidade} senha(s) em texto puro foram trocadas pelo hash.", convertidas);
+                }
+            }
+            catch (Exception erro)
+            {
+                logger.LogError(erro, "Não foi possível converter as senhas em texto puro. O banco está acessível?");
+            }
         }
     }
 }

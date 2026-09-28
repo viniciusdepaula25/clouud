@@ -45,6 +45,12 @@ namespace Clouud.Web.Models
         [Display(Name = "Receber avisos da lista de desejos")]
         public bool ReceberAvisos { get; set; } = true;
 
+        /// <summary>Senhas erradas seguidas (volta a zero no login certo ou quando a conta é bloqueada).</summary>
+        public int FalhasLogin { get; set; }
+
+        /// <summary>Conta bloqueada para login até este momento, depois de muitas senhas erradas.</summary>
+        public DateTime? BloqueadoAte { get; set; }
+
         [ValidateNever]
         public ICollection<Pedido> Pedidos { get; set; } = new List<Pedido>();
 

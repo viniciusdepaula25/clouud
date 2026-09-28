@@ -4,6 +4,8 @@ using Clouud.Web.Services;
 using Clouud.Web.Services.Emails;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Clouud.Web.Infraestrutura;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -44,10 +46,11 @@ namespace Clouud.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(LimitesDeUso.FormulariosDeConta)]
         public async Task<IActionResult> Cadastro(ContaViewModel conta)
         {
             // e-mail sempre em minúsculas e sem espaços, para não existirem duas contas iguais
-            var email = conta.Email.Trim().ToLowerInvariant();
+            var email = (conta.Email ?? "").Trim().ToLowerInvariant();
 
             if (ModelState.IsValid && bancoDados.Usuarios.Any(e => e.Email == email))
             {
@@ -99,42 +102,61 @@ namespace Clouud.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel login)
+        [EnableRateLimiting(LimitesDeUso.Login)]
+        public async Task<IActionResult> Login(LoginViewModel login, [FromServices] ProtecaoLogin protecao,
+            [FromServices] ILogger<ContaController> logger)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var email = login.Email.Trim().ToLowerInvariant();
-                var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.Email.ToLower() == email);
-
-                var (senhaValida, atualizarHash) = usuario != null
-                    ? senhas.Verificar(usuario, login.Senha)
-                    : (false, false);
-
-                if (usuario != null && senhaValida && atualizarHash)
-                {
-                    // conta antiga com senha em texto puro: grava o hash no lugar
-                    usuario.Senha = senhas.GerarHash(usuario, login.Senha);
-                    bancoDados.SaveChanges();
-                }
-
-                if (usuario != null && senhaValida && await AutenticaUsuario(usuario))
-                {
-                    // Volta para a página que pediu o login, se for do próprio site
-                    if (Url.IsLocalUrl(login.ReturnUrl))
-                    {
-                        return LocalRedirect(login.ReturnUrl);
-                    }
-
-                    return usuario.Perfil == PerfilUsuario.Cliente
-                        ? RedirectToAction("Index", "Home", new { area = "" })
-                        : RedirectToAction("Index", "Home", new { area = "Admin" });
-                }
-                else
-                {
-                    ModelState.AddModelError("Senha", "Usuário ou senha inválidos");
-                }
+                return View(login);
             }
-            return View(login);
+
+            var email = (login.Email ?? "").Trim().ToLowerInvariant();
+            var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.Email == email);
+            if (usuario == null)
+            {
+                senhas.GastarTempoComoVerificacao(login.Senha); // mesmo tempo de resposta que um e-mail existente
+                ModelState.AddModelError("Senha", "Usuário ou senha inválidos");
+                return View(login);
+            }
+
+            if (protecao.EstaBloqueado(usuario, out var falta))
+            {
+                ModelState.AddModelError("Senha",
+                    $"Muitas senhas erradas seguidas. Por segurança, o login desta conta está bloqueado por mais {Math.Ceiling(falta.TotalMinutes)} minuto(s). " +
+                    "Se esqueceu a senha, use \"Esqueci minha senha\".");
+                return View(login);
+            }
+
+            var (senhaValida, atualizarHash) = senhas.Verificar(usuario, login.Senha);
+            if (!senhaValida)
+            {
+                if (protecao.RegistrarFalha(usuario))
+                {
+                    logger.LogWarning("Conta {Email} bloqueada para login por {Minutos} minutos depois de {Tentativas} senhas erradas",
+                        usuario.Email, protecao.Bloqueio.TotalMinutes, protecao.TentativasAntesDoBloqueio);
+                }
+                bancoDados.SaveChanges();
+                ModelState.AddModelError("Senha", "Usuário ou senha inválidos");
+                return View(login);
+            }
+
+            ProtecaoLogin.Liberar(usuario);
+            if (atualizarHash)
+            {
+                usuario.Senha = senhas.GerarHash(usuario, login.Senha); // hash com parâmetros novos
+            }
+            bancoDados.SaveChanges();
+            await autenticacao.EntrarAsync(usuario);
+
+            // Volta para a página que pediu o login, se for do próprio site
+            if (Url.IsLocalUrl(login.ReturnUrl))
+            {
+                return LocalRedirect(login.ReturnUrl);
+            }
+            return usuario.Perfil == PerfilUsuario.Cliente
+                ? RedirectToAction("Index", "Home", new { area = "" })
+                : RedirectToAction("Index", "Home", new { area = "Admin" });
         }
 
         /// <summary>Link do e-mail de confirmação (funciona mesmo sem estar logado).</summary>
@@ -150,6 +172,7 @@ namespace Clouud.Web.Controllers
 
         [HttpPost("/conta/esqueci-senha")]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(LimitesDeUso.FormulariosDeConta)]
         public async Task<IActionResult> EsqueciSenha(EsqueciSenhaViewModel pedido)
         {
             if (!ModelState.IsValid)
@@ -243,17 +266,6 @@ namespace Clouud.Web.Controllers
         }
 
         //metodos
-        private async Task<bool> AutenticaUsuario(Usuario usuario)
-        {
-            if (usuario != null)
-            {
-                // grava o cookie de login (nome, e-mail, id e perfil do usuário)
-                await autenticacao.EntrarAsync(usuario);
-                return true;
-            }
-
-            return false;
-        }
 
     }
 

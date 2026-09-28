@@ -77,6 +77,16 @@ def string_conexao(banco: str = BANCO) -> str:
     return f"Host={PG_HOST};Port={PG_PORTA};Database={banco};Username={PG_USUARIO};Password={PG_SENHA}"
 
 
+def hash_senha(senha: str) -> str:
+    """Hash no formato do PasswordHasher do ASP.NET (v3, PBKDF2). Parâmetros leves de propósito:
+    o login aceita e grava um hash novo, mais forte (como acontece com contas de versões antigas)."""
+    import struct
+    salt = os.urandom(16)
+    iteracoes = 10_000
+    subchave = hashlib.pbkdf2_hmac("sha256", senha.encode(), salt, iteracoes, 32)
+    return base64.b64encode(b"\x01" + struct.pack(">III", 1, iteracoes, len(salt)) + salt + subchave).decode()
+
+
 class Cofre:
     """O mesmo esquema de Infraestrutura/CriptografiaChaves.cs, para os testes gravarem e lerem chaves no banco."""
 
@@ -156,6 +166,10 @@ def ambiente_da_aplicacao(url: str = URL, banco: str = BANCO, **extras: str) -> 
         "Email__IntervaloSegundos": "1",
         "Loja__AvisosIntervaloSegundos": "1",
         "Loja__UrlPublica": url,
+        # os testes fazem centenas de logins do mesmo IP; os limites têm testes próprios, numa aplicação separada
+        "Seguranca__Limites__LoginPorMinuto": "100000",
+        "Seguranca__Limites__FormulariosDeContaPor15Minutos": "100000",
+        "Seguranca__Limites__ComprasPorMinuto": "100000",
     })
     ambiente.update(extras)
     return ambiente
@@ -245,11 +259,10 @@ class Fabrica:
         return uuid.uuid4().hex[:8]
 
     def cliente(self, nome: str = "Cliente", senha: str = "senha123", confirmado: bool = True) -> dict:
-        # Senha em texto puro de propósito: é o formato das contas antigas, e o login converte para hash
         email = f"{nome.lower().replace(' ', '')}.{self.sufixo()}@teste.com"
         usuario_id = self.banco.valor(
             """INSERT INTO usuarios (name, email, senha, perfil, email_confirmado_em)
-               VALUES (%s, %s, %s, 0, CASE WHEN %s THEN now() END) RETURNING id""", nome, email, senha, confirmado)
+               VALUES (%s, %s, %s, 0, CASE WHEN %s THEN now() END) RETURNING id""", nome, email, hash_senha(senha), confirmado)
         return {"id": usuario_id, "nome": nome, "email": email, "senha": senha}
 
     def jogo(self, titulo: str | None = None, plataforma: str = "steam", preco: float = 100, chaves: int = 0,

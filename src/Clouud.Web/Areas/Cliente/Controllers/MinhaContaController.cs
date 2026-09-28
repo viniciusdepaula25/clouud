@@ -5,6 +5,8 @@ using Clouud.Web.Services.Emails;
 using Clouud.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Clouud.Web.Infraestrutura;
 
 namespace Clouud.Web.Areas.Cliente.Controllers
 {
@@ -58,7 +60,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 return NotFound();
             }
 
-            var email = conta.Email.Trim().ToLowerInvariant();
+            var email = (conta.Email ?? "").Trim().ToLowerInvariant();
             var trocouEmail = email != usuario.Email;
             var trocouSenha = !string.IsNullOrWhiteSpace(conta.NovaSenha);
 
@@ -116,6 +118,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         /// <summary>Manda de novo o link de confirmação do e-mail (no máximo um a cada 2 minutos).</summary>
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting(LimitesDeUso.FormulariosDeConta)]
         public async Task<IActionResult> ReenviarConfirmacao()
         {
             var usuario = bancoDados.Usuarios.FirstOrDefault(e => e.ID == UsuarioLogadoId());

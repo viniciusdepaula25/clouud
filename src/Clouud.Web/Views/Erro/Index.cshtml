@@ -1,0 +1,26 @@
+@{
+    var codigo = ViewData["Codigo"] as int? ?? 500;
+    var (titulo, texto) = codigo switch
+    {
+        404 => ("Página não encontrada", "O endereço pode ter mudado ou o item não está mais na loja."),
+        429 => ("Muitas tentativas", "Você fez muitas tentativas em pouco tempo. Por segurança, espere um pouco e tente de novo."),
+        403 => ("Acesso negado", "Sua conta não tem permissão para esta página."),
+        400 => ("Não foi possível concluir", "O formulário expirou ou veio incompleto. Volte, recarregue a página e tente de novo."),
+        _ => ("Algo deu errado", "Não conseguimos concluir agora. Tente de novo em instantes.")
+    };
+    ViewData["Title"] = titulo;
+}
+
+<div class="row justify-content-center">
+    <div class="col-sm-10 col-md-7 col-lg-5">
+        <div class="painel-form text-center" id="paginaErro" data-codigo="@codigo">
+            <h2>@titulo</h2>
+            <p>@texto</p>
+            @if (codigo == 429 && Context.Response.Headers.RetryAfter.FirstOrDefault() is string espera)
+            {
+                <p class="text-muted small">Tente de novo em cerca de @espera segundos.</p>
+            }
+            <a href="/" class="btn btn-primary">Ir para a loja</a>
+        </div>
+    </div>
+</div>

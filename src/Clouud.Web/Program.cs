@@ -79,6 +79,10 @@ builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
 // para continuarem valendo depois de mudar a pasta de instalação ou a versão
 builder.Services.AddDataProtection().SetApplicationName("Clouud");
 
+// Proteções do login e dos formulários que um robô atacaria
+LimitesDeUso.Configurar(builder.Services, builder.Configuration);
+builder.Services.AddSingleton<ProtecaoLogin>();
+
 // Criptografia dos códigos das chaves (a chave mestra vem de Seguranca__ChaveCriptografia, nunca do appsettings)
 builder.Services.AddSingleton(_ => CriptografiaChaves.Atual);
 
@@ -103,9 +107,12 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
+// 404, 429 e outros erros sem corpo viram uma página amigável
+app.UseStatusCodePagesWithReExecute("/erro/{0}");
 app.UseStaticFiles();
 
 app.UseRouting();
+app.UseRateLimiter();
 
 //ativa o serviço de autenticacao de usuarios no servidor
 app.UseAuthentication();
@@ -125,6 +132,9 @@ if (app.Configuration.GetValue("Banco:AplicarMigrations", false))
     using var escopo = app.Services.CreateScope();
     await escopo.ServiceProvider.GetRequiredService<BancoDados>().Database.MigrateAsync();
 }
+
+// Contas antigas com senha em texto puro: grava o hash no lugar
+await SenhaService.ConverterSenhasLegadasAsync(app.Services);
 
 // Bancos de antes da criptografia: cifra as chaves que ainda estiverem em texto puro
 await ConversaoChavesLegadas.ConverterAsync(app.Services);

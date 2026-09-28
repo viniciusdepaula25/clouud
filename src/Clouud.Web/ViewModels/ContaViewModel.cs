@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Clouud.Web.Infraestrutura;
 
 
 namespace Clouud.Web.ViewModels
@@ -11,12 +12,13 @@ namespace Clouud.Web.ViewModels
 
         [Required(ErrorMessage = "E-mail obrigatório")]
         [StringLength(100)]
-        [DataType(DataType.EmailAddress, ErrorMessage = "Informe um e-mail válido")]
+        [EmailAddress(ErrorMessage = "Informe um e-mail válido")]
         [Display(Name = "E-mail")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Senha obrigatória")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "A senha deve ter pelo menos 6 caracteres")]
+        [StringLength(100, ErrorMessage = "A senha pode ter no máximo 100 caracteres")]
+        [SenhaForte]
         [DataType(DataType.Password, ErrorMessage = "Informe uma senha válida")]
         public string Senha { get; set; } = string.Empty;
 
