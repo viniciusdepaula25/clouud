@@ -1,5 +1,5 @@
 # Testes de ponta a ponta (navegador de verdade contra a aplicação rodando)
-pytest==8.4.2
+pytest==9.1.1
 pytest-playwright==0.7.1
 playwright==1.56.0
 psycopg[binary]==3.2.10
