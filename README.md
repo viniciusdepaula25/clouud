@@ -68,6 +68,17 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2), com pelo menos 8 car
 
 **Sessão:** o cookie de login é `HttpOnly` e `SameSite=Lax` e expira após 30 minutos sem uso. Cada conta tem um "selo de segurança" gravado também no cookie; trocar a senha, o e-mail ou o perfil (inclusive pelo admin) troca o selo e derruba as sessões abertas em outros aparelhos, e em **Minha conta** há "Sair de todos os outros aparelhos". Sair da conta é só por POST, e todo POST exige o token antiforgery.
 
+**HTTPS e cabeçalhos:** fora do desenvolvimento, a loja redireciona HTTP para HTTPS, manda HSTS (1 ano) e os cookies só trafegam em HTTPS. Toda resposta leva os cabeçalhos recomendados: `Content-Security-Policy` (scripts só do próprio site ou com o *nonce* da página, nada de iframe de outro site nem formulário para fora), `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` e `Permissions-Policy`; o servidor não se identifica. Por causa da CSP, as views não usam `onclick`/`onerror`/`onsubmit`: use `data-confirmar`, `data-fallback` e `data-enviar-ao-mudar`, tratados pelo `wwwroot/js/site.js`, e os `<script>` das páginas recebem o nonce sozinhos.
+
+Em produção, a loja deve ficar atrás de um proxy com o certificado (nginx, Traefik, Caddy, o do provedor de nuvem). Configure:
+
+| Configuração | Para quê |
+|---|---|
+| `Seguranca__Https__Forcar=true` | Padrão fora do desenvolvimento; no `docker-compose.yml` local fica `false` porque não há certificado |
+| `Seguranca__Proxy__Confiar=true` | A aplicação lê o IP e o protocolo originais dos cabeçalhos `X-Forwarded-*` (só ligue atrás de um proxy: exposta direto, qualquer um falsificaria o IP) |
+| `AllowedHosts=clouud.com.br` | Só responde ao domínio da loja |
+| `Loja__UrlPublica=https://clouud.com.br` | Links dos e-mails em HTTPS |
+
 ## Catálogo
 
 Valores aparecem no padrão brasileiro (`R$ 1.234,50`). Nos campos de preço e de cupom dá para digitar com vírgula ou ponto: `59,90`, `59.90`, `1.234,50` e `R$ 1.234,50` valem; um ponto seguido de três dígitos é milhar (`1.500` = mil e quinhentos). A regra fica em `Infraestrutura/Dinheiro.cs` e vale no navegador e no servidor.

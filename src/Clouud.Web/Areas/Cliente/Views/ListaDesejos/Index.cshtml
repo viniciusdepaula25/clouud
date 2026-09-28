@@ -23,7 +23,7 @@
             <div class="col-3 col-md-2">
                 <img src="@(string.IsNullOrEmpty(desejo.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + desejo.Capa))"
                      alt="" class="img-fluid rounded-start h-100" style="object-fit: cover; max-height: 180px; width: 100%"
-                     onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+                     data-fallback="@Url.Content("~/img/sem-capa.svg")" />
             </div>
             <div class="col">
                 <div class="card-body">

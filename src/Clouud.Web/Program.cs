@@ -10,9 +10,36 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// HTTPS: fora do desenvolvimento, a loja redireciona HTTP para HTTPS, manda HSTS e os cookies só
+// trafegam em HTTPS. Desligue (Seguranca:Https:Forcar=false) só onde não há certificado, como no
+// docker compose local. Atrás de um proxy com TLS (nginx, Traefik, Azure...), ligue Seguranca:Proxy:Confiar
+// para a aplicação saber o IP e o protocolo originais.
+var forcarHttps = builder.Configuration.GetValue("Seguranca:Https:Forcar", !builder.Environment.IsDevelopment());
+var confiarProxy = builder.Configuration.GetValue("Seguranca:Proxy:Confiar", false);
+builder.WebHost.ConfigureKestrel(kestrel => kestrel.AddServerHeader = false); // não anuncia o servidor
+if (confiarProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(opcoes =>
+    {
+        opcoes.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        // o proxy é quem fala com a aplicação (ela não deve ficar exposta direto na internet)
+        opcoes.KnownIPNetworks.Clear();
+        opcoes.KnownProxies.Clear();
+    });
+}
+if (forcarHttps)
+{
+    builder.Services.AddHsts(opcoes =>
+    {
+        opcoes.MaxAge = TimeSpan.FromDays(365);
+        opcoes.IncludeSubDomains = true;
+    });
+}
+var politicaCookie = forcarHttps ? CookieSecurePolicy.Always : CookieSecurePolicy.SameAsRequest;
 
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
@@ -25,7 +52,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddAntiforgery(options =>
 {
     options.Cookie.Name = "clouud.antiforgery";
-    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    options.Cookie.SecurePolicy = politicaCookie;
 });
 
 // Banco de dados: uma instância do BancoDados por requisição, injetada nos controllers.
@@ -81,17 +108,13 @@ builder.Services
         options.Cookie.Name = "clouud.sessao";
         options.Cookie.HttpOnly = true;                 // JavaScript não lê o cookie (protege contra XSS)
         options.Cookie.SameSite = SameSiteMode.Lax;     // não vai em POSTs vindos de outros sites
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // em HTTPS, só trafega por HTTPS
+        options.Cookie.SecurePolicy = politicaCookie;    // com HTTPS forçado, só trafega por HTTPS
         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
         options.SlidingExpiration = true;
         // Cada requisição confere o selo de segurança do usuário: nova senha, novo perfil ou conta
         // excluída derrubam as sessões abertas em outros aparelhos
         options.Events.OnValidatePrincipal = AutenticacaoService.ValidarSessaoAsync;
     });
-
-// Adiciona o serviço de envio de arquivos
-builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(
-    Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
 
 
 // Chaves que assinam os cookies de login e os links dos e-mails: nome fixo da aplicação,
@@ -122,11 +145,21 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 });
 
 // Configure the HTTP request pipeline.
+if (confiarProxy)
+{
+    app.UseForwardedHeaders(); // primeiro de tudo: IP e protocolo reais vindos do proxy
+}
+app.UseMiddleware<CabecalhosSeguranca>(forcarHttps);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
 }
-// 404, 429 e outros erros sem corpo viram uma página amigável
+if (forcarHttps)
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+}
+
 app.UseStatusCodePagesWithReExecute("/erro/{0}");
 app.UseStaticFiles();
 

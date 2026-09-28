@@ -6,7 +6,7 @@
 <div class="row">
     <div class="col-md-3">
         <img src="@(string.IsNullOrEmpty(Model.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + Model.Capa))"
-             alt="Capa" class="img-fluid mb-3" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+             alt="Capa" class="img-fluid mb-3" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
     </div>
     <div class="col-md-9">
         <dl class="row">

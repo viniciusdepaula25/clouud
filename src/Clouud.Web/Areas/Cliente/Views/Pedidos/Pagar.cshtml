@@ -58,7 +58,7 @@
         }
 
         <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post" class="mt-4"
-              onsubmit="return confirm('Cancelar este pedido? As chaves voltam para a loja.')">
+              data-confirmar="Cancelar este pedido? As chaves voltam para a loja.">
             <input type="submit" value="Cancelar pedido" class="btn btn-link text-danger p-0" />
         </form>
     </div>

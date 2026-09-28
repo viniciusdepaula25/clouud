@@ -101,14 +101,14 @@ else
     @if (Model.Status == StatusPedido.AguardandoPagamento)
     {
         <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
-              onsubmit="return confirm('Cancelar o pedido #@Model.Id? As chaves reservadas voltam ao estoque.')">
+              data-confirmar="Cancelar o pedido #@Model.Id? As chaves reservadas voltam ao estoque.">
             <input type="submit" value="Cancelar pedido" class="btn btn-danger" />
         </form>
     }
     @if (Model.Status == StatusPedido.Pago)
     {
         <form asp-action="Reembolsar" asp-route-id="@Model.Id" method="post"
-              onsubmit="return confirm('Reembolsar o pedido #@Model.Id? As chaves entregues serão desativadas (o cliente já viu os códigos).')">
+              data-confirmar="Reembolsar o pedido #@Model.Id? As chaves entregues serão desativadas (o cliente já viu os códigos).">
             <input type="submit" value="Reembolsar" class="btn btn-danger" />
         </form>
     }

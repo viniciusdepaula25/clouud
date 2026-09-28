@@ -34,7 +34,7 @@ else
                     <td style="width: 64px">
                         <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + item.Capa))"
                              alt="" width="48" height="64" style="object-fit: cover"
-                             onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+                             data-fallback="@Url.Content("~/img/sem-capa.svg")" />
                     </td>
                     <td>
                         <strong>@item.Titulo</strong><br />
@@ -55,7 +55,7 @@ else
                         <form asp-action="Atualizar" method="post" class="d-flex gap-1">
                             <input type="hidden" name="produtoId" value="@item.ProdutoId" />
                             <select name="quantidade" class="form-select form-select-sm" style="width: 80px" aria-label="Quantidade"
-                                    onchange="this.form.submit()">
+                                    data-enviar-ao-mudar>
                                 @for (var q = 1; q <= CarrinhoItem.QuantidadeMaxima; q++)
                                 {
                                     <option value="@q" selected="@(q == item.Quantidade)">@q</option>

@@ -44,8 +44,8 @@
                 </td>
                 <td>@item.Jogos.Count</td>
                 <td>
-                    <form asp-action="Exclui" asp-route-id="@item.Id" method="post" data-nome="@item.Nome"
-                          onsubmit="return confirm('Excluir a categoria ' + this.dataset.nome + '? Os jogos continuam cadastrados.')">
+                    <form asp-action="Exclui" asp-route-id="@item.Id" method="post"
+                          data-confirmar="Excluir a categoria @item.Nome? Os jogos continuam cadastrados.">
                         <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
                     </form>
                 </td>

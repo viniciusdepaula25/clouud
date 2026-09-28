@@ -44,7 +44,7 @@
                 <td>
                     <img src="@Clouud.Web.Services.FotoPerfilService.Url(item.Foto)" alt="" class="rounded-circle"
                          style="width: 32px; height: 32px; object-fit: cover"
-                         onerror="this.onerror=null;this.src='@Clouud.Web.Services.FotoPerfilService.FotoPadrao'" />
+                         data-fallback="@Clouud.Web.Services.FotoPerfilService.FotoPadrao" />
                 </td>
                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                 <td>@Html.DisplayFor(modelItem => item.Email)</td>

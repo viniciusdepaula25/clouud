@@ -52,6 +52,9 @@ services:
       # serve só para testar. Para uso de verdade, gere a sua (openssl rand -base64 32) e guarde uma cópia.
       Seguranca__ChaveCriptografia: ${CHAVE_CRIPTOGRAFIA:-q9Zq0X0aD8l7cO3a7nqV2mYkP9w6p5T1eJrX0sQw3Zg=}
       TZ: "America/Sao_Paulo"
+      # Aqui a loja roda em HTTP puro, no seu computador. Em produção, coloque um proxy com certificado
+      # (nginx, Traefik, Caddy...) na frente, troque para "true" e ligue Seguranca__Proxy__Confiar.
+      Seguranca__Https__Forcar: "false"
       # Links dos e-mails (confirmação, senha) apontam para cá
       Loja__UrlPublica: "http://localhost:8080"
       Email__Modo: "Smtp"

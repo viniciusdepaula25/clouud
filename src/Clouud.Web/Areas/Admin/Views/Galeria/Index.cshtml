@@ -62,7 +62,7 @@
                             </form>
                             <span class="small text-muted align-self-center ms-1">@(i + 1)º</span>
                         </div>
-                        <form asp-action="Excluir" method="post" onsubmit="return confirm('Excluir esta imagem?')">
+                        <form asp-action="Excluir" method="post" data-confirmar="Excluir esta imagem?">
                             <input type="hidden" name="imagemId" value="@imagem.Id" />
                             <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
                         </form>

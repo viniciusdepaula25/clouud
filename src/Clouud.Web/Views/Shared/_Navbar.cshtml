@@ -65,7 +65,7 @@
                        class="d-flex align-items-center gap-2 text-white text-decoration-none">
                         <span class="fw-semibold">@User.Identity?.Name</span>
                         <img src="@foto" class="rounded-circle foto-barra" alt="Minha conta"
-                             onerror="this.onerror=null;this.src='@Clouud.Web.Services.FotoPerfilService.FotoPadrao'">
+                             data-fallback="@Clouud.Web.Services.FotoPerfilService.FotoPadrao">
                     </a>
                     <form method="post" action="/conta/logout" asp-antiforgery="true" class="m-0">
                             <button type="submit" class="btn btn-secondary btn-sm" id="botaoSair">Sair</button>

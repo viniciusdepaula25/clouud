@@ -100,7 +100,7 @@
                     @if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa && chave.NuncaFoiVendida)
                     {
                         <form asp-action="Excluir" asp-route-id="@chave.Id" asp-route-filtro="@filtro" method="post" class="d-inline"
-                              onsubmit="return confirm('Excluir esta chave do estoque?')">
+                              data-confirmar="Excluir esta chave do estoque?">
                             <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
                         </form>
                     }

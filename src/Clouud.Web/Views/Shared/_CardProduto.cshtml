@@ -18,7 +18,7 @@
     </div>
     <div class="position-relative">
         <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content($"~/uploads/{item.Capa}"))"
-             class="card-img-top capa-card" alt="@item.Titulo" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'">
+             class="card-img-top capa-card" alt="@item.Titulo" data-fallback="@Url.Content("~/img/sem-capa.svg")">
         @if (item.EmPromocao)
         {
             <span class="badge bg-danger position-absolute top-0 start-0 m-2 fs-6">-@item.PercentualDesconto%</span>

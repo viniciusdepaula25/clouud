@@ -41,7 +41,7 @@
                 <td style="white-space: pre-line; max-width: 420px">@avaliacao.Comentario</td>
                 <td class="text-nowrap">@((avaliacao.AtualizadaEm ?? avaliacao.CriadaEm).ToLocalTime().ToString("dd/MM/yyyy"))</td>
                 <td>
-                    <form asp-action="Excluir" method="post" onsubmit="return confirm('Excluir esta avaliação?')">
+                    <form asp-action="Excluir" method="post" data-confirmar="Excluir esta avaliação?">
                         <input type="hidden" name="usuarioId" value="@avaliacao.UsuarioId" />
                         <input type="hidden" name="jogoId" value="@avaliacao.JogoId" />
                         <input type="hidden" name="nota" value="@nota" />

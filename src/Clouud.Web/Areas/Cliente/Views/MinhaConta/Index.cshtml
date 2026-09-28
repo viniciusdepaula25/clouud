@@ -15,7 +15,7 @@
         <div class="d-flex align-items-center gap-3 mb-4">
             <img src="@FotoPerfilService.Url(Model.Foto)" alt="Sua foto de perfil" id="fotoPerfil"
                  class="rounded-circle" style="width: 96px; height: 96px; object-fit: cover"
-                 onerror="this.onerror=null;this.src='@FotoPerfilService.FotoPadrao'" />
+                 data-fallback="@FotoPerfilService.FotoPadrao" />
             <div class="flex-grow-1">
                 <form asp-action="Foto" method="post" enctype="multipart/form-data">
                     <label for="arquivoFoto" class="form-label mb-1">Foto de perfil</label>

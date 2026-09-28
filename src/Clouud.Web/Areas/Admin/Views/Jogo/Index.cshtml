@@ -45,7 +45,7 @@
             <tr>
                 <td>
                     <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + item.Capa))"
-                         alt="" width="48" height="64" style="object-fit: cover" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+                         alt="" width="48" height="64" style="object-fit: cover" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
                 </td>
                 <td>
                     @item.Titulo

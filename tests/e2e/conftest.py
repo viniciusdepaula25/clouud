@@ -390,6 +390,8 @@ class Paginas:
         pagina = contexto.new_page()
         pagina.on("response", lambda r: r.status >= 500 and self.erros.append(f"{r.status} {r.url}"))
         pagina.on("pageerror", lambda e: self.erros.append(f"JavaScript: {e}"))
+        # a Content-Security-Policy bloqueou algo da própria loja (script inline, handler onclick...)
+        pagina.on("console", lambda m: "Content Security Policy" in m.text and self.erros.append(f"CSP: {m.text}"))
         # confirm() das telas (ex.: "Excluir?") é aceito; um alert() inesperado é erro (ex.: script injetado)
         pagina.on("dialog", lambda d: d.accept() if d.type != "alert" else (self.erros.append(f"alert: {d.message}"), d.dismiss()))
         return pagina

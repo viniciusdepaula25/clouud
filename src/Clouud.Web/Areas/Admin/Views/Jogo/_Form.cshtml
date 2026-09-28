@@ -83,7 +83,7 @@
             <label for="txtArquivo" class="control-label">Capa</label>
             @if (Model.CapaAtual != null)
             {
-                <img src="~/uploads/@Model.CapaAtual" alt="Capa atual" class="img-fluid d-block mb-2" onerror="this.onerror=null;this.src='@Url.Content("~/img/sem-capa.svg")'" />
+                <img src="~/uploads/@Model.CapaAtual" alt="Capa atual" class="img-fluid d-block mb-2" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
                 <small class="form-text">Escolha um arquivo só se quiser trocar a capa.</small>
             }
             <input type="file" name="arquivo" id="txtArquivo" class="form-control" accept="@Clouud.Web.Services.ImagemUpload.AcceptHtml" />
