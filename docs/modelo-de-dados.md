@@ -86,6 +86,7 @@ erDiagram
     cupons |o--o{ pedidos : "desconto em"
     usuarios ||--o{ avaliacoes : escreve
     jogos ||--o{ avaliacoes : recebe
+    jogos ||--o{ jogo_imagens : galeria
 
     usuarios {
         int id PK
@@ -169,6 +170,13 @@ erDiagram
         datetime pagar_ate "prazo da reserva"
         datetime pago_em
     }
+    jogo_imagens {
+        int id PK
+        int jogo_id FK
+        string arquivo "em uploads/galeria"
+        string legenda
+        int ordem
+    }
     avaliacoes {
         int usuario_id PK,FK
         int jogo_id PK,FK
@@ -224,6 +232,7 @@ erDiagram
 | **pedidos** | A compra, com status, datas e prazo para pagar | FK para o usuário; status só com os quatro valores válidos; total não negativo |
 | **pedido_itens** | Itens da compra (o `Pedido_Jogo` do diagrama, agora apontando para o produto) | Quantidade maior que zero |
 | **pagamentos** | Tentativas de pagamento do pedido (simulado no início) | FK para o pedido |
+| **jogo_imagens** | Galeria de telas do jogo, na ordem escolhida pelo admin | Apagar o jogo apaga a galeria |
 | **avaliacoes** | Nota e comentário de quem comprou o jogo | Uma por cliente e jogo (pode ser editada); nota de 1 a 5 |
 | **cupons** | Cupons de desconto (% ou valor fixo), com pedido mínimo, validade e limites de uso | Código único e em maiúsculas; % até 100; no pedido, `total = subtotal - desconto` e o desconto nunca passa do subtotal |
 
@@ -238,9 +247,9 @@ erDiagram
 - **Desativar em vez de apagar:** jogos e produtos com vendas são desativados (`ativo = false`) e somem da loja sem perder o histórico dos pedidos.
 - **`pedido_itens` com `id` próprio:** o diagrama usa a chave composta (pedido, jogo). Aqui cada chave vendida precisa apontar para o item em que foi entregue, e isso fica mais simples com um `id`. O par (pedido, produto) continua único.
 
-### O que ficou de fora (pode entrar depois)
+### O que pode entrar depois
 
-- **Galeria de imagens do jogo:** tabela `jogo_imagens`.
+- **Pagamento real:** integrar os `pagamentos` com uma operadora (hoje o pagamento é simulado).
 
 ## 3. Do modelo atual para o proposto
 
@@ -270,5 +279,6 @@ Depois das quatro etapas:
 
 - ✅ **Cupons de desconto** (migration `Cupons`): tabela `cupons`; pedidos ganham `subtotal`, `desconto` e `cupom_id` (os antigos ficam com desconto zero). O uso do cupom é conferido com a linha do cupom travada, então compras simultâneas não passam do limite. Pedidos cancelados ou reembolsados devolvem o uso.
 - ✅ **Página do jogo e avaliações** (migration `Avaliacoes`): página pública `/jogo/{slug}` e tabela `avaliacoes`. Só avalia quem tem um pedido pago com o jogo; a média aparece na vitrine.
+- ✅ **Galeria de imagens** (migration `Galeria`): tabela `jogo_imagens`; o admin envia até 12 imagens por jogo e elas aparecem na página do jogo.
 
 Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.

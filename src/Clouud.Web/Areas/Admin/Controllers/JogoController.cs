@@ -12,10 +12,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
     public class JogoController : AdminController
     {
         private readonly BancoDados bancoDados;
+        private readonly GaleriaService galeria;
 
-        public JogoController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados) : base(webHostEnvironment)
+        public JogoController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados, GaleriaService galeria)
+            : base(webHostEnvironment)
         {
             this.bancoDados = bancoDados;
+            this.galeria = galeria;
         }
 
         [HttpGet]
@@ -158,9 +161,11 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return View(jogo);
             }
 
+            var imagensDaGaleria = bancoDados.JogoImagens.Where(i => i.JogoId == id).Select(i => i.Arquivo).ToList();
             bancoDados.Jogos.Remove(jogo);
             bancoDados.SaveChanges();
             ExcluiArquivo(jogo.Capa);
+            galeria.ExcluirArquivos(imagensDaGaleria);
 
             TempData["Mensagem"] = $"Jogo \"{jogo.Titulo}\" excluído.";
             return RedirectToAction("Index");
@@ -172,6 +177,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 .Include(e => e.Desenvolvedora)
                 .Include(e => e.Categorias)
                 .Include(e => e.Produtos).ThenInclude(p => p.Plataforma)
+                .Include(e => e.Imagens)
                 .AsSplitQuery()
                 .AsQueryable();
 

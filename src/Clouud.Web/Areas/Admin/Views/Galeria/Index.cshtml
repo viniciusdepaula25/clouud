@@ -1,0 +1,79 @@
+@model List<Clouud.Web.Models.JogoImagem>
+@using Clouud.Web.Models
+@using Clouud.Web.Services
+
+@{
+    var jogo = (Jogo)ViewData["Jogo"]!;
+    ViewData["Title"] = "Galeria";
+    var cheia = Model.Count >= JogoImagem.MaximoPorJogo;
+}
+
+<h1>Galeria</h1>
+<h4>@jogo.Titulo</h4>
+<p>Telas do jogo mostradas na <a href="/jogo/@jogo.Slug" target="_blank" style="margin-left: 0">página do jogo</a>, na ordem abaixo. A capa continua sendo a do cadastro do jogo.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+@if (TempData["Erro"] is string erro)
+{
+    <div class="alert alert-danger">@erro</div>
+}
+
+<form asp-action="Enviar" asp-route-id="@jogo.Id" method="post" enctype="multipart/form-data" class="mb-4" style="max-width: 560px">
+    <label for="arquivos" class="form-label">Adicionar imagens (@Model.Count de @JogoImagem.MaximoPorJogo)</label>
+    <div class="d-flex gap-2">
+        <input type="file" name="arquivos" id="arquivos" class="form-control" multiple accept="@ImagemUpload.AcceptHtml" required disabled="@cheia" />
+        <input type="submit" value="Enviar" class="btn btn-secondary" disabled="@cheia" />
+    </div>
+    <small class="form-text">@ImagemUpload.FormatosAceitos, até @(JogoImagem.TamanhoMaximo / (1024 * 1024)) MB cada. Dá para escolher várias de uma vez.</small>
+</form>
+
+@if (Model.Count == 0)
+{
+    <p class="text-muted">Nenhuma imagem na galeria.</p>
+}
+<div class="row g-3">
+    @for (var i = 0; i < Model.Count; i++)
+    {
+        var imagem = Model[i];
+        <div class="col-sm-6 col-lg-4">
+            <div class="card h-100 imagem-galeria">
+                <img src="@GaleriaService.Url(imagem)" alt="@(imagem.Legenda ?? $"Imagem {i + 1}")" class="card-img-top" style="height: 170px; object-fit: cover" />
+                <div class="card-body p-2">
+                    <form asp-action="Legenda" method="post" class="d-flex gap-1 mb-2">
+                        <input type="hidden" name="imagemId" value="@imagem.Id" />
+                        <input type="text" name="legenda" value="@imagem.Legenda" maxlength="@JogoImagem.TamanhoLegenda" placeholder="Legenda (opcional)"
+                               class="form-control form-control-sm" aria-label="Legenda da imagem @(i + 1)" />
+                        <input type="submit" value="Salvar" class="btn btn-secondary btn-sm" />
+                    </form>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-1">
+                            <form asp-action="Mover" method="post">
+                                <input type="hidden" name="imagemId" value="@imagem.Id" />
+                                <input type="hidden" name="direcao" value="-1" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm" disabled="@(i == 0)" aria-label="Mover para a esquerda">◀</button>
+                            </form>
+                            <form asp-action="Mover" method="post">
+                                <input type="hidden" name="imagemId" value="@imagem.Id" />
+                                <input type="hidden" name="direcao" value="1" />
+                                <button type="submit" class="btn btn-outline-primary btn-sm" disabled="@(i == Model.Count - 1)" aria-label="Mover para a direita">▶</button>
+                            </form>
+                            <span class="small text-muted align-self-center ms-1">@(i + 1)º</span>
+                        </div>
+                        <form asp-action="Excluir" method="post" onsubmit="return confirm('Excluir esta imagem?')">
+                            <input type="hidden" name="imagemId" value="@imagem.Id" />
+                            <input type="submit" value="Excluir" class="btn btn-danger btn-sm" />
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="mt-4">
+    <a asp-controller="Jogo" asp-action="Altera" asp-route-id="@jogo.Id">Voltar ao jogo</a> |
+    <a asp-controller="Jogo" asp-action="Index">Jogos</a>
+</div>

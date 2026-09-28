@@ -31,6 +31,8 @@ else
     .nota-opcoes label { cursor: pointer; font-size: 1.75rem; color: #555; padding: 0 .1rem; }
     .nota-opcoes label.acesa { color: #f80; }
     .nota-opcoes input:focus-visible + label { outline: 2px solid #2a9fd6; border-radius: 4px; }
+    .miniatura img { opacity: .55; outline: 2px solid transparent; }
+    .miniatura.ativa img, .miniatura:hover img, .miniatura:focus-visible img { opacity: 1; outline-color: #2a9fd6; }
 </style>
 
 <div class="container pagina-jogo mt-3 mb-5">
@@ -153,6 +155,50 @@ else
         </div>
     </div>
 
+    @if (Model.Imagens.Count > 0)
+    {
+        <h4 class="mt-4">Imagens</h4>
+        <div id="galeria" class="carousel slide galeria" data-bs-ride="false" aria-label="Galeria de imagens de @jogo.Titulo">
+            <div class="carousel-inner rounded" style="background: #111">
+                @for (var i = 0; i < Model.Imagens.Count; i++)
+                {
+                    var imagem = Model.Imagens[i];
+                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                        <img src="@GaleriaService.Url(imagem)" alt="@(imagem.Legenda ?? $"{jogo.Titulo}: imagem {i + 1} de {Model.Imagens.Count}")"
+                             class="d-block w-100" style="height: 460px; object-fit: contain" />
+                        @if (imagem.Legenda != null)
+                        {
+                            <div class="carousel-caption d-none d-md-block"><p class="mb-0 px-2 rounded" style="background: rgba(0,0,0,.6)">@imagem.Legenda</p></div>
+                        }
+                    </div>
+                }
+            </div>
+            @if (Model.Imagens.Count > 1)
+            {
+                <button class="carousel-control-prev" type="button" data-bs-target="#galeria" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Imagem anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#galeria" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Próxima imagem</span>
+                </button>
+            }
+        </div>
+        @if (Model.Imagens.Count > 1)
+        {
+            <div class="d-flex flex-wrap gap-2 mt-2 miniaturas" role="group" aria-label="Escolher imagem">
+                @for (var i = 0; i < Model.Imagens.Count; i++)
+                {
+                    <button type="button" class="p-0 border-0 bg-transparent miniatura @(i == 0 ? "ativa" : "")" data-bs-target="#galeria" data-bs-slide-to="@i"
+                            aria-label="Mostrar imagem @(i + 1)" aria-current="@(i == 0 ? "true" : null)">
+                        <img src="@GaleriaService.Url(Model.Imagens[i])" alt="" style="width: 96px; height: 54px; object-fit: cover" class="rounded" />
+                    </button>
+                }
+            </div>
+        }
+    }
+
     @if (!string.IsNullOrWhiteSpace(jogo.Descricao))
     {
         <h4 class="mt-4">Sobre o jogo</h4>
@@ -257,6 +303,19 @@ else
 </div>
 
 @section Scripts {
+    <script>
+        // Marca a miniatura da imagem que está aparecendo na galeria
+        (function () {
+            const galeria = document.getElementById("galeria");
+            if (!galeria) return;
+            galeria.addEventListener("slid.bs.carousel", evento => {
+                document.querySelectorAll(".miniatura").forEach((botao, i) => {
+                    botao.classList.toggle("ativa", i === evento.to);
+                    if (i === evento.to) botao.setAttribute("aria-current", "true"); else botao.removeAttribute("aria-current");
+                });
+            });
+        })();
+    </script>
     <script>
         // Acende as estrelas até a nota escolhida
         (function () {

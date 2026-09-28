@@ -62,6 +62,10 @@ Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam a
 
 Cada jogo tem uma página pública em `/jogo/{slug}` (ex.: `/jogo/elden-ring`), aberta pelo título do card na vitrine: capa, descrição, ficha técnica, onde comprar (plataformas, preços e estoque) e as avaliações. Só quem tem um pedido **pago** com o jogo pode avaliar (nota de 1 a 5 e comentário opcional); cada cliente tem uma avaliação por jogo, que pode editar ou excluir. A média aparece na vitrine, e em **Admin > Avaliações** o admin filtra e exclui avaliações impróprias.
 
+## Galeria de imagens
+
+Em **Admin > Jogos > Galeria** o admin envia até 12 imagens por jogo (várias de uma vez; JPG, PNG, GIF ou WebP de até 5 MB, conferidas pelo conteúdo do arquivo), coloca legendas e muda a ordem. Elas aparecem na página do jogo com miniaturas para navegar. Os arquivos ficam em `wwwroot/uploads/galeria` e são apagados junto com a imagem ou com o jogo.
+
 ## Cupons de desconto
 
 Em **Admin > Cupons** o admin cria cupons de porcentagem ou de valor fixo, com pedido mínimo, datas de validade, limite de usos no total e por cliente. O cliente digita o código no carrinho e vê o desconto na hora; o cupom é conferido de novo ao finalizar. Pedidos cancelados ou reembolsados devolvem o uso do cupom, e um cupom já usado não pode ser excluído (só desativado).
@@ -102,7 +106,7 @@ A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (
             ├── css/, js/       # estilos e scripts do site
             ├── img/            # imagens fixas do layout
             ├── lib/            # bibliotecas de terceiros (Bootstrap, jQuery)
-            └── uploads/        # capas dos jogos e, em perfis/, fotos de perfil (fora do Git)
+            └── uploads/        # capas dos jogos, perfis/ (fotos de perfil) e galeria/ (fora do Git)
 ```
 
 ## Banco de dados

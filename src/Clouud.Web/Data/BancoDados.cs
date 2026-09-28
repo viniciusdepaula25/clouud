@@ -16,6 +16,7 @@ namespace Clouud.Web.Data
         public DbSet<ListaDesejo> ListaDesejos { get; set; }
         public DbSet<Cupom> Cupons { get; set; }
         public DbSet<Avaliacao> Avaliacoes { get; set; }
+        public DbSet<JogoImagem> JogoImagens { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
@@ -130,6 +131,9 @@ namespace Clouud.Web.Data
                 avaliacao.HasOne(a => a.Jogo).WithMany(j => j.Avaliacoes).OnDelete(DeleteBehavior.Cascade);
                 avaliacao.ToTable(t => t.HasCheckConstraint("ck_avaliacoes_nota", "nota BETWEEN 1 AND 5"));
             });
+
+            // Galeria: apagar o jogo apaga as imagens dele (os arquivos são apagados pelo GaleriaService)
+            modelBuilder.Entity<JogoImagem>().HasOne(i => i.Jogo).WithMany(j => j.Imagens).OnDelete(DeleteBehavior.Cascade);
 
             // Lista de desejos: apagar o usuário ou o jogo remove o jogo das listas
             modelBuilder.Entity<ListaDesejo>(desejo =>

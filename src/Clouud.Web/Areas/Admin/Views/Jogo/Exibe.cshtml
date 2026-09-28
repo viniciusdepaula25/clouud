@@ -13,6 +13,7 @@
 <div>
     <a asp-action="Altera" asp-route-id="@Model.Id">Alterar</a> |
     <a href="/jogo/@Model.Slug" target="_blank">Ver na loja</a> |
+    <a asp-controller="Galeria" asp-action="Index" asp-route-id="@Model.Id">Galeria de imagens</a> |
     <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@Model.Id">Gerenciar produtos</a> |
     <a asp-action="Index">Voltar</a>
 </div>

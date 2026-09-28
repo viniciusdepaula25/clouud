@@ -66,7 +66,8 @@
                         @string.Join(", ", item.Produtos.Select(p => p.Plataforma.Nome).Distinct().Order())
                     }
                     <br />
-                    <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@item.Id" class="small">Gerenciar produtos</a>
+                    <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@item.Id" class="small">Gerenciar produtos</a> ·
+                    <a asp-controller="Galeria" asp-action="Index" asp-route-id="@item.Id" class="small">Galeria (@item.Imagens.Count)</a>
                 </td>
                 <td>@(item.Ativo ? "Ativo" : "Inativo")</td>
                 <td>

@@ -8,6 +8,7 @@ namespace Clouud.Web.ViewModels
         public Jogo Jogo { get; set; } = null!;
         public List<ProdutoVitrineViewModel> Produtos { get; set; } = new();
         public List<AvaliacaoViewModel> Avaliacoes { get; set; } = new();
+        public List<JogoImagem> Imagens { get; set; } = new();
 
         public bool Logado { get; set; }
         public bool PodeAvaliar { get; set; }

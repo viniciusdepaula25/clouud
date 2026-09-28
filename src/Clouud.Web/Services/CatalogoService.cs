@@ -133,6 +133,7 @@ namespace Clouud.Web.Services
                     .Where(p => p.JogoId == jogo.Id && p.Ativo && p.Plataforma.Ativa)
                     .OrderBy(p => p.Plataforma.Nome).ThenBy(p => p.Edicao), hoje).ToList(),
                 Avaliacoes = avaliacoes,
+                Imagens = bancoDados.JogoImagens.Where(i => i.JogoId == jogo.Id).OrderBy(i => i.Ordem).ThenBy(i => i.Id).ToList(),
                 Logado = usuarioId.HasValue
             };
 

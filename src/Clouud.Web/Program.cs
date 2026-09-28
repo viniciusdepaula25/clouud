@@ -29,6 +29,7 @@ builder.Services.AddScoped<ListaDesejosService>();
 builder.Services.AddScoped<FotoPerfilService>();
 builder.Services.AddScoped<PainelService>();
 builder.Services.AddScoped<CupomService>();
+builder.Services.AddScoped<GaleriaService>();
 builder.Services.AddHostedService<CancelamentoAutomatico>();
 builder.Services.AddHttpContextAccessor();
 
