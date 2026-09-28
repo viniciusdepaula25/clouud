@@ -1,0 +1,15 @@
+# Só o necessário para compilar vai para o Docker
+**/bin/
+**/obj/
+**/*.user
+.git/
+.github/
+.vs/
+.idea/
+.vscode/
+tests/
+docs/
+**/__pycache__/
+# Imagens enviadas no computador de quem gerou a imagem não entram nela
+src/Clouud.Web/wwwroot/uploads/*
+!src/Clouud.Web/wwwroot/uploads/.gitkeep

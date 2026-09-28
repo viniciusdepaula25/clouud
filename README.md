@@ -11,7 +11,19 @@ Projeto de uma loja de chaves de ativação de jogos (Steam, Epic Games, Ubisoft
 - PostgreSQL
 - Bootstrap 5 (tema Bootswatch Cyborg)
 
-## Como rodar
+## Rodar com Docker (um comando)
+
+Com o [Docker](https://docs.docker.com/engine/install/) instalado, na pasta do projeto:
+
+```bash
+docker compose up --build
+```
+
+Abra http://localhost:8080 e entre com `admin@clouud.com` / `Admin@123`. O Compose sobe a aplicação e um PostgreSQL 17 próprio (não usa a porta 5432 do seu computador), cria as tabelas e o primeiro administrador. Os dados do banco, as imagens enviadas e as chaves dos cookies de login ficam em volumes do Docker, então sobrevivem a `docker compose down`; para apagar tudo e começar do zero use `docker compose down -v`.
+
+Na primeira vez o log mostra um erro de `__EFMigrationsHistory` não existir: é o Entity Framework conferindo o banco vazio antes de criar as tabelas.
+
+## Como rodar (sem Docker)
 
 **Pré-requisitos:** [.NET SDK 10](https://dotnet.microsoft.com/download) e um PostgreSQL rodando em `localhost:5432`.
 
@@ -88,6 +100,7 @@ A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (
 ├── global.json                 # versão do SDK .NET usada no projeto
 ├── .config/dotnet-tools.json   # versão do dotnet-ef usada no projeto
 ├── .editorconfig               # padrão de formatação (UTF-8, LF, indentação)
+├── Dockerfile, docker-compose.yml  # rodar com Docker
 ├── .github/workflows/ci.yml    # build e testes a cada push (GitHub Actions)
 ├── tests/e2e/                  # testes automatizados (pytest + Playwright)
 └── src/
