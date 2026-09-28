@@ -83,7 +83,7 @@ jobs:
 
       - name: Guardar log da aplicação e capturas de tela
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: resultado-dos-testes
           # só o log e as capturas de tela: os e-mails de teste têm links de senha e chaves
