@@ -62,6 +62,10 @@ Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam a
 
 Na vitrine, o **♡** de cada card põe o jogo na lista de desejos do cliente (vale para todas as plataformas em que o jogo é vendido). A página **Lista de desejos** mostra o preço de agora em cada plataforma, as promoções, o que está esgotado e um botão para comprar. No admin, a tela de **Estoque** mostra quantos clientes querem cada jogo, o que ajuda a decidir o que repor.
 
+## Painel do admin
+
+A tela inicial do admin mostra, para os últimos 7, 30 ou 90 dias: faturamento (só pedidos pagos; reembolsados não entram), pedidos pagos, ticket médio e chaves vendidas, cada um comparado com o período anterior, além de um gráfico de faturamento por dia e os produtos mais vendidos. Também mostra o que precisa de atenção agora: pedidos aguardando pagamento, produtos esgotados, o que repor primeiro (pela procura na lista de desejos) e os últimos pedidos.
+
 ## Estrutura
 
 ```

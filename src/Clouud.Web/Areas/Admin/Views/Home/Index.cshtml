@@ -1,6 +1,348 @@
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model Clouud.Web.ViewModels.PainelViewModel
+@using Clouud.Web.Models
+@using Clouud.Web.ViewModels
+
 @{
+    ViewData["Title"] = "Painel";
+    var periodo = $"{Model.Dias} dias";
+
+    // ---- geometria do gráfico (SVG desenhado no servidor) ----
+    const double largura = 1000, altura = 250, margemEsq = 76, margemDir = 12, margemTopo = 22, margemBase = 30;
+    var plotL = largura - margemEsq - margemDir;
+    var plotA = altura - margemTopo - margemBase;
+    var dados = Model.VendasPorDia;
+    var maximo = dados.Count == 0 ? 0 : dados.Max(d => d.Valor);
+    // escala "redonda": passo 1, 2, 2,5 ou 5 × 10ⁿ, quatro faixas
+    double passo = 25;
+    if (maximo > 0)
+    {
+        var bruto = (double)maximo / 4;
+        var potencia = Math.Pow(10, Math.Floor(Math.Log10(bruto)));
+        var fracao = bruto / potencia;
+        passo = (fracao <= 1 ? 1 : fracao <= 2 ? 2 : fracao <= 2.5 ? 2.5 : fracao <= 5 ? 5 : 10) * potencia;
+    }
+    var topo = maximo > 0 ? Math.Ceiling((double)maximo / passo) * passo : passo * 4;
+    var banda = plotL / Math.Max(dados.Count, 1);
+    var larguraBarra = Math.Min(24, banda - 2);
+    var cadaQuantos = dados.Count <= 7 ? 1 : dados.Count <= 30 ? 5 : 15;
+    var indiceMaximo = dados.FindIndex(d => d.Valor == maximo && maximo > 0);
+    double Y(double valor) => margemTopo + plotA - valor / topo * plotA;
 }
-<h1>Area Admin</h1>
+
+@functions {
+    // Variação contra o período anterior: seta + texto (a cor nunca é o único sinal)
+    private static (string Classe, string Texto)? DescreverVariacao(decimal atual, decimal anterior, string periodo)
+    {
+        var variacao = PainelViewModel.Variacao(atual, anterior);
+        if (variacao == null)
+        {
+            return atual > 0 ? ("painel-neutro", $"sem vendas nos {periodo} anteriores") : null;
+        }
+        if (variacao == 0)
+        {
+            return ("painel-neutro", $"igual aos {periodo} anteriores");
+        }
+        return variacao > 0
+            ? ("painel-alta", $"▲ {variacao}% vs {periodo} anteriores")
+            : ("painel-baixa", $"▼ {Math.Abs(variacao.Value)}% vs {periodo} anteriores");
+    }
+}
+
+<style>
+    /* o layout do admin estiliza todos os links (fonte Impact, margem); aqui eles seguem o texto */
+    .painel a { margin-left: 0; font-family: inherit; font-weight: inherit; }
+    .painel a:not(.btn) { font-size: inherit; }
+    .painel .card { background: #282828; border: 0; }
+    .painel-rotulo { color: #adafae; font-size: .875rem; margin-bottom: .25rem; }
+    .painel-valor { color: #fff; font-size: 1.75rem; font-weight: 600; line-height: 1.2; }
+    .painel-heroi { color: #fff; font-size: 3rem; font-weight: 600; line-height: 1.1; }
+    .painel-alta { color: #77b300; }
+    .painel-baixa { color: #ff6b6b; }
+    .painel-neutro, .painel-detalhe { color: #adafae; }
+    .painel-grafico { position: relative; }
+    .painel-grafico svg { display: block; width: 100%; height: auto; }
+    .painel-grafico .barra { fill: #2a9fd6; }
+    .painel-grafico .coluna { outline: none; cursor: default; }
+    .painel-grafico .coluna:hover .barra, .painel-grafico .coluna:focus .barra { fill: #5ab4e0; }
+    .painel-grafico .coluna:focus .alvo { stroke: #5ab4e0; stroke-width: 1; }
+    .painel-tooltip { position: absolute; pointer-events: none; background: #111; border: 1px solid #3a3a3a; border-radius: 6px;
+                      padding: .4rem .6rem; font-size: .85rem; white-space: nowrap; transform: translate(-50%, -100%); display: none; }
+    .painel-tooltip strong { color: #fff; display: block; font-size: 1rem; }
+    .painel-tooltip span { color: #adafae; }
+    .painel table td, .painel table th { font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="painel">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
+        <h1 class="mb-0">Painel</h1>
+        <div class="btn-group" role="group" aria-label="Período">
+            @foreach (var dias in PainelViewModel.PeriodosPermitidos)
+            {
+                <a asp-action="Index" asp-route-dias="@dias" aria-current="@(dias == Model.Dias ? "true" : null)"
+                   class="btn btn-sm @(dias == Model.Dias ? "btn-primary" : "btn-outline-primary")">Últimos @dias dias</a>
+            }
+        </div>
+    </div>
+    <p class="painel-detalhe mt-1">Vendas dos últimos @periodo (pedidos pagos; reembolsados não entram), comparadas com os @periodo anteriores.</p>
+
+    @* ---- números do período ---- *@
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <div class="card h-100"><div class="card-body">
+                <div class="painel-rotulo">Faturamento</div>
+                <div class="painel-heroi" id="faturamento">@Model.Faturamento.ToString("C")</div>
+                @if (DescreverVariacao(Model.Faturamento, Model.FaturamentoAnterior, periodo) is { } variacaoFaturamento)
+                {
+                    <div class="@variacaoFaturamento.Classe mt-1" id="variacaoFaturamento">@variacaoFaturamento.Texto</div>
+                }
+            </div></div>
+        </div>
+        <div class="col-lg-7">
+            <div class="row g-3 h-100">
+                <div class="col-sm-4">
+                    <div class="card h-100"><div class="card-body">
+                        <div class="painel-rotulo">Pedidos pagos</div>
+                        <div class="painel-valor" id="pedidosPagos">@Model.PedidosPagos</div>
+                        @if (DescreverVariacao(Model.PedidosPagos, Model.PedidosPagosAnterior, periodo) is { } variacaoPedidos)
+                        {
+                            <div class="@variacaoPedidos.Classe small mt-1">@variacaoPedidos.Texto</div>
+                        }
+                    </div></div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card h-100"><div class="card-body">
+                        <div class="painel-rotulo">Ticket médio</div>
+                        <div class="painel-valor">@Model.TicketMedio.ToString("C")</div>
+                        <div class="painel-detalhe small mt-1">por pedido pago</div>
+                    </div></div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card h-100"><div class="card-body">
+                        <div class="painel-rotulo">Chaves vendidas</div>
+                        <div class="painel-valor" id="chavesVendidas">@Model.ChavesVendidas</div>
+                        <div class="painel-detalhe small mt-1">entregues aos clientes</div>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ---- gráfico: faturamento por dia ---- *@
+    <div class="card mt-3"><div class="card-body">
+        <h5 class="mb-1">Faturamento por dia</h5>
+        <div class="painel-detalhe small mb-2">Passe o mouse (ou use Tab) sobre um dia para ver o valor.</div>
+        @if (maximo == 0)
+        {
+            <p class="painel-detalhe my-4 text-center">Nenhuma venda nos últimos @periodo.</p>
+        }
+        else
+        {
+            <div class="painel-grafico" id="graficoVendas">
+                <svg viewBox="0 0 @largura @altura" role="img" aria-label="Faturamento por dia nos últimos @periodo">
+                    @for (var t = 0d; t <= topo + 0.0001; t += passo)
+                    {
+                        var y = Y(t);
+                        <g>
+                            <line x1="@margemEsq" x2="@(largura - margemDir)" y1="@y" y2="@y" stroke="#3a3a3a" stroke-width="1" />
+                            <text x="@(margemEsq - 8)" y="@(y + 4)" text-anchor="end" fill="#adafae" font-size="12">@(((decimal)t).ToString("C0"))</text>
+                        </g>
+                    }
+                    @for (var i = 0; i < dados.Count; i++)
+                    {
+                        var dia = dados[i];
+                        var x = margemEsq + i * banda;
+                        var xBarra = x + (banda - larguraBarra) / 2;
+                        var yBarra = Y((double)dia.Valor);
+                        var h = margemTopo + plotA - yBarra;
+                        var r = Math.Min(4, Math.Min(larguraBarra / 2, h));
+                        var baseY = margemTopo + plotA;
+                        var descricao = $"{dia.Dia:dd/MM}: {dia.Valor.ToString("C")}, {dia.Pedidos} pedido(s)";
+                        <g class="coluna" tabindex="0" aria-label="@descricao"
+                           data-dia="@dia.Dia.ToString("dddd, dd/MM", new System.Globalization.CultureInfo("pt-BR"))"
+                           data-valor="@dia.Valor.ToString("C")" data-pedidos="@dia.Pedidos">
+                            <rect class="alvo" x="@x" y="@margemTopo" width="@banda" height="@plotA" fill="transparent" />
+                            @if (h > 0)
+                            {
+                                <path class="barra" d="M@(xBarra),@(baseY) V@(yBarra + r) Q@(xBarra),@(yBarra) @(xBarra + r),@(yBarra) H@(xBarra + larguraBarra - r) Q@(xBarra + larguraBarra),@(yBarra) @(xBarra + larguraBarra),@(yBarra + r) V@(baseY) Z" />
+                            }
+                        </g>
+                        @if ((dados.Count - 1 - i) % cadaQuantos == 0)
+                        {
+                            <g><text x="@(x + banda / 2)" y="@(altura - 8)" text-anchor="middle" fill="#adafae" font-size="12">@dia.Dia.ToString("dd/MM")</text></g>
+                        }
+                        @if (i == indiceMaximo)
+                        {
+                            <g><text x="@(x + banda / 2)" y="@(yBarra - 6)" text-anchor="middle" fill="#f0f0f0" font-size="12" font-weight="600">@dia.Valor.ToString("C")</text></g>
+                        }
+                    }
+                    <line x1="@margemEsq" x2="@(largura - margemDir)" y1="@(margemTopo + plotA)" y2="@(margemTopo + plotA)" stroke="#555" stroke-width="1" />
+                </svg>
+                <div class="painel-tooltip" id="tooltipVendas" role="status"><strong></strong><span></span></div>
+            </div>
+            <details class="mt-2 small">
+                <summary class="painel-detalhe">Ver os dados em tabela</summary>
+                <table class="table table-sm mt-2 mb-0">
+                    <thead><tr><th>Dia</th><th class="text-end">Pedidos pagos</th><th class="text-end">Faturamento</th></tr></thead>
+                    <tbody>
+                        @foreach (var dia in dados.Where(d => d.Pedidos > 0))
+                        {
+                            <tr><td>@dia.Dia.ToString("dd/MM/yyyy")</td><td class="text-end">@dia.Pedidos</td><td class="text-end">@dia.Valor.ToString("C")</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </details>
+        }
+    </div></div>
+
+    @* ---- situação atual ---- *@
+    <h4 class="mt-4">Agora</h4>
+    <div class="row g-3">
+        <div class="col-6 col-lg-3">
+            <a asp-controller="Pedidos" asp-action="Index" asp-route-status="AguardandoPagamento" class="text-decoration-none d-block h-100">
+                <div class="card h-100"><div class="card-body">
+                    <div class="painel-rotulo">Aguardando pagamento</div>
+                    <div class="painel-valor" id="aguardando">@Model.AguardandoPagamento</div>
+                    <div class="painel-detalhe small mt-1">@Model.ValorAguardando.ToString("C") em chaves reservadas</div>
+                </div></div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a asp-controller="Estoque" asp-action="Index" class="text-decoration-none d-block h-100">
+                <div class="card h-100"><div class="card-body">
+                    <div class="painel-rotulo">Produtos esgotados</div>
+                    <div class="painel-valor" id="esgotados">@Model.ProdutosEsgotados</div>
+                    <div class="painel-detalhe small mt-1">à venda, sem chave disponível</div>
+                </div></div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100"><div class="card-body">
+                <div class="painel-rotulo">Chaves disponíveis</div>
+                <div class="painel-valor">@Model.ChavesDisponiveis</div>
+                <div class="painel-detalhe small mt-1">no estoque de produtos ativos</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a asp-controller="Usuarios" asp-action="Index" class="text-decoration-none d-block h-100">
+                <div class="card h-100"><div class="card-body">
+                    <div class="painel-rotulo">Clientes</div>
+                    <div class="painel-valor">@Model.Clientes</div>
+                    <div class="painel-detalhe small mt-1">contas cadastradas</div>
+                </div></div>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-lg-6">
+            <div class="card h-100"><div class="card-body">
+                <h5>Repor estoque</h5>
+                <div class="painel-detalhe small mb-2">Produtos à venda com menos de @EstoqueProdutoViewModel.EstoqueBaixo chaves, os mais desejados primeiro.</div>
+                @if (Model.Repor.Count == 0)
+                {
+                    <p class="painel-detalhe mb-0">Nenhum produto com estoque baixo.</p>
+                }
+                else
+                {
+                    <table class="table table-sm align-middle mb-0" id="tabelaRepor">
+                        <thead><tr><th>Produto</th><th class="text-end">Disponíveis</th><th class="text-end">Desejos</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model.Repor)
+                            {
+                                <tr>
+                                    <td>@item.Jogo <small class="painel-detalhe">— @item.Plataforma@(item.Edicao != "Standard" ? $" · {item.Edicao}" : "")</small></td>
+                                    <td class="text-end">@(item.Disponiveis == 0 ? "Esgotado" : item.Disponiveis.ToString())</td>
+                                    <td class="text-end">@(item.Desejos > 0 ? $"♥ {item.Desejos}" : "0")</td>
+                                    <td class="text-end"><a asp-controller="Estoque" asp-action="Importar" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Importar</a></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div></div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card h-100"><div class="card-body">
+                <h5>Mais vendidos</h5>
+                <div class="painel-detalhe small mb-2">Por chaves vendidas nos últimos @periodo.</div>
+                @if (Model.MaisVendidos.Count == 0)
+                {
+                    <p class="painel-detalhe mb-0">Nenhuma venda no período.</p>
+                }
+                else
+                {
+                    <table class="table table-sm mb-0" id="tabelaMaisVendidos">
+                        <thead><tr><th>Produto</th><th class="text-end">Chaves</th><th class="text-end">Receita</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in Model.MaisVendidos)
+                            {
+                                <tr>
+                                    <td>@item.Jogo <small class="painel-detalhe">— @item.Plataforma@(item.Edicao != "Standard" ? $" · {item.Edicao}" : "")</small></td>
+                                    <td class="text-end">@item.Unidades</td>
+                                    <td class="text-end">@item.Receita.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card mt-3 mb-4"><div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-2">Últimos pedidos</h5>
+            <a asp-controller="Pedidos" asp-action="Index" class="small">Ver todos</a>
+        </div>
+        @if (Model.UltimosPedidos.Count == 0)
+        {
+            <p class="painel-detalhe mb-0">Nenhum pedido ainda.</p>
+        }
+        else
+        {
+            <table class="table table-sm table-hover align-middle mb-0">
+                <tbody>
+                    @foreach (var pedido in Model.UltimosPedidos)
+                    {
+                        <tr>
+                            <td><a asp-controller="Pedidos" asp-action="Detalhes" asp-route-id="@pedido.Id">#@pedido.Id</a></td>
+                            <td>@pedido.CriadoEm.ToLocalTime().ToString("dd/MM HH:mm")</td>
+                            <td>@pedido.Usuario.Name</td>
+                            <td class="text-end">@pedido.Total.ToString("C")</td>
+                            <td class="text-end"><span class="badge @pedido.Status.Cor()">@pedido.Status.Descricao()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div></div>
+</div>
+
+@section Scripts {
+    <script>
+        // Dica do gráfico: mostra dia, valor e pedidos da coluna sob o mouse ou com foco do teclado
+        (function () {
+            const grafico = document.getElementById("graficoVendas");
+            if (!grafico) return;
+            const dica = document.getElementById("tooltipVendas");
+            const mostrar = coluna => {
+                dica.querySelector("strong").textContent = coluna.dataset.valor;
+                dica.querySelector("span").textContent = `${coluna.dataset.dia} · ${coluna.dataset.pedidos} pedido(s)`;
+                const alvo = coluna.querySelector(".alvo").getBoundingClientRect();
+                const caixa = grafico.getBoundingClientRect();
+                const barra = (coluna.querySelector(".barra") ?? coluna.querySelector(".alvo")).getBoundingClientRect();
+                const x = Math.min(Math.max(alvo.left + alvo.width / 2 - caixa.left, 80), caixa.width - 80);
+                dica.style.left = `${x}px`;
+                dica.style.top = `${Math.max(barra.top - caixa.top - 8, 40)}px`;
+                dica.style.display = "block";
+            };
+            const esconder = () => dica.style.display = "none";
+            grafico.querySelectorAll(".coluna").forEach(coluna => {
+                coluna.addEventListener("pointerenter", () => mostrar(coluna));
+                coluna.addEventListener("focus", () => mostrar(coluna));
+                coluna.addEventListener("pointerleave", esconder);
+                coluna.addEventListener("blur", esconder);
+            });
+        })();
+    </script>
+}
