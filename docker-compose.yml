@@ -55,6 +55,9 @@ services:
       # Aqui a loja roda em HTTP puro, no seu computador. Em produção, coloque um proxy com certificado
       # (nginx, Traefik, Caddy...) na frente, troque para "true" e ligue Seguranca__Proxy__Confiar.
       Seguranca__Https__Forcar: "false"
+      # Pagamento de mentira (botões "aprovar"/"recusar"), para testar a loja. Em produção sem operadora de
+      # pagamento, deixe "false": senão qualquer cliente "aprova" o próprio pedido e leva as chaves.
+      Pagamento__Simulado: "true"
       # Links dos e-mails (confirmação, senha) apontam para cá
       Loja__UrlPublica: "http://localhost:8080"
       Email__Modo: "Smtp"

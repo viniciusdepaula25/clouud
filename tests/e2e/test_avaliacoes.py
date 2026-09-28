@@ -45,8 +45,7 @@ def test_quem_comprou_avalia_edita_e_exclui(paginas, fabrica, banco, cenario):
     fabrica.pedido_pago(cliente["id"], jogo["produto_id"])
     pagina = paginas.nova()
     pagina.goto(url)
-    pagina.click("text=Entrar")
-    pagina.wait_for_load_state()
+    enviar(pagina, "nav >> text=Entrar")
     entrar(pagina, cliente["email"], cliente["senha"], url=pagina.url)
     assert pagina.url.endswith(url)  # o login volta para a página do jogo
     assert pagina.locator("#formAvaliar").count() == 1 and "Avalie este jogo" in pagina.inner_text("#avaliar")

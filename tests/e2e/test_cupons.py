@@ -103,7 +103,7 @@ def test_cupons_que_nao_valem(admin, fabrica, carrinho):
     assert "não existe" in carrinho.mensagens() and carrinho.pagina.locator("#cupomAplicado").count() == 0
     casos = [
         (dict(ate=ONTEM.isoformat()), "venceu"),
-        (dict(de=AMANHA.isoformat()), "só vale a partir"),
+        (dict(de=AMANHA.isoformat()), "não existe"),  # campanha futura não se revela
         (dict(ativo=False), "não está mais ativo"),
     ]
     for opcoes, mensagem in casos:

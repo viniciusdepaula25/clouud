@@ -1,0 +1,7 @@
+@model Clouud.Web.Services.Emails.EmailAlteradoViewModel
+@{
+    ViewData["Title"] = "E-mail da conta alterado";
+}
+<h1 style="margin:0 0 12px;color:#ffffff;font-size:22px;">Olá, @Model.Nome!</h1>
+<p style="margin:0 0 12px;">O e-mail da sua conta na CLOUUD foi trocado para <strong>@Model.NovoEmailMascarado</strong>. Este endereço não recebe mais os e-mails da loja.</p>
+<p style="margin:0;">Se não foi você, alguém pode ter entrado na sua conta: <a href="@Model.LinkEsqueciSenha" style="color:#2a9fd6;">fale com a loja</a> o quanto antes.</p>

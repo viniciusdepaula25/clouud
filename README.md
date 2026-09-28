@@ -68,6 +68,8 @@ As senhas são salvas no banco apenas como *hash* (PBKDF2), com pelo menos 8 car
 
 **Sessão:** o cookie de login é `HttpOnly` e `SameSite=Lax` e expira após 30 minutos sem uso. Cada conta tem um "selo de segurança" gravado também no cookie; trocar a senha, o e-mail ou o perfil (inclusive pelo admin) troca o selo e derruba as sessões abertas em outros aparelhos, e em **Minha conta** há "Sair de todos os outros aparelhos". Sair da conta é só por POST, e todo POST exige o token antiforgery.
 
+O resumo de tudo o que protege a loja, a lista do que conferir antes de colocá-la no ar e o que ainda pode ser reforçado estão em [docs/seguranca.md](docs/seguranca.md).
+
 **HTTPS e cabeçalhos:** fora do desenvolvimento, a loja redireciona HTTP para HTTPS, manda HSTS (1 ano) e os cookies só trafegam em HTTPS. Toda resposta leva os cabeçalhos recomendados: `Content-Security-Policy` (scripts só do próprio site ou com o *nonce* da página, nada de iframe de outro site nem formulário para fora), `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` e `Permissions-Policy`; o servidor não se identifica. Por causa da CSP, as views não usam `onclick`/`onerror`/`onsubmit`: use `data-confirmar`, `data-fallback` e `data-enviar-ao-mudar`, tratados pelo `wwwroot/js/site.js`, e os `<script>` das páginas recebem o nonce sozinhos.
 
 Em produção, a loja deve ficar atrás de um proxy com o certificado (nginx, Traefik, Caddy, o do provedor de nuvem). Configure:
@@ -165,7 +167,8 @@ Os links dos e-mails usam `Loja:UrlPublica` (ex.: `https://clouud.com.br`), e n�
 ├── .config/dotnet-tools.json   # versão do dotnet-ef usada no projeto
 ├── .editorconfig               # padrão de formatação (UTF-8, LF, indentação)
 ├── Dockerfile, docker-compose.yml  # rodar com Docker
-├── .github/workflows/ci.yml    # build e testes a cada push (GitHub Actions)
+├── .github/workflows/ci.yml    # build, pacotes vulneráveis e testes a cada push (GitHub Actions)
+├── docs/seguranca.md           # o que protege a loja e o que conferir antes de ir para produção
 ├── tests/e2e/                  # testes automatizados (pytest + Playwright)
 └── src/
     └── Clouud.Web/             # aplicação ASP.NET Core MVC
@@ -237,4 +240,4 @@ Outro servidor ou senha do banco: variáveis `CLOUUD_PG_HOST`, `CLOUUD_PG_PORTA`
 
 ## Integração contínua
 
-A cada `git push` (e em pull requests) o GitHub Actions (`.github/workflows/ci.yml`) compila o projeto, sobe um PostgreSQL 17 e roda todos os testes. O resultado aparece na aba **Actions** do repositório e no selo no topo deste README; se algo falhar, o log e as capturas de tela ficam disponíveis para baixar na própria execução.
+A cada `git push` (e em pull requests) o GitHub Actions (`.github/workflows/ci.yml`) compila o projeto, confere se algum pacote NuGet tem vulnerabilidade conhecida, sobe um PostgreSQL 17 e roda todos os testes. O Dependabot (`.github/dependabot.yml`) abre pull requests com as atualizações das dependências. O resultado aparece na aba **Actions** do repositório e no selo no topo deste README; se algo falhar, o log e as capturas de tela ficam disponíveis para baixar na própria execução.

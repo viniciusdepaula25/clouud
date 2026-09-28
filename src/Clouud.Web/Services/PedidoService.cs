@@ -20,17 +20,27 @@ namespace Clouud.Web.Services
         private readonly EmailPedidoPago emailPago;
 
         public PedidoService(BancoDados bancoDados, CupomService cupons, IConfiguration configuracao, ILogger<PedidoService> logger,
-            EmailPedidoPago emailPago)
+            EmailPedidoPago emailPago, IWebHostEnvironment ambiente)
         {
             this.bancoDados = bancoDados;
             this.emailPago = emailPago;
             this.cupons = cupons;
             this.logger = logger;
             PrazoPagamento = TimeSpan.FromMinutes(configuracao.GetValue("Loja:MinutosParaPagar", 30));
+            PendentesPorCliente = Math.Max(1, configuracao.GetValue("Loja:PedidosPendentesPorCliente", 2));
+            // O pagamento é simulado (botões "aprovar"/"recusar"). Em produção de verdade, sem uma operadora
+            // integrada, ele fica desligado: senão qualquer um "aprovaria" o próprio pedido e levaria as chaves.
+            PagamentoSimulado = configuracao.GetValue("Pagamento:Simulado", ambiente.IsDevelopment());
         }
 
         /// <summary>Tempo que as chaves ficam reservadas esperando o pagamento.</summary>
         public TimeSpan PrazoPagamento { get; }
+
+        /// <summary>Quantos pedidos esperando pagamento um cliente pode ter ao mesmo tempo (evita travar o estoque).</summary>
+        public int PendentesPorCliente { get; }
+
+        /// <summary>Os botões de simulação do pagamento valem? (Pagamento:Simulado; ligado em desenvolvimento)</summary>
+        public bool PagamentoSimulado { get; }
 
         /// <summary>
         /// Transforma o carrinho em pedido, aplica o cupom (se houver) e reserva as chaves.
@@ -40,6 +50,16 @@ namespace Clouud.Web.Services
         {
             var hoje = DateOnly.FromDateTime(DateTime.Now);
             using var transacao = bancoDados.Database.BeginTransaction(IsolationLevel.ReadCommitted);
+
+            // Trava a linha do cliente: dois "Finalizar" ao mesmo tempo contam os pedidos abertos um de cada vez
+            bancoDados.Database.ExecuteSqlInterpolated($"SELECT 1 FROM usuarios WHERE id = {usuarioId} FOR UPDATE");
+            var agoraUtc = DateTime.UtcNow;
+            var abertos = bancoDados.Pedidos.Count(p => p.UsuarioId == usuarioId && p.Status == StatusPedido.AguardandoPagamento
+                                                        && p.PagarAte > agoraUtc);
+            if (abertos >= PendentesPorCliente)
+            {
+                return (null, $"Você já tem {abertos} pedido(s) esperando pagamento. Pague ou cancele antes de fazer outro.");
+            }
 
             var itens = bancoDados.CarrinhoItens
                 .Include(i => i.Produto).ThenInclude(p => p.Jogo)
@@ -136,6 +156,14 @@ namespace Clouud.Web.Services
         /// </summary>
         public async Task<string?> PagarAsync(int pedidoId, int usuarioId, MetodoPagamento metodo, bool aprovar)
         {
+            if (!PagamentoSimulado)
+            {
+                return "O pagamento online ainda não está disponível nesta loja.";
+            }
+            if (!Enum.IsDefined(metodo))
+            {
+                return "Escolha uma forma de pagamento.";
+            }
             using var transacao = bancoDados.Database.BeginTransaction(IsolationLevel.ReadCommitted);
             var pedido = TravarPedido(pedidoId);
             if (pedido == null || pedido.UsuarioId != usuarioId)
@@ -168,6 +196,15 @@ namespace Clouud.Web.Services
 
             if (aprovar)
             {
+                // Todas as chaves do pedido precisam estar reservadas para ele; senão algo mexeu no estoque
+                var esperadas = bancoDados.PedidoItens.Where(i => i.PedidoId == pedido.Id).Sum(i => i.Quantidade);
+                var reservadas = bancoDados.Chaves.Count(c => c.PedidoItem!.PedidoId == pedido.Id && c.Status == StatusChave.Reservada);
+                if (reservadas != esperadas)
+                {
+                    logger.LogError("Pedido {PedidoId}: {Reservadas} chave(s) reservada(s) para {Esperadas} unidade(s); pagamento recusado",
+                        pedido.Id, reservadas, esperadas);
+                    return "Não foi possível confirmar as chaves deste pedido. Cancele e faça a compra de novo.";
+                }
                 pedido.Status = StatusPedido.Pago;
                 pedido.PagoEm = agora;
                 bancoDados.Chaves

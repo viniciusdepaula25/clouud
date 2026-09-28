@@ -46,10 +46,12 @@ namespace Clouud.Web.Services
                 return new ResultadoCupom(null, 0, $"O cupom {codigo} não existe ou não está mais ativo.");
             }
 
+            // Cupom que ainda não começou responde como inexistente: quem tenta adivinhar códigos
+            // não descobre campanhas futuras
             var hoje = DateOnly.FromDateTime(DateTime.Now);
             if (cupom.ValidoDe.HasValue && hoje < cupom.ValidoDe)
             {
-                return new ResultadoCupom(cupom, 0, $"O cupom {cupom.Codigo} só vale a partir de {cupom.ValidoDe:dd/MM/yyyy}.");
+                return new ResultadoCupom(null, 0, $"O cupom {codigo} não existe ou não está mais ativo.");
             }
             if (cupom.ValidoAte.HasValue && hoje > cupom.ValidoAte)
             {

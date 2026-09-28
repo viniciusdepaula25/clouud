@@ -153,10 +153,13 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            if (chave.Status is StatusChave.Disponivel or StatusChave.Inativa && chave.NuncaFoiVendida)
+            // DELETE com a condição no próprio comando: se uma compra reservou a chave neste instante, nada é apagado
+            var excluidas = bancoDados.Chaves
+                .Where(c => c.Id == id && c.PedidoItemId == null
+                            && (c.Status == StatusChave.Disponivel || c.Status == StatusChave.Inativa))
+                .ExecuteDelete();
+            if (excluidas == 1)
             {
-                bancoDados.Chaves.Remove(chave);
-                bancoDados.SaveChanges();
                 TempData["Mensagem"] = "Chave excluída.";
             }
             else
@@ -174,10 +177,12 @@ namespace Clouud.Web.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            if (chave.Status == de)
+            // UPDATE ... WHERE status = de: não passa por cima de uma reserva feita no mesmo instante
+            var mudadas = bancoDados.Chaves
+                .Where(c => c.Id == id && c.Status == de && (para != StatusChave.Disponivel || c.PedidoItemId == null))
+                .ExecuteUpdate(s => s.SetProperty(c => c.Status, para));
+            if (mudadas == 1)
             {
-                chave.Status = para;
-                bancoDados.SaveChanges();
                 TempData["Mensagem"] = mensagem;
             }
             else

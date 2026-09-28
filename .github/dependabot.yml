@@ -1,0 +1,19 @@
+# Dependabot abre pull requests quando sai versão nova (ou correção de segurança) das dependências
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: pip
+    directory: /tests/e2e
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

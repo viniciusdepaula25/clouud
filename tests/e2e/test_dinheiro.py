@@ -37,8 +37,8 @@ def test_valor_invalido_e_recusado(paginas, fabrica, banco, digitado):
     admin.fill("#Preco", digitado)
     admin.locator("#Preco").blur()
     assert admin.locator("span[data-valmsg-for=Preco]").inner_text() != ""  # o navegador avisa
-    admin.evaluate("const f = document.querySelector('main form'); f.noValidate = true; f.submit()")
-    admin.wait_for_load_state()
+    with admin.expect_navigation():
+        admin.evaluate("const f = document.querySelector('main form'); f.noValidate = true; f.submit()")
     assert "valor inválido" in admin.inner_text("main")  # e o servidor também recusa
     assert admin.input_value("#Preco") == digitado  # o que foi digitado volta para corrigir
     assert banco.valor("SELECT count(*) FROM produtos WHERE jogo_id = %s", jogo["jogo_id"]) == 1

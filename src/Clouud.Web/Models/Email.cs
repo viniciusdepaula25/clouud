@@ -57,6 +57,7 @@ namespace Clouud.Web.Models
         RedefinirSenha,
         SenhaAlterada,
         PedidoPago,
-        ListaDesejos
+        ListaDesejos,
+        EmailAlterado
     }
 }

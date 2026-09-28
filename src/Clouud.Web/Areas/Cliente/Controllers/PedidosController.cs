@@ -60,6 +60,12 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Pagar(int id, MetodoPagamento metodo, bool aprovar)
         {
+            if (!ModelState.IsValid)
+            {
+                // ex.: forma de pagamento que não existe (o binder vira "Pix" e marca o erro aqui)
+                TempData["Erro"] = "Escolha uma forma de pagamento válida.";
+                return RedirectToAction("Pagar", new { id });
+            }
             var erro = await pedidos.PagarAsync(id, UsuarioId, metodo, aprovar);
             if (erro != null)
             {

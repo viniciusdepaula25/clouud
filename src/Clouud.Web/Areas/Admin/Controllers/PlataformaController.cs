@@ -36,8 +36,9 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Inclui(Plataforma plataforma)
+        public IActionResult Inclui([Bind("Nome,InstrucoesAtivacao,Ativa")] Plataforma plataforma)
         {
+            plataforma.Id = 0;
             ValidarNome(plataforma);
             if (!ModelState.IsValid)
             {
@@ -62,7 +63,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Altera(Plataforma dados)
+        public IActionResult Altera([Bind("Id,Nome,InstrucoesAtivacao,Ativa")] Plataforma dados)
         {
             var plataforma = bancoDados.Plataformas.FirstOrDefault(p => p.Id == dados.Id);
             if (plataforma == null)

@@ -37,10 +37,15 @@ namespace Clouud.Web.Areas.Admin.Controllers
             return View(new Cupom());
         }
 
+        /// <summary>Só estes campos vêm do formulário (nada de Pedidos, CriadoEm... num POST forjado).</summary>
+        private const string CamposDoFormulario =
+            "Codigo,Descricao,Tipo,Valor,PedidoMinimo,ValidoDe,ValidoAte,LimiteUsos,LimitePorCliente,Ativo";
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Inclui(Cupom cupom)
+        public IActionResult Inclui([Bind(CamposDoFormulario)] Cupom cupom)
         {
+            cupom.Id = 0; // o Id é do banco, nunca do formulário
             Normalizar(cupom);
             ValidarCodigo(cupom);
             if (!ModelState.IsValid)
@@ -64,7 +69,7 @@ namespace Clouud.Web.Areas.Admin.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Altera(Cupom dados)
+        public IActionResult Altera([Bind("Id," + CamposDoFormulario)] Cupom dados)
         {
             var cupom = bancoDados.Cupons.FirstOrDefault(c => c.Id == dados.Id);
             if (cupom == null)

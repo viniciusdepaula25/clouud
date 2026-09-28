@@ -1,3 +1,4 @@
+@inject Clouud.Web.Services.PedidoService Pedidos
 @model Clouud.Web.Models.Pedido
 @using Clouud.Web.Models
 
@@ -32,18 +33,27 @@
                     <label class="form-check-label" for="metodo-@metodo">@metodo.Descricao()</label>
                 </div>
             }
-            <div class="border rounded p-2 my-3 small">
-                <strong>Pagamento simulado.</strong> A loja ainda não está ligada a uma operadora de pagamento:
-                nenhum dado de pagamento é pedido e nada é cobrado. Use os botões abaixo para simular a resposta.
-            </div>
-            <div class="d-grid gap-2">
-                <button type="submit" name="aprovar" value="true" class="btn btn-danger btn-lg">
-                    Pagar @Model.Total.ToString("C") (simular aprovação)
-                </button>
-                <button type="submit" name="aprovar" value="false" class="btn btn-outline-secondary btn-sm">
-                    Simular pagamento recusado
-                </button>
-            </div>
+            @if (Pedidos.PagamentoSimulado)
+            {
+                <div class="border rounded p-2 my-3 small">
+                    <strong>Pagamento simulado.</strong> A loja ainda não está ligada a uma operadora de pagamento:
+                    nenhum dado de pagamento é pedido e nada é cobrado. Use os botões abaixo para simular a resposta.
+                </div>
+                <div class="d-grid gap-2">
+                    <button type="submit" name="aprovar" value="true" class="btn btn-danger btn-lg">
+                        Pagar @Model.Total.ToString("C") (simular aprovação)
+                    </button>
+                    <button type="submit" name="aprovar" value="false" class="btn btn-outline-secondary btn-sm">
+                        Simular pagamento recusado
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning my-3" id="pagamentoIndisponivel">
+                    O pagamento online ainda não está disponível. As chaves ficam reservadas até o fim do prazo.
+                </div>
+            }
         </form>
 
         @if (Model.Pagamentos.Any())

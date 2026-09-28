@@ -32,6 +32,10 @@ namespace Clouud.Web.Services.Emails
             var usuario = bancoDados.Usuarios.FirstOrDefault(u => u.Email == email);
             if (usuario == null)
             {
+                // Monta um e-mail igual (e joga fora) para a resposta levar o mesmo tempo: medir o tempo não
+                // revela se o e-mail tem conta
+                await fila.RenderizarAsync("RedefinirSenha", new EmailRedefinirSenhaViewModel("Cliente",
+                    links.Absoluto($"/conta/redefinir-senha?token={WebEncoders(RandomNumberGenerator.GetBytes(32))}")));
                 return;
             }
             var umaHoraAtras = DateTime.UtcNow.AddHours(-1);
@@ -89,7 +93,7 @@ namespace Clouud.Web.Services.Emails
             usuario.EmailConfirmadoEm ??= agora;
 
             await fila.AdicionarAsync(TipoEmail.SenhaAlterada, usuario, "Sua senha da CLOUUD foi alterada", "SenhaAlterada",
-                new EmailSenhaAlteradaViewModel(usuario.Name, links.Absoluto("/conta/esqueci-senha")));
+                new EmailSenhaAlteradaViewModel(usuario.Name, "pelo link de \"esqueci minha senha\"", links.Absoluto("/conta/esqueci-senha")));
             bancoDados.SaveChanges();
             return true;
         }
@@ -104,5 +108,7 @@ namespace Clouud.Web.Services.Emails
 
     public record EmailRedefinirSenhaViewModel(string Nome, string Link);
 
-    public record EmailSenhaAlteradaViewModel(string Nome, string LinkEsqueciSenha);
+    public record EmailSenhaAlteradaViewModel(string Nome, string Como, string LinkEsqueciSenha);
+
+    public record EmailAlteradoViewModel(string Nome, string NovoEmailMascarado, string LinkEsqueciSenha);
 }

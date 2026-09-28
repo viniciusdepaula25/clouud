@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Clouud.Web.Data;
+using Clouud.Web.Models;
 using Clouud.Web.Services;
 using Clouud.Web.Services.Emails;
 using Clouud.Web.ViewModels;
@@ -19,11 +20,16 @@ namespace Clouud.Web.Areas.Cliente.Controllers
         private readonly AutenticacaoService autenticacao;
         private readonly FotoPerfilService fotos;
         private readonly ConfirmacaoEmail confirmacao;
+        private readonly FilaEmails fila;
+        private readonly LinksLoja links;
 
         public MinhaContaController(IWebHostEnvironment webHostEnvironment, BancoDados bancoDados,
-            SenhaService senhas, AutenticacaoService autenticacao, FotoPerfilService fotos, ConfirmacaoEmail confirmacao)
+            SenhaService senhas, AutenticacaoService autenticacao, FotoPerfilService fotos, ConfirmacaoEmail confirmacao,
+            FilaEmails fila, LinksLoja links)
             : base(webHostEnvironment)
         {
+            this.fila = fila;
+            this.links = links;
             this.bancoDados = bancoDados;
             this.senhas = senhas;
             this.autenticacao = autenticacao;
@@ -90,6 +96,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 return View(conta);
             }
 
+            var emailAntigo = usuario.Email;
             usuario.Name = conta.Nome.Trim();
             usuario.Email = email;
             usuario.ReceberAvisos = conta.ReceberAvisos;
@@ -104,9 +111,17 @@ namespace Clouud.Web.Areas.Cliente.Controllers
             }
             if (trocouEmail)
             {
-                // E-mail novo precisa ser confirmado de novo
+                // E-mail novo precisa ser confirmado de novo; o antigo fica sabendo da troca
                 usuario.EmailConfirmadoEm = null;
                 await confirmacao.AdicionarConfirmacaoAsync(usuario);
+                await fila.AdicionarAsync(TipoEmail.EmailAlterado, usuario, "O e-mail da sua conta na CLOUUD foi alterado", "EmailAlterado",
+                    new EmailAlteradoViewModel(usuario.Name, Mascarar(email), links.Absoluto("/")), para: emailAntigo);
+            }
+            if (trocouSenha)
+            {
+                await fila.AdicionarAsync(TipoEmail.SenhaAlterada, usuario, "Sua senha da CLOUUD foi alterada", "SenhaAlterada",
+                    new EmailSenhaAlteradaViewModel(usuario.Name, "em \"Minha conta\"", links.Absoluto("/conta/esqueci-senha")),
+                    para: emailAntigo);
             }
 
             bancoDados.SaveChanges();
@@ -209,6 +224,13 @@ namespace Clouud.Web.Areas.Cliente.Controllers
 
             TempData["Mensagem"] = "Foto removida.";
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>"maria.silva@gmail.com" → "ma***@gmail.com" (o aviso vai para o e-mail antigo; não expõe o novo inteiro).</summary>
+        private static string Mascarar(string email)
+        {
+            var arroba = email.IndexOf('@');
+            return arroba <= 0 ? "***" : email[..Math.Min(2, arroba)] + "***" + email[arroba..];
         }
 
         private int UsuarioLogadoId()

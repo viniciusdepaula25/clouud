@@ -32,11 +32,6 @@ namespace Clouud.Web.Controllers
             this.confirmacao = confirmacao;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
-
         [HttpGet]
         public IActionResult Cadastro()
         {

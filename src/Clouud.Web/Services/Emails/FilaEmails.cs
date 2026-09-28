@@ -18,6 +18,9 @@ namespace Clouud.Web.Services.Emails
             this.renderizador = renderizador;
         }
 
+        /// <summary>Só monta o e-mail, sem pôr na fila.</summary>
+        public Task<(string Html, string Texto)> RenderizarAsync<T>(string view, T modelo) => renderizador.RenderizarAsync(view, modelo);
+
         public async Task<Email> AdicionarAsync<T>(TipoEmail tipo, Usuario usuario, string assunto, string view, T modelo,
             string? para = null)
         {

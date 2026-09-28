@@ -6,6 +6,10 @@ on:
   workflow_dispatch:
 
 # Um push novo na mesma branch cancela a execução anterior que ainda estiver rodando
+# O CI só lê o código (sem permissão de escrita no repositório)
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -54,6 +58,14 @@ jobs:
       - name: Compilar
         run: dotnet build --configuration Release --no-restore
 
+      - name: Conferir pacotes com vulnerabilidade conhecida
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee pacotes.txt
+          if grep -q "has the following vulnerable packages" pacotes.txt; then
+            echo "::error::Há pacotes NuGet com vulnerabilidade conhecida (veja acima)."
+            exit 1
+          fi
+
       - name: Instalar Python
         uses: actions/setup-python@v5
         with:
@@ -74,6 +86,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: resultado-dos-testes
-          path: tests/e2e/.saida/
+          # só o log e as capturas de tela: os e-mails de teste têm links de senha e chaves
+          path: |
+            tests/e2e/.saida/*.log
+            tests/e2e/.saida/falhas/
           if-no-files-found: ignore
           retention-days: 7

@@ -51,8 +51,7 @@ def test_inativar_reativar_e_excluir(paginas, fabrica, banco):
     enviar(admin, "input[value=Inativar] >> nth=0")
     t = admin.inner_text("main")
     assert "Chave inativada." in t and "2 disponíveis" in t and "1 inativas" in t
-    admin.click(".btn-group >> text=Inativa")
-    admin.wait_for_load_state()
+    enviar(admin, ".btn-group >> text=Inativa")
     assert admin.locator("tbody tr").count() == 1 and "status=Inativa" in admin.url
     enviar(admin, "input[value=Reativar]")
     assert "devolvida ao estoque" in admin.inner_text("main") and "status=Inativa" in admin.url
