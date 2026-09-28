@@ -58,6 +58,10 @@ No admin, o fluxo é: cadastrar o jogo → cadastrar um ou mais produtos (Steam,
 
 Pedidos não pagos no prazo são cancelados automaticamente e as chaves voltam ao estoque. No admin, **Pedidos** mostra todos os pedidos e permite cancelar os que aguardam pagamento e reembolsar os pagos (as chaves reembolsadas ficam inativas).
 
+## Cupons de desconto
+
+Em **Admin > Cupons** o admin cria cupons de porcentagem ou de valor fixo, com pedido mínimo, datas de validade, limite de usos no total e por cliente. O cliente digita o código no carrinho e vê o desconto na hora; o cupom é conferido de novo ao finalizar. Pedidos cancelados ou reembolsados devolvem o uso do cupom, e um cupom já usado não pode ser excluído (só desativado).
+
 ## Lista de desejos
 
 Na vitrine, o **♡** de cada card põe o jogo na lista de desejos do cliente (vale para todas as plataformas em que o jogo é vendido). A página **Lista de desejos** mostra o preço de agora em cada plataforma, as promoções, o que está esgotado e um botão para comprar. No admin, a tela de **Estoque** mostra quantos clientes querem cada jogo, o que ajuda a decidir o que repor.

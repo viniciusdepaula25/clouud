@@ -24,6 +24,17 @@
         }
     </tbody>
     <tfoot>
+        @if (Model.Desconto > 0)
+        {
+            <tr>
+                <td colspan="3" class="text-end">Subtotal</td>
+                <td class="text-end">@Model.Subtotal.ToString("C")</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="text-end">Desconto@(Model.Cupom != null ? $" (cupom {Model.Cupom.Codigo})" : "")</td>
+                <td class="text-end">- @Model.Desconto.ToString("C")</td>
+            </tr>
+        }
         <tr>
             <th colspan="3" class="text-end">Total</th>
             <th class="text-end">@Model.Total.ToString("C")</th>

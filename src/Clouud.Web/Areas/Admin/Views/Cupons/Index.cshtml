@@ -1,0 +1,89 @@
+@model IEnumerable<Clouud.Web.Models.Cupom>
+
+@{
+    ViewData["Title"] = "Cupons";
+    var usos = ViewData["Usos"] as Dictionary<int, (int Usos, decimal Descontos)> ?? new();
+    var hoje = DateOnly.FromDateTime(DateTime.Today);
+}
+
+<h1>Cupons de desconto</h1>
+<p>O cliente digita o código no carrinho. Cada pedido usa no máximo um cupom; pedidos cancelados ou reembolsados devolvem o uso.</p>
+<hr />
+@if (TempData["Mensagem"] is string mensagem)
+{
+    <div class="alert alert-success">@mensagem</div>
+}
+<div class="mb-2">
+    <a class="btn btn-secondary" asp-action="Inclui">Cadastre um Cupom</a>
+</div>
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Desconto</th>
+            <th>Pedido mínimo</th>
+            <th>Validade</th>
+            <th class="text-end">Usos</th>
+            <th class="text-end">Descontos dados</th>
+            <th>Situação</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8">Nenhum cupom cadastrado.</td></tr>
+        }
+        @foreach (var cupom in Model)
+        {
+            var (quantidade, descontos) = usos.GetValueOrDefault(cupom.Id);
+            var vencido = cupom.ValidoAte.HasValue && cupom.ValidoAte < hoje;
+            var esgotado = cupom.LimiteUsos.HasValue && quantidade >= cupom.LimiteUsos;
+            <tr>
+                <td>
+                    <span class="font-monospace">@cupom.Codigo</span>
+                    @if (cupom.Descricao != null)
+                    {
+                        <br /><small class="text-muted">@cupom.Descricao</small>
+                    }
+                </td>
+                <td>@cupom.DescreverDesconto()</td>
+                <td>@(cupom.PedidoMinimo?.ToString("C") ?? "—")</td>
+                <td>
+                    @if (cupom.ValidoDe == null && cupom.ValidoAte == null)
+                    {
+                        <text>Sem prazo</text>
+                    }
+                    else
+                    {
+                        @($"{cupom.ValidoDe?.ToString("dd/MM/yyyy") ?? "…"} a {cupom.ValidoAte?.ToString("dd/MM/yyyy") ?? "…"}")
+                    }
+                </td>
+                <td class="text-end">@quantidade@(cupom.LimiteUsos.HasValue ? $" / {cupom.LimiteUsos}" : "")</td>
+                <td class="text-end">@descontos.ToString("C")</td>
+                <td>
+                    @if (!cupom.Ativo)
+                    {
+                        <span class="badge bg-secondary">Inativo</span>
+                    }
+                    else if (vencido)
+                    {
+                        <span class="badge bg-secondary">Vencido</span>
+                    }
+                    else if (esgotado)
+                    {
+                        <span class="badge bg-secondary">Esgotado</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Ativo</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Altera" asp-route-id="@cupom.Id" class="btn btn-secondary btn-sm">Alterar</a> |
+                    <a asp-action="Exclui" asp-route-id="@cupom.Id" class="btn btn-danger btn-sm">Excluir</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

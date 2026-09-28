@@ -52,9 +52,25 @@ namespace Clouud.Web.Models
 
         public StatusPedido Status { get; set; } = StatusPedido.AguardandoPagamento;
 
+        /// <summary>Soma dos itens, antes do desconto.</summary>
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal Subtotal { get; set; }
+
+        /// <summary>Desconto do cupom (0 sem cupom).</summary>
+        [DataType(DataType.Currency)]
+        [Column(TypeName = "numeric(10,2)")]
+        public decimal Desconto { get; set; }
+
+        /// <summary>O que o cliente paga: subtotal - desconto.</summary>
         [DataType(DataType.Currency)]
         [Column(TypeName = "numeric(10,2)")]
         public decimal Total { get; set; }
+
+        public int? CupomId { get; set; }
+
+        [ForeignKey(nameof(CupomId))]
+        public Cupom? Cupom { get; set; }
 
         [Display(Name = "Criado em")]
         public DateTime CriadoEm { get; set; } = DateTime.UtcNow;

@@ -14,6 +14,7 @@ namespace Clouud.Web.Data
         public DbSet<Pagamento> Pagamentos { get; set; }
         public DbSet<CarrinhoItem> CarrinhoItens { get; set; }
         public DbSet<ListaDesejo> ListaDesejos { get; set; }
+        public DbSet<Cupom> Cupons { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Categoria> Categorias { get; set; }
         public DbSet<Empresa> Empresas { get; set; }
@@ -78,6 +79,8 @@ namespace Clouud.Web.Data
                     t.HasCheckConstraint("ck_pedidos_status",
                         "status IN ('AguardandoPagamento', 'Pago', 'Cancelado', 'Reembolsado')");
                     t.HasCheckConstraint("ck_pedidos_total", "total >= 0");
+                    // total sempre bate com subtotal - desconto, e o desconto não passa do subtotal
+                    t.HasCheckConstraint("ck_pedidos_desconto", "desconto >= 0 AND desconto <= subtotal AND total = subtotal - desconto");
                 });
                 pedido.HasIndex(p => new { p.Status, p.PagarAte });
             });
@@ -106,6 +109,17 @@ namespace Clouud.Web.Data
                 item.HasOne(i => i.Produto).WithMany().OnDelete(DeleteBehavior.Cascade);
                 item.ToTable(t => t.HasCheckConstraint("ck_carrinho_itens_quantidade",
                     $"quantidade BETWEEN 1 AND {CarrinhoItem.QuantidadeMaxima}"));
+            });
+
+            modelBuilder.Entity<Cupom>(cupom =>
+            {
+                cupom.Property(c => c.Tipo).HasConversion<string>().HasMaxLength(20);
+                cupom.ToTable(t =>
+                {
+                    t.HasCheckConstraint("ck_cupons_tipo", "tipo IN ('Percentual', 'ValorFixo')");
+                    t.HasCheckConstraint("ck_cupons_valor", "valor > 0 AND (tipo <> 'Percentual' OR valor <= 100)");
+                    t.HasCheckConstraint("ck_cupons_codigo", "codigo = upper(codigo)");
+                });
             });
 
             // Lista de desejos: apagar o usuário ou o jogo remove o jogo das listas

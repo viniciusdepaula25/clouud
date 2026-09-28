@@ -83,6 +83,7 @@ erDiagram
     produtos ||--o{ pedido_itens : ""
     pedido_itens ||--o{ chaves : entrega
     pedidos ||--o{ pagamentos : ""
+    cupons |o--o{ pedidos : "desconto em"
 
     usuarios {
         int id PK
@@ -158,10 +159,25 @@ erDiagram
         int id PK
         int usuario_id FK
         string status "AguardandoPagamento | Pago | Cancelado | Reembolsado"
-        numeric total
+        numeric subtotal
+        numeric desconto
+        numeric total "subtotal - desconto"
+        int cupom_id FK
         datetime criado_em
         datetime pagar_ate "prazo da reserva"
         datetime pago_em
+    }
+    cupons {
+        int id PK
+        string codigo UK
+        string tipo "Percentual | ValorFixo"
+        numeric valor
+        numeric pedido_minimo
+        date valido_de
+        date valido_ate
+        int limite_usos
+        int limite_por_cliente
+        bool ativo
     }
     pedido_itens {
         int id PK
@@ -198,6 +214,7 @@ erDiagram
 | **pedidos** | A compra, com status, datas e prazo para pagar | FK para o usuário; status só com os quatro valores válidos; total não negativo |
 | **pedido_itens** | Itens da compra (o `Pedido_Jogo` do diagrama, agora apontando para o produto) | Quantidade maior que zero |
 | **pagamentos** | Tentativas de pagamento do pedido (simulado no início) | FK para o pedido |
+| **cupons** | Cupons de desconto (% ou valor fixo), com pedido mínimo, validade e limites de uso | Código único e em maiúsculas; % até 100; no pedido, `total = subtotal - desconto` e o desconto nunca passa do subtotal |
 
 ### Decisões importantes
 
@@ -212,7 +229,6 @@ erDiagram
 
 ### O que ficou de fora (pode entrar depois)
 
-- **Cupons de desconto:** tabela `cupons`, com o cupom referenciado no pedido.
 - **Avaliações dos jogos:** tabela `avaliacoes` (usuário, jogo, nota, comentário).
 - **Galeria de imagens do jogo:** tabela `jogo_imagens`.
 
@@ -239,5 +255,9 @@ Cada etapa é um commit, com as telas funcionando no final:
 2. ✅ **Estoque de chaves** (migration `Estoque`): tabela `chaves` e telas do admin para importar chaves (colar uma por linha) e ver o estoque de cada produto.
 3. ✅ **Compra** (migration `Compra`): `carrinho_itens`, `pedidos` com status, `pedido_itens` e `pagamentos`. Inclui carrinho, checkout com pagamento simulado, entrega da chave, "Meus pedidos" e "Minhas chaves".
 4. ✅ **Lista de desejos** (migration `ListaDesejos`): tabela `lista_desejos`, coração na vitrine, página "Lista de desejos" com preço, promoção e estoque de cada plataforma, e a procura de cada jogo no estoque do admin.
+
+Depois das quatro etapas:
+
+- ✅ **Cupons de desconto** (migration `Cupons`): tabela `cupons`; pedidos ganham `subtotal`, `desconto` e `cupom_id` (os antigos ficam com desconto zero). O uso do cupom é conferido com a linha do cupom travada, então compras simultâneas não passam do limite. Pedidos cancelados ou reembolsados devolvem o uso.
 
 Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.

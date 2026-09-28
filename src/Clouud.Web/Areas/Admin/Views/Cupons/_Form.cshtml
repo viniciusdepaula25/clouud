@@ -1,0 +1,67 @@
+@model Clouud.Web.Models.Cupom
+@using Clouud.Web.Models
+@* Campos do formulário de cupom, usados em Inclui e Altera *@
+
+<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<input type="hidden" asp-for="Id" />
+<div class="row">
+    <div class="form-group col-sm-6">
+        <label asp-for="Codigo" class="control-label"></label>
+        <input asp-for="Codigo" class="form-control font-monospace" style="text-transform: uppercase" placeholder="Ex: BEMVINDO10" />
+        <span asp-validation-for="Codigo" class="text-danger"></span>
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="Descricao" class="control-label"></label>
+        <input asp-for="Descricao" class="form-control" placeholder="Ex: primeira compra" />
+        <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+</div>
+<div class="row">
+    <div class="form-group col-sm-6">
+        <label asp-for="Tipo" class="control-label">Tipo de desconto</label>
+        <select asp-for="Tipo" class="form-select">
+            <option value="@TipoCupom.Percentual">Porcentagem do pedido (%)</option>
+            <option value="@TipoCupom.ValorFixo">Valor fixo (R$)</option>
+        </select>
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="Valor" class="control-label"></label>
+        <input asp-for="Valor" class="form-control" placeholder="Ex: 10 ou 25.00" inputmode="decimal" />
+        <span asp-validation-for="Valor" class="text-danger"></span>
+    </div>
+</div>
+<div class="form-group">
+    <label asp-for="PedidoMinimo" class="control-label"></label>
+    <input asp-for="PedidoMinimo" class="form-control" placeholder="Em branco = qualquer valor" inputmode="decimal" />
+    <span asp-validation-for="PedidoMinimo" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="form-group col-sm-6">
+        <label asp-for="ValidoDe" class="control-label"></label>
+        <input asp-for="ValidoDe" class="form-control" />
+        <span asp-validation-for="ValidoDe" class="text-danger"></span>
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="ValidoAte" class="control-label"></label>
+        <input asp-for="ValidoAte" class="form-control" />
+        <span asp-validation-for="ValidoAte" class="text-danger"></span>
+    </div>
+</div>
+<small class="form-text">Datas em branco = sem prazo. O cupom vale nos dias inicial e final inteiros.</small>
+<div class="row mt-2">
+    <div class="form-group col-sm-6">
+        <label asp-for="LimiteUsos" class="control-label"></label>
+        <input asp-for="LimiteUsos" class="form-control" placeholder="Em branco = sem limite" />
+        <span asp-validation-for="LimiteUsos" class="text-danger"></span>
+    </div>
+    <div class="form-group col-sm-6">
+        <label asp-for="LimitePorCliente" class="control-label"></label>
+        <input asp-for="LimitePorCliente" class="form-control" placeholder="Em branco = sem limite" />
+        <span asp-validation-for="LimitePorCliente" class="text-danger"></span>
+    </div>
+</div>
+<div class="form-check mt-3">
+    <input asp-for="Ativo" class="form-check-input" />
+    <label asp-for="Ativo" class="form-check-label">Ativo (pode ser usado)</label>
+</div>
+<small class="form-text">Use ponto como separador decimal (ex.: 25.00).</small>

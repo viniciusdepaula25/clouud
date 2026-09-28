@@ -14,11 +14,13 @@ namespace Clouud.Web.Services
     public class PedidoService
     {
         private readonly BancoDados bancoDados;
+        private readonly CupomService cupons;
         private readonly ILogger<PedidoService> logger;
 
-        public PedidoService(BancoDados bancoDados, IConfiguration configuracao, ILogger<PedidoService> logger)
+        public PedidoService(BancoDados bancoDados, CupomService cupons, IConfiguration configuracao, ILogger<PedidoService> logger)
         {
             this.bancoDados = bancoDados;
+            this.cupons = cupons;
             this.logger = logger;
             PrazoPagamento = TimeSpan.FromMinutes(configuracao.GetValue("Loja:MinutosParaPagar", 30));
         }
@@ -26,8 +28,11 @@ namespace Clouud.Web.Services
         /// <summary>Tempo que as chaves ficam reservadas esperando o pagamento.</summary>
         public TimeSpan PrazoPagamento { get; }
 
-        /// <summary>Transforma o carrinho em pedido e reserva as chaves. Devolve o pedido ou a mensagem de erro.</summary>
-        public (Pedido? Pedido, string? Erro) CriarDoCarrinho(int usuarioId)
+        /// <summary>
+        /// Transforma o carrinho em pedido, aplica o cupom (se houver) e reserva as chaves.
+        /// Devolve o pedido ou a mensagem de erro.
+        /// </summary>
+        public (Pedido? Pedido, string? Erro) CriarDoCarrinho(int usuarioId, string? codigoCupom = null)
         {
             var hoje = DateOnly.FromDateTime(DateTime.Now);
             using var transacao = bancoDados.Database.BeginTransaction(IsolationLevel.ReadCommitted);
@@ -68,7 +73,26 @@ namespace Clouud.Web.Services
                     Subtotal = preco * item.Quantidade
                 });
             }
-            pedido.Total = pedido.Itens.Sum(i => i.Subtotal);
+            pedido.Subtotal = pedido.Itens.Sum(i => i.Subtotal);
+
+            var codigo = CupomService.Normalizar(codigoCupom);
+            if (codigo.Length > 0)
+            {
+                // Trava a linha do cupom: duas compras ao mesmo tempo não passam do limite de usos
+                var cupom = bancoDados.Cupons
+                    .FromSqlInterpolated($"SELECT * FROM cupons WHERE codigo = {codigo} FOR UPDATE")
+                    .AsEnumerable()
+                    .FirstOrDefault();
+                var resultado = cupons.Validar(cupom, codigo, usuarioId, pedido.Subtotal);
+                if (!resultado.Valido)
+                {
+                    return (null, resultado.Erro);
+                }
+                pedido.CupomId = resultado.Cupom!.Id;
+                pedido.Desconto = resultado.Desconto;
+            }
+
+            pedido.Total = pedido.Subtotal - pedido.Desconto;
             bancoDados.Pedidos.Add(pedido);
             bancoDados.SaveChanges();
 
@@ -97,7 +121,8 @@ namespace Clouud.Web.Services
             bancoDados.SaveChanges();
             transacao.Commit();
 
-            logger.LogInformation("Pedido {PedidoId} criado pelo usuário {UsuarioId}: {Total}", pedido.Id, usuarioId, pedido.Total);
+            logger.LogInformation("Pedido {PedidoId} criado pelo usuário {UsuarioId}: {Total} (desconto {Desconto})",
+                pedido.Id, usuarioId, pedido.Total, pedido.Desconto);
             return (pedido, null);
         }
 

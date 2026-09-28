@@ -31,7 +31,17 @@ namespace Clouud.Web.ViewModels
     public class CarrinhoViewModel
     {
         public List<CarrinhoLinhaViewModel> Itens { get; set; } = new();
-        public decimal Total => Itens.Sum(i => i.Subtotal);
+        public decimal Subtotal => Itens.Sum(i => i.Subtotal);
+
+        /// <summary>Cupom guardado para este carrinho (vale ou não, conforme <see cref="ErroCupom"/>).</summary>
+        public string? CodigoCupom { get; set; }
+        public string? DescricaoCupom { get; set; }
+        public decimal Desconto { get; set; }
+
+        /// <summary>Por que o cupom guardado não vale agora (ex.: pedido mínimo). Nulo se vale.</summary>
+        public string? ErroCupom { get; set; }
+
+        public decimal Total => Subtotal - Desconto;
         public bool PodeFinalizar => Itens.Count > 0 && Itens.All(i => i.Problema == null);
     }
 }

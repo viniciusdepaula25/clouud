@@ -75,6 +75,19 @@ else
             }
         </tbody>
         <tfoot>
+            @if (Model.Desconto > 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-end">Subtotal</td>
+                    <td class="text-end" id="subtotalCarrinho">@Model.Subtotal.ToString("C")</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="text-end">Cupom @Model.CodigoCupom (@Model.DescricaoCupom)</td>
+                    <td class="text-end" id="descontoCarrinho">- @Model.Desconto.ToString("C")</td>
+                    <td></td>
+                </tr>
+            }
             <tr>
                 <th colspan="4" class="text-end">Total</th>
                 <th class="text-end fs-5" id="totalCarrinho">@Model.Total.ToString("C")</th>
@@ -82,6 +95,30 @@ else
             </tr>
         </tfoot>
     </table>
+
+    <div class="mb-3" style="max-width: 460px">
+        @if (Model.CodigoCupom != null)
+        {
+            <div class="d-flex align-items-center gap-2">
+                <span>Cupom <strong id="cupomAplicado">@Model.CodigoCupom</strong></span>
+                <form asp-action="RemoverCupom" method="post" class="m-0">
+                    <input type="submit" value="Remover" class="btn btn-link btn-sm text-danger p-0" />
+                </form>
+            </div>
+            @if (Model.ErroCupom != null)
+            {
+                <div class="text-warning small" id="avisoCupom">@Model.ErroCupom</div>
+            }
+        }
+        else
+        {
+            <form asp-action="AplicarCupom" method="post" class="d-flex gap-2">
+                <input type="text" name="codigo" class="form-control" placeholder="Cupom de desconto" maxlength="30"
+                       aria-label="Cupom de desconto" autocomplete="off" style="text-transform: uppercase" required />
+                <input type="submit" value="Aplicar" class="btn btn-secondary" />
+            </form>
+        }
+    </div>
 
     <div class="d-flex justify-content-between align-items-center">
         <a asp-controller="Home" asp-action="Index">Continuar comprando</a>

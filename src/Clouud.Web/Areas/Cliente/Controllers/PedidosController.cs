@@ -99,6 +99,7 @@ namespace Clouud.Web.Areas.Cliente.Controllers
                 .Include(p => p.Itens).ThenInclude(i => i.Produto).ThenInclude(p => p.Plataforma)
                 .Include(p => p.Itens).ThenInclude(i => i.Chaves)
                 .Include(p => p.Pagamentos)
+                .Include(p => p.Cupom)
                 .AsSplitQuery()
                 .FirstOrDefault();
         }
