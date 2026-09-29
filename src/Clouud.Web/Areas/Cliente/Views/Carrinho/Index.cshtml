@@ -6,127 +6,123 @@
     ViewData["Title"] = "Carrinho";
 }
 
-<h1 class="mt-3">Meu carrinho</h1>
-<hr />
+<div class="cabecalho-pagina">
+    <div>
+        <h1><i class="bi bi-cart3 me-2 text-danger" aria-hidden="true"></i>Meu carrinho</h1>
+        @if (Model.Itens.Count > 0)
+        {
+            var unidades = Model.Itens.Sum(i => i.Quantidade);
+            <p class="subtitulo">@unidades @(unidades == 1 ? "item" : "itens") no carrinho</p>
+        }
+    </div>
+    @if (Model.Itens.Count > 0)
+    {
+        <div class="acoes"><a href="/loja" class="btn btn-outline-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Continuar comprando</a></div>
+    }
+</div>
 <partial name="_Alertas" />
 
 @if (Model.Itens.Count == 0)
 {
-    <p>Seu carrinho está vazio.</p>
-    <a href="/loja" class="btn btn-secondary">Ver jogos</a>
+    <div class="estado-vazio">
+        <i class="bi bi-cart-x" aria-hidden="true"></i>
+        <p class="titulo-vazio">Seu carrinho está vazio.</p>
+        <p>Escolha um jogo na loja e clique em Comprar.</p>
+        <a href="/loja" class="btn btn-danger">Ver jogos</a>
+    </div>
 }
 else
 {
-    <table class="table align-middle">
-        <thead>
-            <tr>
-                <th colspan="2">Produto</th>
-                <th class="text-end">Preço</th>
-                <th>Quantidade</th>
-                <th class="text-end">Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Itens)
-            {
-                <tr>
-                    <td style="width: 64px">
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-8">
+            <section class="painel" aria-label="Itens do carrinho">
+                @foreach (var item in Model.Itens)
+                {
+                    <div class="item-carrinho">
                         <img src="@(string.IsNullOrEmpty(item.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + item.Capa))"
-                             alt="" width="48" height="64" style="object-fit: cover"
-                             data-fallback="@Url.Content("~/img/sem-capa.svg")" />
-                    </td>
-                    <td>
-                        <strong>@item.Titulo</strong><br />
-                        <small class="text-muted">@item.Plataforma@(item.Edicao != "Standard" ? $" · {item.Edicao}" : "")</small>
-                        @if (item.Problema != null)
-                        {
-                            <div class="text-danger small">@item.Problema</div>
-                        }
-                    </td>
-                    <td class="text-end">
-                        @if (item.EmPromocao)
-                        {
-                            <s class="text-muted small">@item.Preco.ToString("C")</s><br />
-                        }
-                        @item.PrecoAtual.ToString("C")
-                    </td>
-                    <td>
-                        <form asp-action="Atualizar" method="post" class="d-flex gap-1">
-                            <input type="hidden" name="produtoId" value="@item.ProdutoId" />
-                            <select name="quantidade" class="form-select form-select-sm" style="width: 80px" aria-label="Quantidade"
-                                    data-enviar-ao-mudar>
-                                @for (var q = 1; q <= CarrinhoItem.QuantidadeMaxima; q++)
+                             alt="" class="capa-item" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
+                        <div class="min-w-0">
+                            <strong class="text-white d-block">@item.Titulo</strong>
+                            <small class="text-muted"><i class="bi bi-controller me-1" aria-hidden="true"></i>@item.Plataforma@(item.Edicao != "Standard" ? $" · {item.Edicao}" : "")</small>
+                            <div class="small mt-1">
+                                @if (item.EmPromocao)
                                 {
-                                    <option value="@q" selected="@(q == item.Quantidade)">@q</option>
+                                    <s class="text-muted me-1">@item.Preco.ToString("C")</s>
                                 }
-                            </select>
-                            <noscript><input type="submit" value="OK" class="btn btn-secondary btn-sm" /></noscript>
-                        </form>
-                    </td>
-                    <td class="text-end">@item.Subtotal.ToString("C")</td>
-                    <td class="text-end">
-                        <form asp-action="Remover" method="post">
-                            <input type="hidden" name="produtoId" value="@item.ProdutoId" />
-                            <input type="submit" value="Remover" class="btn btn-outline-danger btn-sm" />
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-        <tfoot>
-            @if (Model.Desconto > 0)
-            {
-                <tr>
-                    <td colspan="4" class="text-end">Subtotal</td>
-                    <td class="text-end" id="subtotalCarrinho">@Model.Subtotal.ToString("C")</td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td colspan="4" class="text-end">Cupom @Model.CodigoCupom (@Model.DescricaoCupom)</td>
-                    <td class="text-end" id="descontoCarrinho">- @Model.Desconto.ToString("C")</td>
-                    <td></td>
-                </tr>
-            }
-            <tr>
-                <th colspan="4" class="text-end">Total</th>
-                <th class="text-end fs-5" id="totalCarrinho">@Model.Total.ToString("C")</th>
-                <th></th>
-            </tr>
-        </tfoot>
-    </table>
+                                <span class="text-white">@item.PrecoAtual.ToString("C")</span> <span class="text-muted">cada</span>
+                            </div>
+                            @if (item.Problema != null)
+                            {
+                                <div class="text-danger small mt-1"><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>@item.Problema</div>
+                            }
+                        </div>
+                        <div class="controles-item">
+                            <form asp-action="Atualizar" method="post" class="d-flex align-items-center gap-2 m-0">
+                                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                <label class="small text-muted" for="quantidade-@item.ProdutoId">Qtd.</label>
+                                <select name="quantidade" id="quantidade-@item.ProdutoId" class="form-select form-select-sm" style="width: 76px"
+                                        data-enviar-ao-mudar>
+                                    @for (var q = 1; q <= CarrinhoItem.QuantidadeMaxima; q++)
+                                    {
+                                        <option value="@q" selected="@(q == item.Quantidade)">@q</option>
+                                    }
+                                </select>
+                                <noscript><input type="submit" value="OK" class="btn btn-secondary btn-sm" /></noscript>
+                            </form>
+                            <strong class="text-white fs-5 text-end" style="min-width: 7rem">@item.Subtotal.ToString("C")</strong>
+                            <form asp-action="Remover" method="post" class="m-0">
+                                <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                <input type="submit" value="Remover" class="btn btn-outline-danger btn-sm" aria-label="Remover @item.Titulo do carrinho" />
+                            </form>
+                        </div>
+                    </div>
+                }
+            </section>
+        </div>
 
-    <div class="mb-3" style="max-width: 460px">
-        @if (Model.CodigoCupom != null)
-        {
-            <div class="d-flex align-items-center gap-2">
-                <span>Cupom <strong id="cupomAplicado">@Model.CodigoCupom</strong></span>
-                <form asp-action="RemoverCupom" method="post" class="m-0">
-                    <input type="submit" value="Remover" class="btn btn-link btn-sm text-danger p-0" />
+        <aside class="col-lg-4">
+            <div class="painel resumo-compra">
+                <h2 class="painel-titulo"><i class="bi bi-receipt" aria-hidden="true"></i>Resumo</h2>
+
+                <div class="mb-3">
+                    @if (Model.CodigoCupom != null)
+                    {
+                        <div class="cupom-aplicado">
+                            <span><i class="bi bi-ticket-perforated me-1 text-danger" aria-hidden="true"></i>Cupom <strong class="text-white" id="cupomAplicado">@Model.CodigoCupom</strong></span>
+                            <form asp-action="RemoverCupom" method="post" class="m-0">
+                                <input type="submit" value="Remover" class="btn btn-link btn-sm text-danger p-0" />
+                            </form>
+                        </div>
+                        @if (Model.ErroCupom != null)
+                        {
+                            <div class="small mt-2 texto-aviso" id="avisoCupom"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>@Model.ErroCupom</div>
+                        }
+                    }
+                    else
+                    {
+                        <form asp-action="AplicarCupom" method="post">
+                            <label for="codigoCupom" class="form-label">Cupom de desconto</label>
+                            <div class="input-group">
+                                <input type="text" name="codigo" id="codigoCupom" class="form-control" placeholder="Ex.: BEMVINDO10" maxlength="30"
+                                       autocomplete="off" style="text-transform: uppercase" required />
+                                <input type="submit" value="Aplicar" class="btn btn-secondary" />
+                            </div>
+                        </form>
+                    }
+                </div>
+
+                <div class="linha-resumo"><span>Subtotal</span><span id="subtotalCarrinho">@Model.Subtotal.ToString("C")</span></div>
+                @if (Model.Desconto > 0)
+                {
+                    <div class="linha-resumo"><span>Cupom @Model.CodigoCupom <small class="text-muted d-block">@Model.DescricaoCupom</small></span><span id="descontoCarrinho" class="text-success">- @Model.Desconto.ToString("C")</span></div>
+                }
+                <div class="linha-resumo total"><span>Total</span><span id="totalCarrinho">@Model.Total.ToString("C")</span></div>
+
+                <form asp-action="Finalizar" method="post" class="d-grid mt-3">
+                    <input type="submit" value="Finalizar compra" class="btn btn-danger btn-lg" disabled="@(!Model.PodeFinalizar)" />
                 </form>
+                <p class="small text-muted mt-2 mb-0"><i class="bi bi-clock me-1" aria-hidden="true"></i>Ao finalizar, as chaves ficam reservadas por @((int)Pedidos.PrazoPagamento.TotalMinutes) minutos para você pagar.</p>
             </div>
-            @if (Model.ErroCupom != null)
-            {
-                <div class="text-warning small" id="avisoCupom">@Model.ErroCupom</div>
-            }
-        }
-        else
-        {
-            <form asp-action="AplicarCupom" method="post" class="d-flex gap-2">
-                <input type="text" name="codigo" class="form-control" placeholder="Cupom de desconto" maxlength="30"
-                       aria-label="Cupom de desconto" autocomplete="off" style="text-transform: uppercase" required />
-                <input type="submit" value="Aplicar" class="btn btn-secondary" />
-            </form>
-        }
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center">
-        <a href="/loja">Continuar comprando</a>
-        <form asp-action="Finalizar" method="post" class="text-end">
-            <small class="d-block text-muted mb-1">
-                Ao finalizar, as chaves ficam reservadas por @((int)Pedidos.PrazoPagamento.TotalMinutes) minutos para você pagar.
-            </small>
-            <input type="submit" value="Finalizar compra" class="btn btn-danger btn-lg" disabled="@(!Model.PodeFinalizar)" />
-        </form>
+        </aside>
     </div>
 }

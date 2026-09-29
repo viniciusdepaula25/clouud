@@ -6,106 +6,121 @@
 }
 
 
-<div class="row justify-content-center mt-2">
-    <div class="col-md-8 col-lg-6 col-xl-5">
-        <h2>Minha conta</h2>
-        <hr />
-        <partial name="_Alertas" />
+<div class="cabecalho-pagina">
+    <div>
+        <h1><i class="bi bi-person-circle me-2 text-danger" aria-hidden="true"></i>Minha conta</h1>
+        <p class="subtitulo">Seus dados, a senha e os avisos por e-mail.</p>
+    </div>
+</div>
+<partial name="_Alertas" />
 
-        <div class="d-flex align-items-center gap-3 mb-4">
+<div class="row g-4 align-items-start">
+    <aside class="col-lg-4">
+        <section class="painel text-center mb-4" aria-labelledby="tituloFoto">
             <img src="@FotoPerfilService.Url(Model.Foto)" alt="Sua foto de perfil" id="fotoPerfil"
-                 class="rounded-circle" style="width: 96px; height: 96px; object-fit: cover"
-                 data-fallback="@FotoPerfilService.FotoPadrao" />
-            <div class="flex-grow-1">
-                <form asp-action="Foto" method="post" enctype="multipart/form-data">
-                    <label for="arquivoFoto" class="form-label mb-1">Foto de perfil</label>
-                    <input type="file" name="arquivo" id="arquivoFoto" class="form-control form-control-sm"
-                           accept="image/jpeg,image/png,image/gif,image/webp" required />
-                    <small class="form-text d-block">JPG, PNG, GIF ou WebP, até 2 MB.</small>
-                    <span class="text-danger small d-block" id="erroFoto"></span>
-                    <input type="submit" value="Enviar foto" class="btn btn-secondary btn-sm mt-1" />
-                </form>
-                @if (!string.IsNullOrEmpty(Model.Foto))
+                 class="rounded-circle foto-conta mb-3" data-fallback="@FotoPerfilService.FotoPadrao" />
+            <h2 class="h5 mb-1" id="tituloFoto">@Model.Nome</h2>
+            <p class="small text-muted mb-2 text-break">@Model.Email</p>
+            @* Confirmação do e-mail: sem ela não vão os avisos da lista de desejos *@
+            <div class="d-flex flex-wrap justify-content-center align-items-center gap-2 mb-3 small" id="statusEmail">
+                @if (Model.EmailConfirmado)
                 {
-                    <form asp-action="RemoverFoto" method="post" class="mt-1">
-                        <input type="submit" value="Remover foto" class="btn btn-link btn-sm text-danger p-0" />
+                    <span class="situacao situacao-sucesso">E-mail confirmado</span>
+                }
+                else
+                {
+                    <span class="situacao situacao-aviso">E-mail não confirmado</span>
+                    <form asp-action="ReenviarConfirmacao" method="post" class="m-0">
+                        <input type="submit" value="Reenviar e-mail de confirmação" class="btn btn-link btn-sm p-0" />
                     </form>
                 }
             </div>
-        </div>
-
-        @* Confirmação do e-mail: sem ela não vão os avisos da lista de desejos *@
-        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small" id="statusEmail">
-            @if (Model.EmailConfirmado)
+            <form asp-action="Foto" method="post" enctype="multipart/form-data" class="text-start">
+                <label for="arquivoFoto" class="form-label">Foto de perfil</label>
+                <input type="file" name="arquivo" id="arquivoFoto" class="form-control form-control-sm"
+                       accept="image/jpeg,image/png,image/gif,image/webp" required />
+                <small class="form-text d-block">JPG, PNG, GIF ou WebP, até 2 MB. A prévia aparece acima antes de enviar.</small>
+                <span class="text-danger small d-block" id="erroFoto"></span>
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-2">
+                    <input type="submit" value="Enviar foto" class="btn btn-secondary btn-sm" />
+                </div>
+            </form>
+            @if (!string.IsNullOrEmpty(Model.Foto))
             {
-                <span class="badge bg-success">E-mail confirmado</span>
-            }
-            else
-            {
-                <span class="badge bg-warning text-dark">E-mail não confirmado</span>
-                <form asp-action="ReenviarConfirmacao" method="post" class="m-0">
-                    <input type="submit" value="Reenviar e-mail de confirmação" class="btn btn-link btn-sm p-0" />
+                <form asp-action="RemoverFoto" method="post" class="mt-2 text-start">
+                    <input type="submit" value="Remover foto" class="btn btn-link btn-sm text-danger p-0" />
                 </form>
             }
-        </div>
+        </section>
 
-        <form asp-action="Index" method="post">
+        <section class="painel" aria-labelledby="tituloAparelhos">
+            <h2 class="painel-titulo" id="tituloAparelhos"><i class="bi bi-laptop" aria-hidden="true"></i>Aparelhos conectados</h2>
+            <p class="small text-muted mb-3">Entrou num computador que não é seu e esqueceu de sair? Isto desconecta a sua conta de todos os outros aparelhos.</p>
+            <form asp-action="SairDeTodos" method="post">
+                <input type="submit" value="Sair de todos os outros aparelhos" class="btn btn-outline-danger btn-sm" />
+            </form>
+        </section>
+    </aside>
+
+    <div class="col-lg-8">
+        <form asp-action="Index" method="post" class="form-admin">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Nome" class="control-label"></label>
-                <input asp-for="Nome" class="form-control" />
-                <span asp-validation-for="Nome" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+            <fieldset class="mb-4">
+                <legend>Dados</legend>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Nome" class="form-label"></label>
+                        <input asp-for="Nome" class="form-control" autocomplete="name" />
+                        <span asp-validation-for="Nome" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" autocomplete="email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-check form-switch mt-3">
+                    <input asp-for="ReceberAvisos" class="form-check-input" role="switch" />
+                    <label asp-for="ReceberAvisos" class="form-check-label"></label>
+                    @if (!Model.EmailConfirmado)
+                    {
+                        <small class="d-block text-muted">Os avisos só vão depois que você confirmar o e-mail.</small>
+                    }
+                </div>
+            </fieldset>
 
-            <div class="form-check mt-3">
-                <input asp-for="ReceberAvisos" class="form-check-input" />
-                <label asp-for="ReceberAvisos" class="form-check-label"></label>
-                @if (!Model.EmailConfirmado)
-                {
-                    <small class="d-block text-muted">Os avisos só vão depois que você confirmar o e-mail.</small>
-                }
-            </div>
+            <fieldset class="mb-4">
+                <legend>Trocar senha <span class="text-lowercase fw-normal">(opcional)</span></legend>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="NovaSenha" class="form-label"></label>
+                        <input asp-for="NovaSenha" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="NovaSenha" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmarNovaSenha" class="form-label"></label>
+                        <input asp-for="ConfirmarNovaSenha" class="form-control" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmarNovaSenha" class="text-danger"></span>
+                    </div>
+                </div>
+            </fieldset>
 
-            <h5 class="mt-4">Trocar senha <small class="text-muted">(opcional)</small></h5>
-            <div class="form-group">
-                <label asp-for="NovaSenha" class="control-label"></label>
-                <input asp-for="NovaSenha" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="NovaSenha" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ConfirmarNovaSenha" class="control-label"></label>
-                <input asp-for="ConfirmarNovaSenha" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="ConfirmarNovaSenha" class="text-danger"></span>
-            </div>
+            <fieldset>
+                <legend>Confirmação</legend>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label asp-for="SenhaAtual" class="form-label"></label>
+                        <input asp-for="SenhaAtual" class="form-control" autocomplete="current-password" />
+                        <small class="form-text">Obrigatória só para trocar o e-mail ou a senha.</small>
+                        <span asp-validation-for="SenhaAtual" class="text-danger d-block"></span>
+                    </div>
+                </div>
+            </fieldset>
 
-            <div class="form-group mt-4">
-                <label asp-for="SenhaAtual" class="control-label"></label>
-                <input asp-for="SenhaAtual" class="form-control" autocomplete="current-password" />
-                <small class="form-text">Obrigatória só para trocar o e-mail ou a senha.</small>
-                <span asp-validation-for="SenhaAtual" class="text-danger d-block"></span>
-            </div>
-
-            <div class="form-group text-center p-4">
-                <input type="submit" value="Salvar" class="btn btn-primary" />
+            <div class="rodape-form">
                 <a asp-area="Cliente" asp-controller="Home" asp-action="Index" class="btn btn-secondary">Voltar</a>
+                <input type="submit" value="Salvar" class="btn btn-primary px-4" />
             </div>
-        </form>
-    </div>
-</div>
-
-
-<div class="row justify-content-center mt-2">
-    <div class="col-md-8 col-lg-6 col-xl-5">
-        <hr />
-        <h5>Aparelhos conectados</h5>
-        <p class="small text-muted mb-2">Entrou num computador que não é seu e esqueceu de sair? Isto desconecta a sua conta de todos os outros aparelhos.</p>
-        <form asp-action="SairDeTodos" method="post">
-            <input type="submit" value="Sair de todos os outros aparelhos" class="btn btn-outline-danger btn-sm" />
         </form>
     </div>
 </div>
