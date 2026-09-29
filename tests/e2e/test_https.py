@@ -21,6 +21,7 @@ def test_cabecalhos_de_seguranca(app):
         assert diretiva in csp
     assert re.search(r"script-src 'self' 'nonce-[A-Za-z0-9+/=]+'", csp)
     assert "unsafe-inline" not in csp.split("script-src")[1].split(";")[0]  # script inline só com nonce
+    assert "https:" not in csp  # fontes e ícones vêm do próprio site: nenhum domínio de fora liberado
 
 
 def test_nonce_muda_a_cada_resposta_e_vai_nos_scripts_da_pagina(paginas):

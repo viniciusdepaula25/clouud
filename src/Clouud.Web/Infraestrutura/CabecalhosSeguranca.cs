@@ -36,9 +36,9 @@ namespace Clouud.Web.Infraestrutura
             {
                 "default-src 'self'",
                 $"script-src 'self' 'nonce-{nonce}'",
-                // estilos: os do site, os atributos style="" das páginas e as fontes do Google do tema
-                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-                "font-src 'self' https://fonts.gstatic.com data:",
+                // estilos: os do site e os atributos style="" das páginas; fontes e ícones servidos pelo próprio site
+                "style-src 'self' 'unsafe-inline'",
+                "font-src 'self' data:",
                 "img-src 'self' data: blob:",
                 "connect-src 'self'",
                 "object-src 'none'",

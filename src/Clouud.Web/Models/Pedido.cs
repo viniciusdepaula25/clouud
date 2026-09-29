@@ -27,13 +27,13 @@ namespace Clouud.Web.Models
             _ => status.ToString()
         };
 
-        /// <summary>Cor do selo (classe do Bootstrap) de cada situação.</summary>
+        /// <summary>Classes do selo de cada situação (componente .situacao do site.css).</summary>
         public static string Cor(this StatusPedido status) => status switch
         {
-            StatusPedido.AguardandoPagamento => "bg-warning text-dark",
-            StatusPedido.Pago => "bg-success",
-            StatusPedido.Reembolsado => "bg-info text-dark",
-            _ => "bg-secondary"
+            StatusPedido.AguardandoPagamento => "situacao situacao-aviso",
+            StatusPedido.Pago => "situacao situacao-sucesso",
+            StatusPedido.Reembolsado => "situacao situacao-roxa",
+            _ => "situacao situacao-neutra"
         };
     }
 

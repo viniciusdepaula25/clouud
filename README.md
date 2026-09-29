@@ -20,7 +20,7 @@ Loja de chaves de ativação de jogos (Steam, Epic Games, Ubisoft, Battle.net...
 │   ├── Infraestrutura/      # dinheiro em reais, criptografia, segurança
 │   ├── Data/                # DbContext, admin inicial e migrations
 │   ├── Views/               # páginas Razor e e-mails
-│   └── wwwroot/             # css, js, imagens e uploads
+│   └── wwwroot/             # css (tema.css e site.css), js, fontes, ícones, imagens e uploads
 ├── tests/e2e/               # testes automatizados (pytest + Playwright)
 ├── docs/                    # documentação do projeto
 ├── Dockerfile, docker-compose.yml
@@ -70,6 +70,7 @@ dotnet build && python -m pytest tests/e2e
 ## Documentação
 
 - [Funcionalidades](docs/funcionalidades.md): o que cada tela faz (loja, compra, cupons, lista de desejos, painel...)
+- [Guia visual](docs/guia-visual.md): cores, fontes, componentes e regras de layout das telas
 - [Configuração](docs/configuracao.md): senhas, ajustes, Docker e produção
 - [E-mails](docs/emails.md): quais e-mails a loja manda e como configurar o envio
 - [Segurança](docs/seguranca.md): o que protege a loja e o que conferir antes de ir para produção

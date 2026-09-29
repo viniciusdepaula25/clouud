@@ -4,8 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CLOUUD</title>
-    <link rel="icon" type="image/png" href="~/img/logo.png" />
+    <link rel="icon" type="image/png" href="~/img/favicon.png" />
     <link rel="stylesheet" href="~/css/mytheme.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     @await RenderSectionAsync("Estilos", required: false)
 </head>
@@ -15,14 +17,48 @@
         <partial name="_Navbar" />
     </header>
 
-    <main role="main" class="container flex-grow-1 py-3">
+    <main role="main" class="container-xl flex-grow-1 py-3">
         @RenderBody()
     </main>
 
-    <footer class="rodape border-top border-secondary py-3 mt-4">
-        <div class="container d-flex flex-wrap justify-content-between gap-2 small text-muted">
-            <span><strong class="marca-texto">CLOUUD</strong> · chaves de ativação para Steam, Epic Games, Battle.net e mais</span>
-            <span>Projeto de estudo: pagamento simulado, nenhuma cobrança real.</span>
+    <footer class="rodape mt-5">
+        <div class="container-xl py-4">
+            <div class="row g-4">
+                <div class="col-12 col-md-5">
+                    <a href="/" class="marca text-decoration-none mb-2"><img src="~/img/logo-nuvem.png" alt="" />CLOUUD</a>
+                    <p class="mb-0">Chaves de ativação para Steam, Epic Games, Battle.net, GOG e mais, entregues logo depois do pagamento.</p>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2 offset-lg-1">
+                    <h2>Loja</h2>
+                    <ul>
+                        <li><a href="/loja">Todos os jogos</a></li>
+                        <li><a href="/loja?promocoes=true">Promoções</a></li>
+                        <li><a href="/loja?ordem=lancamentos">Lançamentos</a></li>
+                        <li><a href="/loja?ordem=mais-vendidos">Mais vendidos</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-4 col-lg-3">
+                    <h2>Sua conta</h2>
+                    <ul>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li><a asp-area="Cliente" asp-controller="Pedidos" asp-action="Index">Pedidos</a></li>
+                            <li><a asp-area="Cliente" asp-controller="MinhasChaves" asp-action="Index">Chaves compradas</a></li>
+                            <li><a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index">Dados da conta</a></li>
+                        }
+                        else
+                        {
+                            <li><a href="/conta/login">Acessar a conta</a></li>
+                            <li><a href="/conta/cadastro">Criar conta</a></li>
+                            <li><a href="/conta/esqueci-senha">Recuperar a senha</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            <div class="aviso-rodape d-flex flex-wrap justify-content-between gap-2 small mt-4 pt-3">
+                <span>© @DateTime.Now.Year <span class="marca-texto">CLOUUD</span> · projeto de estudo</span>
+                <span><i class="bi bi-info-circle me-1" aria-hidden="true"></i>Pagamento simulado: nenhuma cobrança real.</span>
+            </div>
         </div>
     </footer>
 

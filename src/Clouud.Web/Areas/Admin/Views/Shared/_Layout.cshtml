@@ -4,60 +4,62 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CLOUUD Admin</title>
-    <link rel="icon" type="image/png" href="~/img/logo.png" />
+    <link rel="icon" type="image/png" href="~/img/favicon.png" />
     <link rel="stylesheet" href="~/css/mytheme.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 @{
     var controllerAtual = ViewContext.RouteData.Values["controller"] as string;
     string? Ativo(string controller) => string.Equals(controllerAtual, controller, StringComparison.OrdinalIgnoreCase) ? "active" : null;
 }
-<body class="d-flex flex-column min-vh-100">
+<body class="d-flex flex-column min-vh-100 area-admin">
     <header>
-        <nav class="navbar navbar-expand-xl navbar-dark bg-danger barra-admin" aria-label="Menu do admin">
-            <div class="container-fluid">
-                <a class="navbar-brand marca" asp-area="Admin" asp-controller="Home" asp-action="Index">CLOUUD</a>
+        <nav class="navbar navbar-expand-lg navbar-dark barra-admin" aria-label="Menu do admin">
+            <div class="container-xl">
+                <a class="navbar-brand marca" asp-area="Admin" asp-controller="Home" asp-action="Index"><img src="~/img/logo-branco.png" alt="" />CLOUUD <span class="rotulo-admin">Admin</span></a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuAdmin"
                         aria-controls="menuAdmin" aria-expanded="false" aria-label="Abrir o menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="menuAdmin">
-                    <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Jogo")" asp-area="Admin" asp-controller="Jogo" asp-action="Index">Jogos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Produto")" asp-area="Admin" asp-controller="Produto" asp-action="Index">Produtos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Estoque")" asp-area="Admin" asp-controller="Estoque" asp-action="Index">Estoque</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Pedidos")" asp-area="Admin" asp-controller="Pedidos" asp-action="Index">Pedidos</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Cupons")" asp-area="Admin" asp-controller="Cupons" asp-action="Index">Cupons</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Avaliacoes")" asp-area="Admin" asp-controller="Avaliacoes" asp-action="Index">Avaliações</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Plataforma")" asp-area="Admin" asp-controller="Plataforma" asp-action="Index">Plataformas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Categoria")" asp-area="Admin" asp-controller="Categoria" asp-action="Index">Categorias</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Usuarios")" asp-area="Admin" asp-controller="Usuarios" asp-action="Index">Usuários</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link @Ativo("Emails")" asp-area="Admin" asp-controller="Emails" asp-action="Index">E-mails</a>
-                    </li>
+                    <ul class="navbar-nav secoes-barra">
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Jogo")" asp-area="Admin" asp-controller="Jogo" asp-action="Index"><i class="bi bi-controller" aria-hidden="true"></i>Jogos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Produto")" asp-area="Admin" asp-controller="Produto" asp-action="Index"><i class="bi bi-box-seam" aria-hidden="true"></i>Produtos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Estoque")" asp-area="Admin" asp-controller="Estoque" asp-action="Index"><i class="bi bi-key" aria-hidden="true"></i>Estoque</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Pedidos")" asp-area="Admin" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-receipt" aria-hidden="true"></i>Pedidos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Cupons")" asp-area="Admin" asp-controller="Cupons" asp-action="Index"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Cupons</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Avaliacoes")" asp-area="Admin" asp-controller="Avaliacoes" asp-action="Index"><i class="bi bi-star" aria-hidden="true"></i>Avaliações</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Plataforma")" asp-area="Admin" asp-controller="Plataforma" asp-action="Index"><i class="bi bi-display" aria-hidden="true"></i>Plataformas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Categoria")" asp-area="Admin" asp-controller="Categoria" asp-action="Index"><i class="bi bi-tags" aria-hidden="true"></i>Categorias</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Usuarios")" asp-area="Admin" asp-controller="Usuarios" asp-action="Index"><i class="bi bi-people" aria-hidden="true"></i>Usuários</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @Ativo("Emails")" asp-area="Admin" asp-controller="Emails" asp-action="Index"><i class="bi bi-envelope" aria-hidden="true"></i>E-mails</a>
+                        </li>
                     </ul>
-                    <div class="d-flex flex-wrap align-items-center gap-2 pb-2 pb-xl-0">
-                        <a href="/" class="btn btn-dark btn-sm">Ver a loja</a>
+                    <div class="d-flex flex-wrap align-items-center gap-2 pb-2 pb-lg-0 ms-lg-auto acoes-barra">
+                        <a href="/" class="btn btn-escuro btn-sm"><i class="bi bi-shop" aria-hidden="true"></i>Ver a loja</a>
                         <form method="post" action="/conta/logout" asp-antiforgery="true" class="m-0">
-                            <button type="submit" class="btn btn-secondary btn-sm" id="botaoSair">Sair</button>
+                            <button type="submit" class="btn btn-escuro btn-sm" id="botaoSair"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Sair</button>
                         </form>
                     </div>
                 </div>
@@ -65,9 +67,16 @@
         </nav>
     </header>
 
-    <main role="main" class="container flex-grow-1 py-3">
+    <main role="main" class="container-xl flex-grow-1 py-4">
         @RenderBody()
     </main>
+
+    <footer class="rodape rodape-admin">
+        <div class="container-xl py-3 d-flex flex-wrap justify-content-between gap-2 small">
+            <span><span class="marca-texto">CLOUUD</span> · painel administrativo</span>
+            <span>Logado como @User.Identity?.Name</span>
+        </div>
+    </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

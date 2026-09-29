@@ -1,9 +1,15 @@
 @* Mensagens de sucesso e de erro vindas do redirecionamento anterior *@
 @if (TempData["Mensagem"] is string mensagem)
 {
-    <div class="alert alert-success">@mensagem</div>
+    <div class="alert alert-success alert-com-icone" role="status">
+        <i class="bi bi-check-circle" aria-hidden="true"></i>
+        <div>@mensagem</div>
+    </div>
 }
 @if (TempData["Erro"] is string erro)
 {
-    <div class="alert alert-danger">@erro</div>
+    <div class="alert alert-danger alert-com-icone" role="alert">
+        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+        <div>@erro</div>
+    </div>
 }

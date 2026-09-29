@@ -1,0 +1,120 @@
+/* ==========================================================================
+   CLOUUD — tokens do tema
+   Único lugar com cores, fontes, raios, sombras e espaçamentos. Os componentes (site.css) só usam
+   estas variáveis. Por cima do Bootstrap 5.3 + Bootswatch Cyborg (mytheme.css): as variáveis do
+   Bootstrap que importam para a loja são apontadas para os tokens aqui embaixo.
+   ========================================================================== */
+
+/* Fontes servidas pelo próprio site (a CSP não precisa liberar outros domínios) */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../lib/fontes/roboto-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../lib/fontes/roboto-500.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../lib/fontes/roboto-700.woff2") format("woff2");
+}
+/* Anton: condensada e pesada como a Impact, mas igual em qualquer sistema */
+@font-face {
+  font-family: "Anton";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../lib/fontes/anton-400.woff2") format("woff2");
+}
+
+:root {
+  /* ---- cores base ---- */
+  --cl-fundo: #060606;
+  --cl-superficie: #151515;        /* cards, painéis */
+  --cl-superficie-2: #1d1d1d;      /* cabeçalhos de tabela, campos, blocos internos */
+  --cl-superficie-3: #282828;      /* hover, destaque suave */
+  --cl-painel: rgba(14, 14, 14, .9); /* painel sobre a imagem de fundo */
+  --cl-vidro: rgba(6, 6, 6, .72);
+  --cl-borda: #2c2c2c;
+  --cl-borda-forte: #444;
+
+  /* ---- texto ---- */
+  --cl-texto: #b9bbba;             /* 9,2:1 sobre a superfície */
+  --cl-titulo: #fff;
+  --cl-texto-suave: #8e9190;       /* 5,4:1 sobre a superfície (AA) */
+
+  /* ---- marca e estados ---- */
+  --cl-vermelho: #cc0000;          /* barra, selos, botão principal da loja */
+  --cl-vermelho-escuro: #9e0000;
+  --cl-vermelho-texto: #ff5252;    /* vermelho para texto pequeno sobre o escuro (AA) */
+  --cl-vermelho-rgb: 204, 0, 0;
+  --cl-azul: #2a9fd6;              /* links, botões de formulário, foco, gráfico */
+  --cl-azul-texto: #5cb8e4;
+  --cl-azul-botao: #1d78a8;        /* fundo de botão com texto branco (AA) */
+  --cl-azul-rgb: 42, 159, 214;
+  --cl-laranja: #ff8800;           /* estrelas, avisos */
+  --cl-verde: #77b300;             /* sucesso, à venda */
+  --cl-verde-texto: #9bd11f;
+  --cl-roxo: #9933cc;              /* informação */
+  --cl-roxo-texto: #c77dff;
+
+  /* ---- tipografia ---- */
+  --cl-fonte: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --cl-fonte-marca: "Anton", Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  --cl-fonte-codigo: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* ---- forma ---- */
+  --cl-raio: .75rem;
+  --cl-raio-sm: .5rem;
+  --cl-raio-lg: 1rem;
+  --cl-sombra: 0 12px 32px rgba(0, 0, 0, .5);
+  --cl-sombra-sm: 0 4px 14px rgba(0, 0, 0, .4);
+  --cl-neon: 0 0 0 1px rgba(var(--cl-vermelho-rgb), .65), 0 0 22px rgba(var(--cl-vermelho-rgb), .35);
+  --cl-foco: 0 0 0 .2rem rgba(var(--cl-azul-rgb), .5);
+  --cl-transicao: .18s ease;
+
+  /* ---- espaçamento ---- */
+  --cl-espaco-1: .25rem;
+  --cl-espaco-2: .5rem;
+  --cl-espaco-3: 1rem;
+  --cl-espaco-4: 1.5rem;
+  --cl-espaco-5: 2.5rem;
+  --cl-espaco-secao: 3rem;
+  --cl-toque: 44px;                /* área mínima de toque no celular */
+
+  /* ---- variáveis do Bootstrap apontadas para os tokens ---- */
+  --bs-font-sans-serif: var(--cl-fonte);
+  --bs-body-font-family: var(--cl-fonte);
+  --bs-body-color: var(--cl-texto);
+  --bs-body-bg: var(--cl-fundo);
+  --bs-heading-color: var(--cl-titulo);
+  --bs-secondary-color: var(--cl-texto-suave);
+  --bs-link-color: var(--cl-azul-texto);
+  --bs-link-color-rgb: 92, 184, 228;
+  --bs-link-hover-color: #8fd0ef;
+  --bs-link-hover-color-rgb: 143, 208, 239;
+  --bs-border-color: var(--cl-borda);
+  --bs-border-color-translucent: var(--cl-borda);
+  --bs-border-radius: var(--cl-raio-sm);
+  --bs-border-radius-sm: .375rem;
+  --bs-border-radius-lg: var(--cl-raio);
+  --bs-border-radius-xl: var(--cl-raio-lg);
+  --bs-focus-ring-color: rgba(var(--cl-azul-rgb), .5);
+  --bs-emphasis-color: #fff;
+  --bs-emphasis-color-rgb: 255, 255, 255;
+  --bs-tertiary-bg: var(--cl-superficie-2);
+  --bs-secondary-bg: var(--cl-superficie-3);
+  --bs-form-valid-color: var(--cl-verde-texto);
+  --bs-form-valid-border-color: var(--cl-verde);
+  --bs-form-invalid-color: var(--cl-vermelho-texto);
+  --bs-form-invalid-border-color: var(--cl-vermelho-texto);
+}

@@ -14,69 +14,70 @@
     var voltarAposLogin = caminho == "/" || caminho.StartsWith("/conta", StringComparison.OrdinalIgnoreCase) ? null : caminho + Context.Request.QueryString;
     var ativo = (string prefixo) => caminho.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase) ? "active" : null;
 }
-<nav class="navbar navbar-expand-lg navbar-dark bg-danger barra-loja" aria-label="Navegação principal">
-    <div class="container-fluid">
-        <a class="navbar-brand marca" href="/">CLOUUD</a>
+<nav class="navbar navbar-expand-lg navbar-dark barra-loja" aria-label="Navegação principal">
+    <div class="container-xl">
+        <a class="navbar-brand marca" href="/"><img src="~/img/logo-branco.png" alt="" />CLOUUD</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal"
                 aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir o menu">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="menuPrincipal">
-            <ul class="navbar-nav me-auto">
+            <form class="busca-barra" role="search" method="get" action="/loja">
+                <i class="bi bi-search" aria-hidden="true"></i>
+                <input class="form-control" type="search" name="busca" placeholder="Buscar jogos" aria-label="Buscar jogos" />
+            </form>
+            <div class="d-flex align-items-center flex-wrap gap-2 ms-lg-3 acoes-barra">
+                @if (logado)
+                {
+                    <a asp-area="Cliente" asp-controller="Carrinho" asp-action="Index" class="btn btn-escuro" id="linkCarrinho">
+                        <i class="bi bi-cart3" aria-hidden="true"></i>Carrinho
+                        @if (unidadesNoCarrinho > 0)
+                        {
+                            <span class="badge rounded-pill contador-barra ms-1" id="contadorCarrinho">@unidadesNoCarrinho</span>
+                        }
+                    </a>
+                    <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta"
+                       class="d-flex align-items-center gap-2 conta-barra">
+                        <img src="@foto" class="rounded-circle foto-barra" alt="Minha conta"
+                             data-fallback="@Clouud.Web.Services.FotoPerfilService.FotoPadrao">
+                        <span class="fw-semibold nome">@User.Identity?.Name</span>
+                    </a>
+                    <form method="post" action="/conta/logout" asp-antiforgery="true" class="m-0">
+                        <button type="submit" class="btn btn-escuro" id="botaoSair"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Sair</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@voltarAposLogin" class="btn btn-escuro"><i class="bi bi-person" aria-hidden="true"></i>Entrar</a>
+                    <a asp-area="" asp-controller="Conta" asp-action="Cadastro" class="btn btn-branco">Cadastrar</a>
+                }
+            </div>
+            <ul class="navbar-nav secoes-barra">
                 <li class="nav-item">
-                    <a class="nav-link @(caminho.Equals("/loja", StringComparison.OrdinalIgnoreCase) && !Context.Request.Query.ContainsKey("promocoes") ? "active" : null)" href="/loja">Loja</a>
+                    <a class="nav-link @(caminho.Equals("/loja", StringComparison.OrdinalIgnoreCase) && !Context.Request.Query.ContainsKey("promocoes") ? "active" : null)" href="/loja"><i class="bi bi-grid" aria-hidden="true"></i>Loja</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @(Context.Request.Query.ContainsKey("promocoes") ? "active" : null)" href="/loja?promocoes=true">Promoções</a>
+                    <a class="nav-link @(Context.Request.Query.ContainsKey("promocoes") ? "active" : null)" href="/loja?promocoes=true"><i class="bi bi-tag" aria-hidden="true"></i>Promoções</a>
                 </li>
                 @if (logado)
                 {
                     <li class="nav-item">
-                        <a class="nav-link @ativo("/Cliente/Pedidos")" asp-area="Cliente" asp-controller="Pedidos" asp-action="Index">Meus pedidos</a>
+                        <a class="nav-link @ativo("/Cliente/Pedidos")" asp-area="Cliente" asp-controller="Pedidos" asp-action="Index"><i class="bi bi-receipt" aria-hidden="true"></i>Meus pedidos</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @ativo("/Cliente/MinhasChaves")" asp-area="Cliente" asp-controller="MinhasChaves" asp-action="Index">Minhas chaves</a>
+                        <a class="nav-link @ativo("/Cliente/MinhasChaves")" asp-area="Cliente" asp-controller="MinhasChaves" asp-action="Index"><i class="bi bi-key" aria-hidden="true"></i>Minhas chaves</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link @ativo("/Cliente/ListaDesejos")" asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Index">Lista de desejos@(jogosDesejados > 0 ? $" ({jogosDesejados})" : "")</a>
+                        <a class="nav-link @ativo("/Cliente/ListaDesejos")" asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Index"><i class="bi bi-heart" aria-hidden="true"></i>Lista de desejos@(jogosDesejados > 0 ? $" ({jogosDesejados})" : "")</a>
                     </li>
                     @if (admin)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index">Painel admin</a>
+                        <li class="nav-item ms-lg-auto">
+                            <a class="nav-link" asp-area="Admin" asp-controller="Home" asp-action="Index"><i class="bi bi-speedometer2" aria-hidden="true"></i>Painel admin</a>
                         </li>
                     }
                 }
             </ul>
-            <form class="d-flex my-2 my-lg-0 me-lg-3 busca-barra" role="search" method="get" action="/loja">
-                <input class="form-control form-control-sm" type="search" name="busca" placeholder="Buscar jogos" aria-label="Buscar jogos" />
-            </form>
-            <div class="d-flex align-items-center flex-wrap gap-2 pb-2 pb-lg-0">
-                @if (logado)
-                {
-                    <a asp-area="Cliente" asp-controller="Carrinho" asp-action="Index" class="btn btn-dark btn-sm" id="linkCarrinho">
-                        Carrinho
-                        @if (unidadesNoCarrinho > 0)
-                        {
-                            <span class="badge rounded-pill bg-white text-black ms-1" id="contadorCarrinho">@unidadesNoCarrinho</span>
-                        }
-                    </a>
-                    <a asp-area="Cliente" asp-controller="MinhaConta" asp-action="Index" title="Minha conta"
-                       class="d-flex align-items-center gap-2 text-white text-decoration-none">
-                        <span class="fw-semibold">@User.Identity?.Name</span>
-                        <img src="@foto" class="rounded-circle foto-barra" alt="Minha conta"
-                             data-fallback="@Clouud.Web.Services.FotoPerfilService.FotoPadrao">
-                    </a>
-                    <form method="post" action="/conta/logout" asp-antiforgery="true" class="m-0">
-                            <button type="submit" class="btn btn-secondary btn-sm" id="botaoSair">Sair</button>
-                        </form>
-                }
-                else
-                {
-                    <a asp-area="" asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@voltarAposLogin" class="btn btn-secondary btn-sm">Entrar</a>
-                    <a asp-area="" asp-controller="Conta" asp-action="Cadastro" class="btn btn-secondary btn-sm">Cadastrar</a>
-                }
-            </div>
         </div>
     </div>
 </nav>
