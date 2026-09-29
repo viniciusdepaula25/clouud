@@ -1,31 +1,28 @@
 @model Clouud.Web.ViewModels.ProdutoFormViewModel
 
 @{
-    ViewData["Title"] = "Altera";
+    ViewData["Title"] = "Alterar produto";
 }
 
-<h1>Altera</h1>
-
-<h4>Produto</h4>
-<hr />
-@if (TempData["Mensagem"] is string mensagem)
-{
-    <div class="alert alert-success">@mensagem</div>
-}
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index" asp-route-jogoId="@Model.JogoId">Produtos</a> / Alterar</nav>
+        <h1>Alterar produto</h1>
+    </div>
+</div>
+<partial name="_Alertas" />
 <div class="row">
-    <div class="col-md-6">
-        <form asp-action="Altera">
+    <div class="col-lg-9 col-xl-8">
+        <form asp-action="Altera" class="form-admin">
             <partial name="_Form" model="Model" />
-            <div class="form-group mt-3">
-                <input type="submit" value="Salvar" class="btn btn-primary" />
+            <div class="rodape-form">
+                <a asp-action="Index" asp-route-jogoId="@Model.JogoId" class="btn btn-secondary">Voltar</a>
+                <input type="submit" value="Salvar" class="btn btn-primary px-4" />
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index" asp-route-jogoId="@Model.JogoId">Voltar</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

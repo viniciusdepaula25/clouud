@@ -17,16 +17,19 @@
     var fuso = TimeZoneInfo.Local;
 }
 
-<h1>E-mails</h1>
-<p>E-mails automáticos da loja. Eles entram numa fila e são enviados em segundo plano; se o servidor de e-mail falhar,
+<div class="cabecalho-pagina">
+    <div>
+        <h1>E-mails</h1>
+        <p class="subtitulo">E-mails automáticos da loja. Eles entram numa fila e são enviados em segundo plano; se o servidor de e-mail falhar,
     a loja tenta de novo até @Email.MaximoTentativas vezes. Depois do envio o conteúdo é apagado (links de senha e chaves não ficam guardados).</p>
-<p class="small">
-    Na fila agora: <strong id="emailsPendentes">@ViewData["Pendentes"]</strong> ·
-    Falharam: <strong id="emailsFalhas">@ViewData["Falhas"]</strong>
-</p>
-<hr />
+    </div>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-3 small">
+    <span class="situacao situacao-aviso">Na fila agora: <strong id="emailsPendentes">@ViewData["Pendentes"]</strong></span>
+    <span class="situacao situacao-perigo">Falharam: <strong id="emailsFalhas">@ViewData["Falhas"]</strong></span>
+</div>
 
-<form asp-action="Index" method="get" class="d-flex flex-wrap gap-2 mb-3">
+<form asp-action="Index" method="get" class="filtros-admin d-flex flex-wrap gap-2 align-items-center" role="search">
     <select name="tipo" class="form-select" style="width: auto" aria-label="Tipo">
         <option value="">Todos os tipos</option>
         @foreach (var (valor, nome) in nomes)
@@ -44,15 +47,16 @@
     <input type="submit" value="Filtrar" class="btn btn-secondary" />
 </form>
 
+<div class="tabela-painel">
 <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-sm table-hover align-middle">
         <thead>
             <tr><th>Criado em</th><th>Tipo</th><th>Para</th><th>Assunto</th><th>Situação</th></tr>
         </thead>
         <tbody>
             @if (Model.Count == 0)
             {
-                <tr><td colspan="5">Nenhum e-mail encontrado.</td></tr>
+                <tr><td colspan="5" class="text-center text-muted py-4">Nenhum e-mail encontrado.</td></tr>
             }
             @foreach (var email in Model)
             {
@@ -64,17 +68,17 @@
                     <td>
                         @if (email.EnviadoEm.HasValue)
                         {
-                            <span class="badge bg-success">Enviado</span>
+                            <span class="situacao situacao-sucesso">Enviado</span>
                             <small class="text-muted">@TimeZoneInfo.ConvertTimeFromUtc(email.EnviadoEm.Value, fuso).ToString("HH:mm:ss")</small>
                         }
                         else if (email.Desistiu)
                         {
-                            <span class="badge bg-danger">Falhou</span>
+                            <span class="situacao situacao-perigo">Falhou</span>
                             <small class="d-block text-muted">@email.UltimoErro</small>
                         }
                         else
                         {
-                            <span class="badge bg-warning text-dark">Na fila</span>
+                            <span class="situacao situacao-aviso">Na fila</span>
                             @if (email.Tentativas > 0)
                             {
                                 <small class="d-block text-muted">@email.Tentativas tentativa(s): @email.UltimoErro</small>
@@ -85,4 +89,5 @@
             }
         </tbody>
     </table>
+</div>
 </div>

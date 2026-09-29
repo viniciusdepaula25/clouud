@@ -1,21 +1,26 @@
 @model Clouud.Web.Models.Usuario
 
 @{
-    ViewData["Title"] = "Exclui";
+    ViewData["Title"] = "Excluir usuário";
 }
 
-<h1>Exclui</h1>
-
-<h3>Tem certeza que deseja excluir este usuário?</h3>
-<div>
-    <h4>Usuário</h4>
-    <hr />
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Usuários</a> / Excluir</nav>
+        <h1>Excluir usuário</h1>
+    </div>
+</div>
+<div class="alert alert-danger alert-com-icone">
+    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+    <div><strong>Tem certeza que deseja excluir este usuário?</strong> Esta ação não pode ser desfeita.</div>
+</div>
+<div class="painel confirmar-exclusao">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <partial name="_Detalhes" model="Model" />
 
-    <form asp-action="Exclui">
+    <form asp-action="Exclui" class="rodape-form">
         <input type="hidden" asp-for="ID" />
-        <input type="submit" value="Excluir" class="btn btn-danger" /> |
-        <a asp-action="Index">Voltar</a>
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+        <input type="submit" value="Excluir" class="btn btn-danger px-4" />
     </form>
 </div>

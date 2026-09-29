@@ -1,23 +1,22 @@
 @model Clouud.Web.ViewModels.JogoFormViewModel
 
 @{
-    ViewData["Title"] = "Inclui";
+    ViewData["Title"] = "Cadastrar jogo";
 }
 
-<h1>Inclui</h1>
-
-<h4>Jogo</h4>
-<hr />
-<form asp-action="Inclui" enctype="multipart/form-data">
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Jogos</a> / Cadastrar jogo</nav>
+        <h1>Cadastrar jogo</h1>
+    </div>
+</div>
+<form asp-action="Inclui" enctype="multipart/form-data" class="form-admin">
     <partial name="_Form" model="Model" />
-    <div class="form-group mt-3">
-        <input type="submit" value="Cadastrar" class="btn btn-primary" />
+    <div class="rodape-form">
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+        <input type="submit" value="Cadastrar" class="btn btn-primary px-4" />
     </div>
 </form>
-
-<div>
-    <a asp-action="Index">Voltar</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

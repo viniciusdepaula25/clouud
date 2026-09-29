@@ -3,23 +3,23 @@
 
 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 <input type="hidden" asp-for="Id" />
-<div class="form-group">
-    <label asp-for="JogoId" class="control-label"></label>
+<div class="form-group mb-3">
+    <label asp-for="JogoId" class="form-label"></label>
     <select asp-for="JogoId" asp-items="Model.OpcoesJogos" class="form-select">
         <option value="">Escolha o jogo</option>
     </select>
     <span asp-validation-for="JogoId" class="text-danger"></span>
 </div>
-<div class="form-group">
-    <label asp-for="PlataformaId" class="control-label"></label>
+<div class="form-group mb-3">
+    <label asp-for="PlataformaId" class="form-label"></label>
     <select asp-for="PlataformaId" asp-items="Model.OpcoesPlataformas" class="form-select">
         <option value="">Escolha a plataforma</option>
     </select>
     <span asp-validation-for="PlataformaId" class="text-danger"></span>
 </div>
 <div class="row">
-    <div class="form-group col-sm-6">
-        <label asp-for="Edicao" class="control-label"></label>
+    <div class="form-group col-sm-6 mb-3">
+        <label asp-for="Edicao" class="form-label"></label>
         <input asp-for="Edicao" class="form-control" list="edicoes" />
         <datalist id="edicoes">
             <option value="Standard"></option>
@@ -30,8 +30,8 @@
         </datalist>
         <span asp-validation-for="Edicao" class="text-danger"></span>
     </div>
-    <div class="form-group col-sm-6">
-        <label asp-for="Regiao" class="control-label"></label>
+    <div class="form-group col-sm-6 mb-3">
+        <label asp-for="Regiao" class="form-label"></label>
         <input asp-for="Regiao" class="form-control" list="regioes" />
         <datalist id="regioes">
             <option value="Global"></option>
@@ -41,29 +41,29 @@
         <span asp-validation-for="Regiao" class="text-danger"></span>
     </div>
 </div>
-<div class="form-group">
-    <label asp-for="Preco" class="control-label"></label>
+<div class="form-group mb-3">
+    <label asp-for="Preco" class="form-label"></label>
     <input asp-for="Preco" dinheiro class="form-control" placeholder="Ex: 59,90" />
     <span asp-validation-for="Preco" class="text-danger"></span>
 </div>
-<fieldset class="border rounded p-2 mt-3">
-    <legend class="fs-6 w-auto px-1">Promoção (opcional)</legend>
+<fieldset class="grupo-form mt-2">
+    <legend>Promoção <span class="text-lowercase fw-normal">(opcional)</span></legend>
     <div class="row">
-        <div class="form-group col-sm-6">
-            <label asp-for="PrecoPromocional" class="control-label"></label>
+        <div class="form-group col-sm-6 mb-3">
+            <label asp-for="PrecoPromocional" class="form-label"></label>
             <input asp-for="PrecoPromocional" dinheiro class="form-control" placeholder="Ex: 29,90" />
             <span asp-validation-for="PrecoPromocional" class="text-danger"></span>
         </div>
-        <div class="form-group col-sm-6">
-            <label asp-for="PromocaoAte" class="control-label"></label>
+        <div class="form-group col-sm-6 mb-3">
+            <label asp-for="PromocaoAte" class="form-label"></label>
             <input asp-for="PromocaoAte" class="form-control" />
             <span asp-validation-for="PromocaoAte" class="text-danger"></span>
         </div>
     </div>
     <small class="form-text">Deixe o preço promocional em branco para vender pelo preço normal. Sem data, a promoção vale até ser removida.</small>
 </fieldset>
-<div class="form-check mt-3">
-    <input asp-for="Ativo" class="form-check-input" />
+<div class="form-check form-switch mt-3">
+    <input asp-for="Ativo" class="form-check-input" role="switch" />
     <label asp-for="Ativo" class="form-check-label"></label>
 </div>
 <small class="form-text">Os preços aceitam vírgula ou ponto (59,90 ou 59.90) e separador de milhar (1.234,50).</small>

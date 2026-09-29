@@ -6,16 +6,18 @@
     var hoje = DateOnly.FromDateTime(DateTime.Today);
 }
 
-<h1>Cupons de desconto</h1>
-<p>O cliente digita o código no carrinho. Cada pedido usa no máximo um cupom; pedidos cancelados ou reembolsados devolvem o uso.</p>
-<hr />
-@if (TempData["Mensagem"] is string mensagem)
-{
-    <div class="alert alert-success">@mensagem</div>
-}
-<div class="mb-2">
-    <a class="btn btn-secondary" asp-action="Inclui">Cadastre um Cupom</a>
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Cupons de desconto</h1>
+        <p class="subtitulo">O cliente digita o código no carrinho. Cada pedido usa no máximo um cupom; pedidos cancelados ou reembolsados devolvem o uso.</p>
+    </div>
+    <div class="acoes">
+        <a class="btn btn-danger" asp-action="Inclui"><i class="bi bi-plus-lg" aria-hidden="true"></i>Cadastre um Cupom</a>
+    </div>
 </div>
+<partial name="_Alertas" />
+<div class="tabela-painel">
+<div class="table-responsive">
 <table class="table table-hover align-middle">
     <thead>
         <tr>
@@ -32,7 +34,7 @@
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="8">Nenhum cupom cadastrado.</td></tr>
+            <tr><td colspan="8" class="text-center text-muted py-4">Nenhum cupom cadastrado.</td></tr>
         }
         @foreach (var cupom in Model)
         {
@@ -41,7 +43,7 @@
             var esgotado = cupom.LimiteUsos.HasValue && quantidade >= cupom.LimiteUsos;
             <tr>
                 <td>
-                    <span class="font-monospace">@cupom.Codigo</span>
+                    <span class="font-monospace fw-bold text-white">@cupom.Codigo</span>
                     @if (cupom.Descricao != null)
                     {
                         <br /><small class="text-muted">@cupom.Descricao</small>
@@ -60,30 +62,34 @@
                     }
                 </td>
                 <td class="text-end">@quantidade@(cupom.LimiteUsos.HasValue ? $" / {cupom.LimiteUsos}" : "")</td>
-                <td class="text-end">@descontos.ToString("C")</td>
+                <td class="text-end text-nowrap">@descontos.ToString("C")</td>
                 <td>
                     @if (!cupom.Ativo)
                     {
-                        <span class="badge bg-secondary">Inativo</span>
+                        <span class="situacao situacao-neutra">Inativo</span>
                     }
                     else if (vencido)
                     {
-                        <span class="badge bg-secondary">Vencido</span>
+                        <span class="situacao situacao-perigo">Vencido</span>
                     }
                     else if (esgotado)
                     {
-                        <span class="badge bg-secondary">Esgotado</span>
+                        <span class="situacao situacao-aviso">Esgotado</span>
                     }
                     else
                     {
-                        <span class="badge bg-success">Ativo</span>
+                        <span class="situacao situacao-sucesso">Ativo</span>
                     }
                 </td>
                 <td>
-                    <a asp-action="Altera" asp-route-id="@cupom.Id" class="btn btn-secondary btn-sm">Alterar</a> |
-                    <a asp-action="Exclui" asp-route-id="@cupom.Id" class="btn btn-danger btn-sm">Excluir</a>
+                    <div class="acoes-linha">
+                        <a asp-action="Altera" asp-route-id="@cupom.Id" class="btn btn-secondary btn-sm">Alterar</a>
+                        <a asp-action="Exclui" asp-route-id="@cupom.Id" class="btn btn-outline-danger btn-sm">Excluir</a>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+</div>
+</div>

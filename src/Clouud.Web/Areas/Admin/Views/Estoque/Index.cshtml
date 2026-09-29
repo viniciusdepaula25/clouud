@@ -5,18 +5,21 @@
     ViewData["Title"] = "Estoque";
 }
 
-<h1>Estoque de Chaves</h1>
-<p>Chaves de ativação de cada produto. Produto sem chave disponível aparece como <strong>Esgotado</strong> na loja.</p>
-<hr />
-<div class="d-flex justify-content-end">
-    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-start mb-2">
-        <div>
-            <input type="search" id="txtBusca" name="busca" value="@ViewData["Busca"]" placeholder="Nome do jogo" class="form-control" />
-        </div>
-        <input type="submit" value="Buscar" class="btn btn-secondary" />
-    </form>
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Estoque de chaves</h1>
+        <p class="subtitulo">Chaves de ativação de cada produto. Produto sem chave disponível aparece como <strong>Esgotado</strong> na loja.</p>
+    </div>
 </div>
-<table class="table table-hover">
+<form asp-action="Index" method="get" class="filtros-admin d-flex flex-wrap gap-2 align-items-center" role="search">
+    <label for="txtBusca" class="visually-hidden">Buscar pelo jogo</label>
+    <input type="search" id="txtBusca" name="busca" value="@ViewData["Busca"]" placeholder="Nome do jogo" class="form-control" style="max-width: 360px" />
+    <input type="submit" value="Buscar" class="btn btn-secondary" />
+    <span class="ms-auto small text-muted"><span class="badge bg-warning text-dark">n</span> estoque baixo (menos de @EstoqueProdutoViewModel.EstoqueBaixo) · <span class="text-danger">♥</span> clientes com o jogo na lista de desejos</span>
+</form>
+<div class="tabela-painel">
+<div class="table-responsive">
+<table class="table table-hover align-middle">
     <thead>
         <tr>
             <th scope="col">Jogo</th>
@@ -33,12 +36,12 @@
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="9">Nenhum produto encontrado. <a asp-controller="Produto" asp-action="Inclui">Cadastre um produto</a> para adicionar chaves.</td></tr>
+            <tr><td colspan="9" class="text-center text-muted py-4">Nenhum produto encontrado. <a asp-controller="Produto" asp-action="Inclui">Cadastre um produto</a> para adicionar chaves.</td></tr>
         }
         @foreach (var item in Model)
         {
             <tr>
-                <td>
+                <td class="titulo-linha fw-semibold">
                     @item.Jogo
                     @if (!item.Ativo)
                     {
@@ -64,12 +67,16 @@
                 <td class="text-end">@item.Reservadas</td>
                 <td class="text-end">@item.Vendidas</td>
                 <td class="text-end">@item.Inativas</td>
-                <td class="text-end">@(item.Desejos > 0 ? $"♥ {item.Desejos}" : "0")</td>
+                <td class="text-end">@if (item.Desejos > 0) { <span class="text-danger">@($"♥ {item.Desejos}")</span> } else { <span class="text-muted">0</span> }</td>
                 <td>
-                    <a asp-action="Importar" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Importar chaves</a> |
-                    <a asp-action="Chaves" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm">Ver chaves</a>
+                    <div class="acoes-linha">
+                        <a asp-action="Importar" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm text-nowrap">Importar chaves</a>
+                        <a asp-action="Chaves" asp-route-id="@item.ProdutoId" class="btn btn-secondary btn-sm text-nowrap">Ver chaves</a>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+</div>
+</div>

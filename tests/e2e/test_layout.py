@@ -80,3 +80,41 @@ def test_links_sem_margem_global(paginas, fabrica):
         margens = p.evaluate("""[...document.querySelectorAll('main a')]
             .map(a => getComputedStyle(a).marginLeft).filter(m => m === '15px' || m === '10px')""")
         assert margens == [], url
+
+
+@pytest.mark.parametrize("quem, urls", [
+    ("visitante", ["/", LOJA, "/conta/login", "/conta/cadastro"]),
+    ("cliente", ["/Cliente/Carrinho", "/Cliente/Pedidos", "/Cliente/MinhaConta", "/Cliente/ListaDesejos"]),
+    ("admin", ["/Admin", "/Admin/Jogo", "/Admin/Produto", "/Admin/Estoque", "/Admin/Pedidos", "/Admin/Usuarios"]),
+])
+def test_nada_rola_para_o_lado_no_celular(browser, app, fabrica, quem, urls):
+    """Tabelas largas rolam só dentro do próprio painel; a página nunca passa da largura da tela."""
+    jogo = fabrica.jogo(chaves=2, promocional=50)
+    contexto = browser.new_context(base_url=app, viewport=CELULAR)
+    try:
+        pagina = contexto.new_page()
+        if quem != "visitante":
+            conta = fabrica.cliente() if quem == "cliente" else {"email": "admin@clouud.com", "senha": "Admin@123"}
+            if quem == "cliente":
+                fabrica.pedido_pago(conta["id"], jogo["produto_id"])
+            pagina.goto("/conta/login")
+            pagina.fill("input[name=Email]", conta["email"])
+            pagina.fill("input[name=Senha]", conta["senha"])
+            enviar(pagina, "form input[type=submit] >> nth=-1")
+        for url in urls:
+            pagina.goto(url)
+            assert pagina.evaluate("document.documentElement.scrollWidth") <= CELULAR["width"], url
+    finally:
+        contexto.close()
+
+
+def test_fontes_e_icones_vem_do_proprio_site(paginas, app):
+    pagina = paginas.nova()
+    de_fora = []
+    pagina.on("request", lambda r: not r.url.startswith(app) and de_fora.append(r.url))
+    pagina.goto(LOJA)
+    pagina.wait_for_load_state("networkidle")
+    assert de_fora == []
+    familias = pagina.evaluate("getComputedStyle(document.body).fontFamily")
+    assert familias.startswith('"Roboto"') or familias.startswith("Roboto")
+    assert pagina.evaluate("document.fonts.check('16px Anton')") and pagina.evaluate("document.fonts.check('16px bootstrap-icons')")

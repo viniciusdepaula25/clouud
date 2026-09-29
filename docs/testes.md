@@ -2,7 +2,7 @@
 
 ## Testes
 
-Os testes em `tests/e2e` usam a aplicação de verdade: sobem o CLOUUD num banco só para testes (`clouud_testes`, apagado e recriado a cada execução; o `lojajogos` não é tocado) e usam um navegador Chromium (Playwright) para fazer o que um cliente e um admin fazem, conferindo o resultado nas telas, no banco e nos e-mails. Cobrem catálogo, vitrine, estoque, compra, cupons, avaliações, lista de desejos, conta e foto de perfil, galeria e capa, painel, e-mails, segurança (criptografia, login, sessão, HTTPS e cabeçalhos), as regras do banco e compras simultâneas (a mesma chave nunca é vendida duas vezes).
+Os testes em `tests/e2e` usam a aplicação de verdade: sobem o CLOUUD num banco só para testes (`clouud_testes`, apagado e recriado a cada execução; o `lojajogos` não é tocado) e usam um navegador Chromium (Playwright) para fazer o que um cliente e um admin fazem, conferindo o resultado nas telas, no banco e nos e-mails. Cobrem catálogo, vitrine, estoque, compra, cupons, avaliações, lista de desejos, conta e foto de perfil, galeria e capa, painel, e-mails, segurança (criptografia, login, sessão, HTTPS e cabeçalhos), o layout no celular, as regras do banco e compras simultâneas (a mesma chave nunca é vendida duas vezes).
 
 ### Preparar (uma vez)
 

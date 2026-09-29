@@ -1,25 +1,26 @@
 @model Clouud.Web.ViewModels.JogoFormViewModel
 
 @{
-    ViewData["Title"] = "Altera";
+    ViewData["Title"] = "Alterar jogo";
 }
 
-<h1>Altera</h1>
-
-<h4>Jogo</h4>
-<hr />
-<form asp-action="Altera" enctype="multipart/form-data">
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Jogos</a> / Alterar jogo</nav>
+        <h1>Alterar jogo</h1>
+    </div>
+    <div class="acoes">
+        <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@Model.Id" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-seam" aria-hidden="true"></i>Produtos deste jogo</a>
+        <a asp-controller="Galeria" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm"><i class="bi bi-images" aria-hidden="true"></i>Galeria de imagens</a>
+    </div>
+</div>
+<form asp-action="Altera" enctype="multipart/form-data" class="form-admin">
     <partial name="_Form" model="Model" />
-    <div class="form-group mt-3">
-        <input type="submit" value="Salvar" class="btn btn-primary" />
+    <div class="rodape-form">
+        <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+        <input type="submit" value="Salvar" class="btn btn-primary px-4" />
     </div>
 </form>
-
-<div>
-    <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@Model.Id">Produtos deste jogo</a> |
-    <a asp-controller="Galeria" asp-action="Index" asp-route-id="@Model.Id">Galeria de imagens</a> |
-    <a asp-action="Index">Voltar</a>
-</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

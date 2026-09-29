@@ -8,69 +8,75 @@
     var estoque = ViewData["Estoque"] as Dictionary<int, int> ?? new();
 }
 
-<h1>@(jogoTitulo is null ? "Produtos Cadastrados" : $"Produtos de {jogoTitulo}")</h1>
-<p>Cada produto é um jogo vendido em uma plataforma e edição, com preço próprio.</p>
-<hr />
-@if (TempData["Mensagem"] is string mensagem)
-{
-    <div class="alert alert-success">@mensagem</div>
-}
-<div class="d-flex justify-content-between mb-2">
+<div class="cabecalho-pagina">
     <div>
-        <a class="btn btn-secondary" asp-action="Inclui" asp-route-jogoId="@jogoId">Cadastre um Produto</a>
+        @if (jogoId.HasValue)
+        {
+            <nav class="migalhas" aria-label="Você está em"><a asp-controller="Jogo" asp-action="Index">Jogos</a> / <a asp-controller="Jogo" asp-action="Altera" asp-route-id="@jogoId">@jogoTitulo</a> / Produtos</nav>
+        }
+        <h1>@(jogoTitulo is null ? "Produtos" : $"Produtos de {jogoTitulo}")</h1>
+        <p class="subtitulo">Cada produto é um jogo vendido em uma plataforma e edição, com preço próprio.</p>
     </div>
-    @if (jogoId.HasValue)
-    {
-        <div>
-            <a asp-controller="Jogo" asp-action="Altera" asp-route-id="@jogoId">Voltar ao jogo</a> |
-            <a asp-action="Index" asp-route-jogoId="">Ver todos os produtos</a>
-        </div>
-    }
+    <div class="acoes">
+        @if (jogoId.HasValue)
+        {
+            <a asp-controller="Jogo" asp-action="Altera" asp-route-id="@jogoId" class="btn btn-outline-secondary">Voltar ao jogo</a>
+            <a asp-action="Index" asp-route-jogoId="" class="btn btn-outline-secondary">Ver todos os produtos</a>
+        }
+        <a class="btn btn-danger" asp-action="Inclui" asp-route-jogoId="@jogoId"><i class="bi bi-plus-lg" aria-hidden="true"></i>Cadastre um Produto</a>
+    </div>
 </div>
-<table class="table table-hover">
+<partial name="_Alertas" />
+<div class="tabela-painel">
+<div class="table-responsive">
+<table class="table table-hover align-middle">
     <thead>
         <tr>
             <th scope="col">Jogo</th>
             <th scope="col">Plataforma</th>
             <th scope="col">Edição</th>
             <th scope="col">Região</th>
-            <th scope="col">Preço</th>
+            <th scope="col" class="text-end">Preço</th>
             <th scope="col">Promoção</th>
             <th scope="col">Estoque</th>
             <th scope="col">Situação</th>
-            <th></th>
+            <th scope="col"><span class="visually-hidden">Ações</span></th>
         </tr>
     </thead>
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="9">Nenhum produto cadastrado.</td></tr>
+            <tr><td colspan="9" class="text-center text-muted py-4">Nenhum produto cadastrado.</td></tr>
         }
         @foreach (var item in Model)
         {
             <tr>
-                <td>@item.Jogo.Titulo</td>
+                <td class="titulo-linha fw-semibold">@item.Jogo.Titulo</td>
                 <td>@item.Plataforma.Nome</td>
                 <td>@item.Edicao</td>
                 <td>@item.Regiao</td>
-                <td>@item.Preco.ToString("C")</td>
-                <td>
+                <td class="text-end text-nowrap">@item.Preco.ToString("C")</td>
+                <td class="small">
                     @if (item.PrecoPromocional.HasValue)
                     {
-                        @item.PrecoPromocional.Value.ToString("C")
+                        <span class="text-white text-nowrap">@item.PrecoPromocional.Value.ToString("C")</span>
                         if (item.PromocaoAte.HasValue)
                         {
-                            <small>até @item.PromocaoAte.Value.ToString("dd/MM/yyyy")</small>
+                            <small class="d-block text-muted text-nowrap">até @item.PromocaoAte.Value.ToString("dd/MM/yyyy")</small>
                         }
                         if (!item.EmPromocao(hoje))
                         {
                             <span class="badge bg-secondary">encerrada</span>
                         }
                     }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
                 </td>
-                <td>
+                <td class="text-nowrap">
                     @{ var disponiveis = estoque.GetValueOrDefault(item.Id); }
-                    <a asp-controller="Estoque" asp-action="Chaves" asp-route-id="@item.Id">
+                    <a asp-controller="Estoque" asp-action="Chaves" asp-route-id="@item.Id" class="text-decoration-none">
                         @if (disponiveis == 0)
                         {
                             <span class="badge bg-danger">Esgotado</span>
@@ -81,13 +87,17 @@
                         }
                     </a>
                 </td>
-                <td>@(item.Ativo ? "À venda" : "Inativo")</td>
+                <td><span class="situacao @(item.Ativo ? "situacao-sucesso" : "situacao-neutra")">@(item.Ativo ? "À venda" : "Inativo")</span></td>
                 <td>
-                    <a asp-controller="Estoque" asp-action="Importar" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Importar chaves</a> |
-                    <a asp-action="Altera" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Alterar</a> |
-                    <a asp-action="Exclui" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Excluir</a>
+                    <div class="acoes-linha">
+                        <a asp-controller="Estoque" asp-action="Importar" asp-route-id="@item.Id" class="btn btn-secondary btn-sm text-nowrap">Importar chaves</a>
+                        <a asp-action="Altera" asp-route-id="@item.Id" class="btn btn-secondary btn-sm">Alterar</a>
+                        <a asp-action="Exclui" asp-route-id="@item.Id" class="btn btn-outline-danger btn-sm">Excluir</a>
+                    </div>
                 </td>
             </tr>
         }
     </tbody>
 </table>
+</div>
+</div>

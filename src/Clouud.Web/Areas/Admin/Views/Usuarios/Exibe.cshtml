@@ -1,17 +1,21 @@
 @model Clouud.Web.Models.Usuario
 
 @{
-    ViewData["Title"] = "Exibe";
+    ViewData["Title"] = Model.Name;
 }
 
-<h1>Exibe</h1>
-
-<div>
-    <h4>Usuário</h4>
-    <hr />
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Usuários</a> / Exibir</nav>
+        <h1>@Model.Name</h1>
+    </div>
+    <div class="acoes">
+        <a asp-action="Altera" asp-route-id="@Model.ID" class="btn btn-primary btn-sm"><i class="bi bi-pencil" aria-hidden="true"></i>Alterar</a>
+    </div>
+</div>
+<div class="painel">
     <partial name="_Detalhes" model="Model" />
 </div>
-<div>
-    <a asp-action="Altera" asp-route-id="@Model.ID" class="btn btn-secondary">Alterar</a> |
-    <a asp-action="Index">Voltar</a>
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Voltar</a>
 </div>

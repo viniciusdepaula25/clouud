@@ -8,45 +8,52 @@
     var resumo = (Dictionary<StatusPedido, (int Quantidade, decimal Valor)>)ViewData["Resumo"]!;
 }
 
-<h1>Pedidos</h1>
-<hr />
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Pedidos</h1>
+        <p class="subtitulo">Clique numa situação para filtrar. Pedidos aguardando pagamento podem ser cancelados; os pagos, reembolsados.</p>
+    </div>
+</div>
 <div class="row g-3 mb-3">
     @foreach (var status in Enum.GetValues<StatusPedido>())
     {
         var (quantidade, valor) = resumo.GetValueOrDefault(status);
         <div class="col-6 col-md-3">
-            <a asp-action="Index" asp-route-status="@status" class="text-decoration-none d-block h-100">
-                <div class="card h-100 @(filtro == status ? "border-primary" : "")">
-                    <div class="card-body py-2">
-                        <div class="small text-muted">@status.Descricao()</div>
-                        <div class="fs-4">@quantidade</div>
-                        <div class="small">@valor.ToString("C")</div>
-                    </div>
-                </div>
+            <a asp-action="Index" asp-route-status="@status" class="filtro-situacao @(filtro == status ? "ativo" : "")" aria-current="@(filtro == status ? "true" : null)">
+                <span class="@status.Cor()">@status.Descricao()</span>
+                <div class="numero mt-2">@quantidade</div>
+                <div class="small text-muted">@valor.ToString("C")</div>
             </a>
         </div>
     }
 </div>
 
-<div class="d-flex justify-content-between align-items-center mb-2">
+<div class="filtros-admin d-flex flex-wrap justify-content-between align-items-center gap-2">
     <div>
         @if (filtro.HasValue)
         {
-            <span>Mostrando: <strong>@filtro.Value.Descricao()</strong></span>
+            <span>Mostrando: <strong class="text-white">@filtro.Value.Descricao()</strong></span>
             <a asp-action="Index" class="ms-2">ver todos</a>
         }
+        else
+        {
+            <span class="text-muted small">Todos os pedidos</span>
+        }
     </div>
-    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-start mb-2">
+    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-center flex-grow-1 flex-md-grow-0" role="search">
         @if (filtro.HasValue)
         {
             <input type="hidden" name="status" value="@filtro" />
         }
+        <label for="txtBusca" class="visually-hidden">Buscar pedido</label>
         <input type="search" id="txtBusca" name="busca" value="@ViewData["Busca"]" placeholder="Nº do pedido, nome ou e-mail"
-               class="form-control" />
+               class="form-control" style="min-width: 16rem" />
         <input type="submit" value="Buscar" class="btn btn-secondary" />
     </form>
 </div>
 
+<div class="tabela-painel">
+<div class="table-responsive">
 <table class="table table-hover align-middle">
     <thead>
         <tr>
@@ -56,29 +63,31 @@
             <th>Jogos</th>
             <th class="text-end">Total</th>
             <th>Situação</th>
-            <th></th>
+            <th><span class="visually-hidden">Ações</span></th>
         </tr>
     </thead>
     <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="7">Nenhum pedido encontrado.</td></tr>
+            <tr><td colspan="7" class="text-center text-muted py-4">Nenhum pedido encontrado.</td></tr>
         }
         @foreach (var pedido in Model)
         {
             <tr>
-                <td>#@pedido.Id</td>
-                <td>@pedido.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                <td class="fw-semibold text-white">#@pedido.Id</td>
+                <td class="text-nowrap">@pedido.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
                 <td>@pedido.Usuario.Name<br /><small class="text-muted">@pedido.Usuario.Email</small></td>
                 <td>@string.Join(", ", pedido.Itens.Select(i => i.Produto.Jogo.Titulo).Distinct())</td>
-                <td class="text-end">@pedido.Total.ToString("C")</td>
-                <td><span class="badge @pedido.Status.Cor()">@pedido.Status.Descricao()</span></td>
-                <td><a asp-action="Detalhes" asp-route-id="@pedido.Id" class="btn btn-secondary btn-sm">Detalhes</a></td>
+                <td class="text-end text-nowrap text-white">@pedido.Total.ToString("C")</td>
+                <td><span class="@pedido.Status.Cor()">@pedido.Status.Descricao()</span></td>
+                <td class="text-end"><a asp-action="Detalhes" asp-route-id="@pedido.Id" class="btn btn-secondary btn-sm">Detalhes</a></td>
             </tr>
         }
     </tbody>
 </table>
+</div>
+</div>
 @if (total > Model.Count())
 {
-    <p class="text-muted">Mostrando os @Model.Count() pedidos mais recentes de @total. Use os filtros para achar os outros.</p>
+    <p class="text-muted small mt-2">Mostrando os @Model.Count() pedidos mais recentes de @total. Use os filtros para achar os outros.</p>
 }

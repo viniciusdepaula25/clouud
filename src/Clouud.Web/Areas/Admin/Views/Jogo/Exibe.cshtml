@@ -1,19 +1,23 @@
 @model Clouud.Web.Models.Jogo
 
 @{
-    ViewData["Title"] = "Exibe";
+    ViewData["Title"] = Model.Titulo;
 }
 
-<h1>Exibe</h1>
-
-<h4>Jogo</h4>
-<hr />
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Jogos</a> / Exibir</nav>
+        <h1>@Model.Titulo</h1>
+    </div>
+    <div class="acoes">
+        <a href="/jogo/@Model.Slug" target="_blank" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>Ver na loja</a>
+        <a asp-controller="Galeria" asp-action="Index" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm"><i class="bi bi-images" aria-hidden="true"></i>Galeria de imagens</a>
+        <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@Model.Id" class="btn btn-outline-secondary btn-sm"><i class="bi bi-box-seam" aria-hidden="true"></i>Gerenciar produtos</a>
+        <a asp-action="Altera" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i class="bi bi-pencil" aria-hidden="true"></i>Alterar</a>
+    </div>
+</div>
 <partial name="_Detalhes" model="Model" />
 
-<div>
-    <a asp-action="Altera" asp-route-id="@Model.Id">Alterar</a> |
-    <a href="/jogo/@Model.Slug" target="_blank">Ver na loja</a> |
-    <a asp-controller="Galeria" asp-action="Index" asp-route-id="@Model.Id">Galeria de imagens</a> |
-    <a asp-controller="Produto" asp-action="Index" asp-route-jogoId="@Model.Id">Gerenciar produtos</a> |
-    <a asp-action="Index">Voltar</a>
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Voltar</a>
 </div>

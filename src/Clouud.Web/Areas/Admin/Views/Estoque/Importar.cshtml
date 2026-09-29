@@ -6,17 +6,24 @@
     var resultado = ViewData["Resultado"] as ResultadoImportacao;
 }
 
-<h1>Importar chaves</h1>
-<hr />
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Estoque</a> / Importar chaves</nav>
+        <h1>Importar chaves</h1>
+    </div>
+    <div class="acoes">
+        <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId" class="btn btn-outline-secondary btn-sm"><i class="bi bi-list-ul" aria-hidden="true"></i>Ver chaves</a>
+    </div>
+</div>
 <partial name="_Produto" model="Model.Produto" />
 
 <div class="row">
-    <div class="col-md-8">
-        <form asp-action="Importar" asp-route-id="@Model.Produto.ProdutoId" method="post">
+    <div class="col-lg-9">
+        <form asp-action="Importar" asp-route-id="@Model.Produto.ProdutoId" method="post" class="form-admin">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             @if (resultado != null)
             {
-                <ul class="text-warning">
+                <ul class="alert alert-warning ps-4">
                     @if (resultado.JaCadastradas.Count > 0)
                     {
                         <li>Já cadastradas: @string.Join(", ", resultado.JaCadastradas.Take(20))@(resultado.JaCadastradas.Count > 20 ? "..." : "")</li>
@@ -32,7 +39,7 @@
                 </ul>
             }
             <div class="form-group">
-                <label asp-for="Codigos" class="control-label"></label>
+                <label asp-for="Codigos" class="form-label"></label>
                 <textarea asp-for="Codigos" class="form-control font-monospace" rows="14" spellcheck="false" autocomplete="off"
                           placeholder="AAAAA-BBBBB-CCCCC&#10;DDDDD-EEEEE-FFFFF"></textarea>
                 <small class="form-text">
@@ -41,17 +48,14 @@
                 </small>
                 <div id="contador" class="small mt-1"></div>
             </div>
-            <div class="form-group mt-3">
-                <input type="submit" value="Importar" class="btn btn-primary" />
+            <div class="rodape-form">
+                <a asp-action="Index" class="btn btn-secondary">Voltar ao estoque</a>
+                <input type="submit" value="Importar" class="btn btn-primary px-4" />
             </div>
         </form>
     </div>
 </div>
 
-<div class="mt-3">
-    <a asp-action="Chaves" asp-route-id="@Model.Produto.ProdutoId">Ver chaves</a> |
-    <a asp-action="Index">Voltar ao estoque</a>
-</div>
 
 @section Scripts {
     <script>

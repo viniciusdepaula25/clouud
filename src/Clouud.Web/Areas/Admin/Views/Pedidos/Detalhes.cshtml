@@ -5,112 +5,127 @@
     ViewData["Title"] = $"Pedido #{Model.Id}";
 }
 
-<h1>
-    Pedido #@Model.Id
-    <span class="badge fs-6 align-middle @Model.Status.Cor()">@Model.Status.Descricao()</span>
-</h1>
-<hr />
-@if (TempData["Mensagem"] is string mensagem)
-{
-    <div class="alert alert-success">@mensagem</div>
-}
-@if (TempData["Erro"] is string erro)
-{
-    <div class="alert alert-danger">@erro</div>
-}
-
-<dl class="row">
-    <dt class="col-sm-2">Cliente</dt>
-    <dd class="col-sm-10">@Model.Usuario.Name (@Model.Usuario.Email)</dd>
-    <dt class="col-sm-2">Criado em</dt>
-    <dd class="col-sm-10">@Model.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
-    @if (Model.Status == StatusPedido.AguardandoPagamento)
-    {
-        <dt class="col-sm-2">Pagar até</dt>
-        <dd class="col-sm-10">@Model.PagarAte?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
-    }
-    @if (Model.PagoEm.HasValue)
-    {
-        <dt class="col-sm-2">Pago em</dt>
-        <dd class="col-sm-10">@Model.PagoEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
-    }
-    @if (Model.Desconto > 0)
-    {
-        <dt class="col-sm-2">Subtotal</dt>
-        <dd class="col-sm-10">@Model.Subtotal.ToString("C")</dd>
-        <dt class="col-sm-2">Desconto</dt>
-        <dd class="col-sm-10">- @Model.Desconto.ToString("C")@(Model.Cupom != null ? $" (cupom {Model.Cupom.Codigo})" : "")</dd>
-    }
-    <dt class="col-sm-2">Total</dt>
-    <dd class="col-sm-10">@Model.Total.ToString("C")</dd>
-</dl>
-
-<h4>Itens e chaves</h4>
-<table class="table table-sm">
-    <thead>
-        <tr><th>Produto</th><th class="text-end">Qtd.</th><th class="text-end">Preço unitário</th><th class="text-end">Subtotal</th><th>Chaves</th></tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Itens.OrderBy(i => i.Id))
+<div class="cabecalho-pagina">
+    <div>
+        <nav class="migalhas" aria-label="Você está em"><a asp-action="Index">Pedidos</a> / Pedido #@Model.Id</nav>
+        <h1 class="d-flex flex-wrap align-items-center gap-3">
+            Pedido #@Model.Id
+            <span class="@Model.Status.Cor() fs-6">@Model.Status.Descricao()</span>
+        </h1>
+    </div>
+    <div class="acoes">
+        @if (Model.Status == StatusPedido.AguardandoPagamento)
         {
-            <tr>
-                <td>@item.Produto.Jogo.Titulo <small class="text-muted">— @item.Produto.Plataforma.Nome · @item.Produto.Edicao</small></td>
-                <td class="text-end">@item.Quantidade</td>
-                <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
-                <td class="text-end">@item.Subtotal.ToString("C")</td>
-                <td class="font-monospace small">
-                    @if (item.Chaves.Count == 0)
-                    {
-                        <span class="text-muted">nenhuma</span>
-                    }
-                    @foreach (var chave in item.Chaves.OrderBy(c => c.Id))
-                    {
-                        <div>@chave.CodigoMascarado() <span class="text-muted">(@chave.Status.Descricao())</span></div>
-                    }
-                </td>
-            </tr>
+            <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
+                  data-confirmar="Cancelar o pedido #@Model.Id? As chaves reservadas voltam ao estoque.">
+                <input type="submit" value="Cancelar pedido" class="btn btn-danger" />
+            </form>
         }
-    </tbody>
-</table>
+        @if (Model.Status == StatusPedido.Pago)
+        {
+            <form asp-action="Reembolsar" asp-route-id="@Model.Id" method="post"
+                  data-confirmar="Reembolsar o pedido #@Model.Id? As chaves entregues serão desativadas (o cliente já viu os códigos).">
+                <input type="submit" value="Reembolsar" class="btn btn-danger" />
+            </form>
+        }
+    </div>
+</div>
+<partial name="_Alertas" />
 
-<h4>Pagamentos</h4>
-@if (Model.Pagamentos.Count == 0)
-{
-    <p class="text-muted">Nenhuma tentativa de pagamento.</p>
-}
-else
-{
-    <table class="table table-sm small">
-        <thead><tr><th>Data</th><th>Forma</th><th>Resultado</th><th>Transação</th><th class="text-end">Valor</th></tr></thead>
-        <tbody>
-            @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.CriadoEm))
+<div class="row g-4">
+    <div class="col-lg-4">
+        <section class="painel h-100" aria-labelledby="tituloCliente">
+            <h2 class="painel-titulo" id="tituloCliente"><i class="bi bi-person" aria-hidden="true"></i>Cliente e valores</h2>
+            <dl class="lista-dados">
+                <dt>Cliente</dt>
+                <dd>@Model.Usuario.Name<br /><small class="text-muted text-break">@Model.Usuario.Email</small></dd>
+                <dt>Criado em</dt>
+                <dd>@Model.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                @if (Model.Status == StatusPedido.AguardandoPagamento)
+                {
+                    <dt>Pagar até</dt>
+                    <dd>@Model.PagarAte?.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                }
+                @if (Model.PagoEm.HasValue)
+                {
+                    <dt>Pago em</dt>
+                    <dd>@Model.PagoEm.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+                }
+                @if (Model.Desconto > 0)
+                {
+                    <dt>Subtotal</dt>
+                    <dd>@Model.Subtotal.ToString("C")</dd>
+                    <dt>Desconto</dt>
+                    <dd>- @Model.Desconto.ToString("C")@(Model.Cupom != null ? $" (cupom {Model.Cupom.Codigo})" : "")</dd>
+                }
+                <dt>Total</dt>
+                <dd class="fs-5 fw-bold text-white">@Model.Total.ToString("C")</dd>
+            </dl>
+        </section>
+    </div>
+    <div class="col-lg-8">
+        <section class="painel mb-4" aria-labelledby="tituloItens">
+            <h2 class="painel-titulo" id="tituloItens"><i class="bi bi-key" aria-hidden="true"></i>Itens e chaves</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr><th>Produto</th><th class="text-end">Qtd.</th><th class="text-end">Preço unitário</th><th class="text-end">Subtotal</th><th>Chaves</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Itens.OrderBy(i => i.Id))
+                        {
+                            <tr>
+                                <td><span class="titulo-linha fw-semibold">@item.Produto.Jogo.Titulo</span> <small class="text-muted d-block">@item.Produto.Plataforma.Nome · @item.Produto.Edicao</small></td>
+                                <td class="text-end">@item.Quantidade</td>
+                                <td class="text-end text-nowrap">@item.PrecoUnitario.ToString("C")</td>
+                                <td class="text-end text-nowrap">@item.Subtotal.ToString("C")</td>
+                                <td class="font-monospace small">
+                                    @if (item.Chaves.Count == 0)
+                                    {
+                                        <span class="text-muted">nenhuma</span>
+                                    }
+                                    @foreach (var chave in item.Chaves.OrderBy(c => c.Id))
+                                    {
+                                        <div class="text-nowrap">@chave.CodigoMascarado() <span class="text-muted">(@chave.Status.Descricao())</span></div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="painel" aria-labelledby="tituloPagamentos">
+            <h2 class="painel-titulo" id="tituloPagamentos"><i class="bi bi-credit-card" aria-hidden="true"></i>Pagamentos</h2>
+            @if (Model.Pagamentos.Count == 0)
             {
-                <tr>
-                    <td>@pagamento.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@pagamento.Metodo.Descricao()</td>
-                    <td>@pagamento.Status</td>
-                    <td class="font-monospace">@pagamento.CodigoTransacao</td>
-                    <td class="text-end">@pagamento.Valor.ToString("C")</td>
-                </tr>
+                <p class="text-muted">Nenhuma tentativa de pagamento.</p>
             }
-        </tbody>
-    </table>
-}
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm small align-middle">
+                        <thead><tr><th>Data</th><th>Forma</th><th>Resultado</th><th>Transação</th><th class="text-end">Valor</th></tr></thead>
+                        <tbody>
+                            @foreach (var pagamento in Model.Pagamentos.OrderBy(p => p.CriadoEm))
+                            {
+                                <tr>
+                                    <td class="text-nowrap">@pagamento.CriadoEm.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@pagamento.Metodo.Descricao()</td>
+                                    <td><span class="situacao @(pagamento.Status == StatusPagamento.Aprovado ? "situacao-sucesso" : pagamento.Status == StatusPagamento.Recusado ? "situacao-perigo" : "situacao-aviso")">@pagamento.Status</span></td>
+                                    <td class="font-monospace">@pagamento.CodigoTransacao</td>
+                                    <td class="text-end text-nowrap">@pagamento.Valor.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>
 
-<div class="d-flex gap-2 mt-3">
-    @if (Model.Status == StatusPedido.AguardandoPagamento)
-    {
-        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
-              data-confirmar="Cancelar o pedido #@Model.Id? As chaves reservadas voltam ao estoque.">
-            <input type="submit" value="Cancelar pedido" class="btn btn-danger" />
-        </form>
-    }
-    @if (Model.Status == StatusPedido.Pago)
-    {
-        <form asp-action="Reembolsar" asp-route-id="@Model.Id" method="post"
-              data-confirmar="Reembolsar o pedido #@Model.Id? As chaves entregues serão desativadas (o cliente já viu os códigos).">
-            <input type="submit" value="Reembolsar" class="btn btn-danger" />
-        </form>
-    }
-    <a asp-action="Index" class="btn btn-link">Voltar aos pedidos</a>
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left" aria-hidden="true"></i>Voltar aos pedidos</a>
 </div>

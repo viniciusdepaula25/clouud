@@ -1,16 +1,23 @@
 @model Clouud.Web.ViewModels.EstoqueProdutoViewModel
 @* Cabeçalho com o produto e os totais do estoque, usado em Chaves e Importar *@
-<h4>
-    @Model.Jogo
-    <small class="text-muted">— @Model.Plataforma@(Model.Edicao != "Standard" ? $" · {Model.Edicao}" : "")</small>
-    @if (!Model.Ativo)
-    {
-        <span class="badge bg-secondary">fora da loja</span>
-    }
-</h4>
-<p>
-    <strong class="@(Model.Disponiveis == 0 ? "text-danger" : Model.Disponiveis < Clouud.Web.ViewModels.EstoqueProdutoViewModel.EstoqueBaixo ? "text-warning" : "text-success")">
-        @Model.Disponiveis disponíveis
-    </strong>
-    · @Model.Reservadas reservadas · @Model.Vendidas vendidas · @Model.Inativas inativas
-</p>
+@{
+    var corDisponiveis = Model.Disponiveis == 0 ? "situacao-perigo" : Model.Disponiveis < Clouud.Web.ViewModels.EstoqueProdutoViewModel.EstoqueBaixo ? "situacao-aviso" : "situacao-sucesso";
+}
+<div class="painel painel-sm mb-3 d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <h2 class="h5 mb-0">
+            @Model.Jogo
+            <small class="text-muted fw-normal">— @Model.Plataforma@(Model.Edicao != "Standard" ? $" · {Model.Edicao}" : "")</small>
+            @if (!Model.Ativo)
+            {
+                <span class="badge bg-secondary">fora da loja</span>
+            }
+        </h2>
+    </div>
+    <p class="mb-0 d-flex flex-wrap gap-2 resumo-estoque">
+        <span class="situacao @corDisponiveis"><strong>@Model.Disponiveis</strong> disponíveis</span>
+        <span class="situacao situacao-aviso"><strong>@Model.Reservadas</strong> reservadas</span>
+        <span class="situacao situacao-info"><strong>@Model.Vendidas</strong> vendidas</span>
+        <span class="situacao situacao-neutra"><strong>@Model.Inativas</strong> inativas</span>
+    </p>
+</div>

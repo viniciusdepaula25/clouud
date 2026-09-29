@@ -48,87 +48,63 @@
     }
 }
 
-<style>
-    /* o layout do admin estiliza todos os links (fonte Impact, margem); aqui eles seguem o texto */
-    .painel a:not(.btn) { font-size: inherit; }
-    .painel .card { background: #282828; border: 0; }
-    .painel-rotulo { color: #adafae; font-size: .875rem; margin-bottom: .25rem; }
-    .painel-valor { color: #fff; font-size: 1.75rem; font-weight: 600; line-height: 1.2; }
-    .painel-heroi { color: #fff; font-size: 3rem; font-weight: 600; line-height: 1.1; }
-    .painel-alta { color: #77b300; }
-    .painel-baixa { color: #ff6b6b; }
-    .painel-neutro, .painel-detalhe { color: #adafae; }
-    .painel-grafico { position: relative; }
-    .painel-grafico svg { display: block; width: 100%; height: auto; }
-    .painel-grafico .barra { fill: #2a9fd6; }
-    .painel-grafico .coluna { outline: none; cursor: default; }
-    .painel-grafico .coluna:hover .barra, .painel-grafico .coluna:focus .barra { fill: #5ab4e0; }
-    .painel-grafico .coluna:focus .alvo { stroke: #5ab4e0; stroke-width: 1; }
-    .painel-tooltip { position: absolute; pointer-events: none; background: #111; border: 1px solid #3a3a3a; border-radius: 6px;
-                      padding: .4rem .6rem; font-size: .85rem; white-space: nowrap; transform: translate(-50%, -100%); display: none; }
-    .painel-tooltip strong { color: #fff; display: block; font-size: 1rem; }
-    .painel-tooltip span { color: #adafae; }
-    .painel table td, .painel table th { font-variant-numeric: tabular-nums; }
-</style>
 
-<div class="painel">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-2">
-        <h1 class="mb-0">Painel</h1>
+<div class="painel-admin">
+    <div class="cabecalho-pagina mb-2">
+        <div>
+            <h1>Painel</h1>
+            <p class="subtitulo">Vendas dos últimos @periodo (pedidos pagos; reembolsados não entram), comparadas com os @periodo anteriores.</p>
+        </div>
         <div class="btn-group" role="group" aria-label="Período">
             @foreach (var dias in PainelViewModel.PeriodosPermitidos)
             {
                 <a asp-action="Index" asp-route-dias="@dias" aria-current="@(dias == Model.Dias ? "true" : null)"
-                   class="btn btn-sm @(dias == Model.Dias ? "btn-primary" : "btn-outline-primary")">Últimos @dias dias</a>
+                   class="btn btn-sm @(dias == Model.Dias ? "btn-danger" : "btn-outline-secondary")">Últimos @dias dias</a>
             }
         </div>
     </div>
-    <p class="painel-detalhe mt-1">Vendas dos últimos @periodo (pedidos pagos; reembolsados não entram), comparadas com os @periodo anteriores.</p>
 
     @* ---- números do período ---- *@
-    <div class="row g-3">
-        <div class="col-lg-5">
-            <div class="card h-100"><div class="card-body">
-                <div class="painel-rotulo">Faturamento</div>
-                <div class="painel-heroi" id="faturamento">@Model.Faturamento.ToString("C")</div>
+    <div class="row g-3 mt-1">
+        <div class="col-md-6 col-xl-3">
+            <div class="indicador indicador-destaque">
+                <div class="rotulo"><i class="bi bi-cash-stack" aria-hidden="true"></i>Faturamento</div>
+                <div class="valor" id="faturamento">@Model.Faturamento.ToString("C")</div>
                 @if (DescreverVariacao(Model.Faturamento, Model.FaturamentoAnterior, periodo) is { } variacaoFaturamento)
                 {
-                    <div class="@variacaoFaturamento.Classe mt-1" id="variacaoFaturamento">@variacaoFaturamento.Texto</div>
+                    <div class="@variacaoFaturamento.Classe variacao mt-1" id="variacaoFaturamento">@variacaoFaturamento.Texto</div>
                 }
-            </div></div>
+            </div>
         </div>
-        <div class="col-lg-7">
-            <div class="row g-3 h-100">
-                <div class="col-sm-4">
-                    <div class="card h-100"><div class="card-body">
-                        <div class="painel-rotulo">Pedidos pagos</div>
-                        <div class="painel-valor" id="pedidosPagos">@Model.PedidosPagos</div>
-                        @if (DescreverVariacao(Model.PedidosPagos, Model.PedidosPagosAnterior, periodo) is { } variacaoPedidos)
-                        {
-                            <div class="@variacaoPedidos.Classe small mt-1">@variacaoPedidos.Texto</div>
-                        }
-                    </div></div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="card h-100"><div class="card-body">
-                        <div class="painel-rotulo">Ticket médio</div>
-                        <div class="painel-valor">@Model.TicketMedio.ToString("C")</div>
-                        <div class="painel-detalhe small mt-1">por pedido pago</div>
-                    </div></div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="card h-100"><div class="card-body">
-                        <div class="painel-rotulo">Chaves vendidas</div>
-                        <div class="painel-valor" id="chavesVendidas">@Model.ChavesVendidas</div>
-                        <div class="painel-detalhe small mt-1">entregues aos clientes</div>
-                    </div></div>
-                </div>
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="indicador" style="--cor-indicador: var(--cl-azul)">
+                <div class="rotulo"><i class="bi bi-bag-check" aria-hidden="true"></i>Pedidos pagos</div>
+                <div class="valor" id="pedidosPagos">@Model.PedidosPagos</div>
+                @if (DescreverVariacao(Model.PedidosPagos, Model.PedidosPagosAnterior, periodo) is { } variacaoPedidos)
+                {
+                    <div class="@variacaoPedidos.Classe variacao mt-1">@variacaoPedidos.Texto</div>
+                }
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="indicador" style="--cor-indicador: var(--cl-roxo)">
+                <div class="rotulo"><i class="bi bi-receipt" aria-hidden="true"></i>Ticket médio</div>
+                <div class="valor">@Model.TicketMedio.ToString("C")</div>
+                <div class="painel-detalhe variacao mt-1">por pedido pago</div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="indicador" style="--cor-indicador: var(--cl-verde)">
+                <div class="rotulo"><i class="bi bi-key" aria-hidden="true"></i>Chaves vendidas</div>
+                <div class="valor" id="chavesVendidas">@Model.ChavesVendidas</div>
+                <div class="painel-detalhe variacao mt-1">entregues aos clientes</div>
             </div>
         </div>
     </div>
 
     @* ---- gráfico: faturamento por dia ---- *@
-    <div class="card mt-3"><div class="card-body">
-        <h5 class="mb-1">Faturamento por dia</h5>
+    <section class="painel mt-3" aria-labelledby="tituloGrafico">
+        <h2 class="painel-titulo mb-1" id="tituloGrafico"><i class="bi bi-bar-chart" aria-hidden="true"></i>Faturamento por dia</h2>
         <div class="painel-detalhe small mb-2">Passe o mouse (ou use Tab) sobre um dia para ver o valor.</div>
         @if (maximo == 0)
         {
@@ -142,8 +118,8 @@
                     {
                         var y = Y(t);
                         <g>
-                            <line x1="@margemEsq" x2="@(largura - margemDir)" y1="@y" y2="@y" stroke="#3a3a3a" stroke-width="1" />
-                            <text x="@(margemEsq - 8)" y="@(y + 4)" text-anchor="end" fill="#adafae" font-size="12">@(((decimal)t).ToString("C0"))</text>
+                            <line x1="@margemEsq" x2="@(largura - margemDir)" y1="@y" y2="@y" stroke="#2c2c2c" stroke-width="1" />
+                            <text x="@(margemEsq - 8)" y="@(y + 4)" text-anchor="end" fill="#8e9190" font-size="12">@(((decimal)t).ToString("C0"))</text>
                         </g>
                     }
                     @for (var i = 0; i < dados.Count; i++)
@@ -167,11 +143,11 @@
                         </g>
                         @if ((dados.Count - 1 - i) % cadaQuantos == 0)
                         {
-                            <g><text x="@(x + banda / 2)" y="@(altura - 8)" text-anchor="middle" fill="#adafae" font-size="12">@dia.Dia.ToString("dd/MM")</text></g>
+                            <g><text x="@(x + banda / 2)" y="@(altura - 8)" text-anchor="middle" fill="#8e9190" font-size="12">@dia.Dia.ToString("dd/MM")</text></g>
                         }
                         @if (i == indiceMaximo)
                         {
-                            <g><text x="@(x + banda / 2)" y="@(yBarra - 6)" text-anchor="middle" fill="#f0f0f0" font-size="12" font-weight="600">@dia.Valor.ToString("C")</text></g>
+                            <g><text x="@(x + banda / 2)" y="@(yBarra - 6)" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600">@dia.Valor.ToString("C")</text></g>
                         }
                     }
                     <line x1="@margemEsq" x2="@(largura - margemDir)" y1="@(margemTopo + plotA)" y2="@(margemTopo + plotA)" stroke="#555" stroke-width="1" />
@@ -191,51 +167,51 @@
                 </table>
             </details>
         }
-    </div></div>
+    </section>
 
     @* ---- situação atual ---- *@
-    <h4 class="mt-4">Agora</h4>
+    <h2 class="titulo-secao mt-5 mb-3">Agora</h2>
     <div class="row g-3">
         <div class="col-6 col-lg-3">
             <a asp-controller="Pedidos" asp-action="Index" asp-route-status="AguardandoPagamento" class="text-decoration-none d-block h-100">
-                <div class="card h-100"><div class="card-body">
-                    <div class="painel-rotulo">Aguardando pagamento</div>
-                    <div class="painel-valor" id="aguardando">@Model.AguardandoPagamento</div>
-                    <div class="painel-detalhe small mt-1">@Model.ValorAguardando.ToString("C") em chaves reservadas</div>
-                </div></div>
+                <div class="indicador indicador-link" style="--cor-indicador: var(--cl-laranja)">
+                    <div class="rotulo"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Aguardando pagamento</div>
+                    <div class="valor" id="aguardando">@Model.AguardandoPagamento</div>
+                    <div class="painel-detalhe variacao mt-1">@Model.ValorAguardando.ToString("C") em chaves reservadas</div>
+                </div>
             </a>
         </div>
         <div class="col-6 col-lg-3">
             <a asp-controller="Estoque" asp-action="Index" class="text-decoration-none d-block h-100">
-                <div class="card h-100"><div class="card-body">
-                    <div class="painel-rotulo">Produtos esgotados</div>
-                    <div class="painel-valor" id="esgotados">@Model.ProdutosEsgotados</div>
-                    <div class="painel-detalhe small mt-1">à venda, sem chave disponível</div>
-                </div></div>
+                <div class="indicador indicador-link">
+                    <div class="rotulo"><i class="bi bi-exclamation-octagon" aria-hidden="true"></i>Produtos esgotados</div>
+                    <div class="valor" id="esgotados">@Model.ProdutosEsgotados</div>
+                    <div class="painel-detalhe variacao mt-1">à venda, sem chave disponível</div>
+                </div>
             </a>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card h-100"><div class="card-body">
-                <div class="painel-rotulo">Chaves disponíveis</div>
-                <div class="painel-valor">@Model.ChavesDisponiveis</div>
-                <div class="painel-detalhe small mt-1">no estoque de produtos ativos</div>
-            </div></div>
+            <div class="indicador" style="--cor-indicador: var(--cl-verde)">
+                <div class="rotulo"><i class="bi bi-box-seam" aria-hidden="true"></i>Chaves disponíveis</div>
+                <div class="valor">@Model.ChavesDisponiveis</div>
+                <div class="painel-detalhe variacao mt-1">no estoque de produtos ativos</div>
+            </div>
         </div>
         <div class="col-6 col-lg-3">
             <a asp-controller="Usuarios" asp-action="Index" class="text-decoration-none d-block h-100">
-                <div class="card h-100"><div class="card-body">
-                    <div class="painel-rotulo">Clientes</div>
-                    <div class="painel-valor">@Model.Clientes</div>
-                    <div class="painel-detalhe small mt-1">contas cadastradas</div>
-                </div></div>
+                <div class="indicador indicador-link" style="--cor-indicador: var(--cl-azul)">
+                    <div class="rotulo"><i class="bi bi-people" aria-hidden="true"></i>Clientes</div>
+                    <div class="valor">@Model.Clientes</div>
+                    <div class="painel-detalhe variacao mt-1">contas cadastradas</div>
+                </div>
             </a>
         </div>
     </div>
 
     <div class="row g-3 mt-1">
         <div class="col-lg-6">
-            <div class="card h-100"><div class="card-body">
-                <h5>Repor estoque</h5>
+            <section class="painel h-100">
+                <h2 class="painel-titulo mb-1"><i class="bi bi-arrow-repeat" aria-hidden="true"></i>Repor estoque</h2>
                 <div class="painel-detalhe small mb-2">Produtos à venda com menos de @EstoqueProdutoViewModel.EstoqueBaixo chaves, os mais desejados primeiro.</div>
                 @if (Model.Repor.Count == 0)
                 {
@@ -243,7 +219,7 @@
                 }
                 else
                 {
-                    <table class="table table-sm align-middle mb-0" id="tabelaRepor">
+                    <div class="table-responsive"><table class="table table-sm align-middle mb-0" id="tabelaRepor">
                         <thead><tr><th>Produto</th><th class="text-end">Disponíveis</th><th class="text-end">Desejos</th><th></th></tr></thead>
                         <tbody>
                             @foreach (var item in Model.Repor)
@@ -256,13 +232,13 @@
                                 </tr>
                             }
                         </tbody>
-                    </table>
+                    </table></div>
                 }
-            </div></div>
+            </section>
         </div>
         <div class="col-lg-6">
-            <div class="card h-100"><div class="card-body">
-                <h5>Mais vendidos</h5>
+            <section class="painel h-100">
+                <h2 class="painel-titulo mb-1"><i class="bi bi-trophy" aria-hidden="true"></i>Mais vendidos</h2>
                 <div class="painel-detalhe small mb-2">Por chaves vendidas nos últimos @periodo.</div>
                 @if (Model.MaisVendidos.Count == 0)
                 {
@@ -270,7 +246,7 @@
                 }
                 else
                 {
-                    <table class="table table-sm mb-0" id="tabelaMaisVendidos">
+                    <div class="table-responsive"><table class="table table-sm mb-0" id="tabelaMaisVendidos">
                         <thead><tr><th>Produto</th><th class="text-end">Chaves</th><th class="text-end">Receita</th></tr></thead>
                         <tbody>
                             @foreach (var item in Model.MaisVendidos)
@@ -282,16 +258,16 @@
                                 </tr>
                             }
                         </tbody>
-                    </table>
+                    </table></div>
                 }
-            </div></div>
+            </section>
         </div>
     </div>
 
-    <div class="card mt-3 mb-4"><div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-2">Últimos pedidos</h5>
-            <a asp-controller="Pedidos" asp-action="Index" class="small">Ver todos</a>
+    <section class="painel mt-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="painel-titulo mb-0"><i class="bi bi-clock-history" aria-hidden="true"></i>Últimos pedidos</h2>
+            <a asp-controller="Pedidos" asp-action="Index" class="ver-todos small">Ver todos →</a>
         </div>
         @if (Model.UltimosPedidos.Count == 0)
         {
@@ -299,7 +275,7 @@
         }
         else
         {
-            <table class="table table-sm table-hover align-middle mb-0">
+            <div class="table-responsive"><table class="table table-sm table-hover align-middle mb-0">
                 <tbody>
                     @foreach (var pedido in Model.UltimosPedidos)
                     {
@@ -308,13 +284,13 @@
                             <td>@pedido.CriadoEm.ToLocalTime().ToString("dd/MM HH:mm")</td>
                             <td>@pedido.Usuario.Name</td>
                             <td class="text-end">@pedido.Total.ToString("C")</td>
-                            <td class="text-end"><span class="badge @pedido.Status.Cor()">@pedido.Status.Descricao()</span></td>
+                            <td class="text-end"><span class="@pedido.Status.Cor()">@pedido.Status.Descricao()</span></td>
                         </tr>
                     }
                 </tbody>
-            </table>
+            </table></div>
         }
-    </div></div>
+    </section>
 </div>
 
 @section Scripts {

@@ -3,37 +3,41 @@
 @{
     var hoje = DateOnly.FromDateTime(DateTime.Today);
 }
-<div class="row">
-    <div class="col-md-3">
+<div class="painel mb-4">
+<div class="row g-4">
+    <div class="col-md-4">
         <img src="@(string.IsNullOrEmpty(Model.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + Model.Capa))"
-             alt="Capa" class="img-fluid mb-3" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
+             alt="Capa" class="capa-previa" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
     </div>
-    <div class="col-md-9">
-        <dl class="row">
-            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Titulo)</dt>
+    <div class="col-md-8">
+        <dl class="row mb-0 lista-dados-bs">
+            <dt class="col-sm-3 text-muted fw-normal">@Html.DisplayNameFor(model => model.Titulo)</dt>
             <dd class="col-sm-9">@Model.Titulo</dd>
-            <dt class="col-sm-3">Endereço</dt>
+            <dt class="col-sm-3 text-muted fw-normal">Endereço</dt>
             <dd class="col-sm-9">@Model.Slug</dd>
-            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.Descricao)</dt>
+            <dt class="col-sm-3 text-muted fw-normal">@Html.DisplayNameFor(model => model.Descricao)</dt>
             <dd class="col-sm-9" style="white-space: pre-line">@Model.Descricao</dd>
-            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.DataLancamento)</dt>
+            <dt class="col-sm-3 text-muted fw-normal">@Html.DisplayNameFor(model => model.DataLancamento)</dt>
             <dd class="col-sm-9">@Model.DataLancamento?.ToString("dd/MM/yyyy")</dd>
-            <dt class="col-sm-3">@Html.DisplayNameFor(model => model.ClassificacaoIndicativa)</dt>
+            <dt class="col-sm-3 text-muted fw-normal">@Html.DisplayNameFor(model => model.ClassificacaoIndicativa)</dt>
             <dd class="col-sm-9">@(Model.ClassificacaoIndicativa == "L" ? "Livre" : Model.ClassificacaoIndicativa)</dd>
-            <dt class="col-sm-3">Desenvolvedora</dt>
+            <dt class="col-sm-3 text-muted fw-normal">Desenvolvedora</dt>
             <dd class="col-sm-9">@Model.Desenvolvedora?.Nome</dd>
-            <dt class="col-sm-3">Publicadora</dt>
+            <dt class="col-sm-3 text-muted fw-normal">Publicadora</dt>
             <dd class="col-sm-9">@Model.Publicadora?.Nome</dd>
-            <dt class="col-sm-3">Categorias</dt>
+            <dt class="col-sm-3 text-muted fw-normal">Categorias</dt>
             <dd class="col-sm-9">@string.Join(", ", Model.Categorias.OrderBy(c => c.Nome).Select(c => c.Nome))</dd>
-            <dt class="col-sm-3">Situação</dt>
+            <dt class="col-sm-3 text-muted fw-normal">Situação</dt>
             <dd class="col-sm-9">@(Model.Ativo ? "Ativo" : "Inativo")@(Model.Destaque ? ", em destaque" : "")</dd>
         </dl>
     </div>
 </div>
+</div>
 
-<h4>Produtos</h4>
-<table class="table table-sm">
+<h2 class="titulo-secao mb-3">Produtos</h2>
+<div class="tabela-painel">
+<div class="table-responsive">
+<table class="table table-sm align-middle">
     <thead>
         <tr>
             <th>Plataforma</th>
@@ -47,7 +51,7 @@
     <tbody>
         @if (Model.Produtos.Count == 0)
         {
-            <tr><td colspan="6">Nenhum produto. O jogo só aparece na loja depois de ter um produto ativo.</td></tr>
+            <tr><td colspan="6" class="text-muted text-center py-3">Nenhum produto. O jogo só aparece na loja depois de ter um produto ativo.</td></tr>
         }
         @foreach (var produto in Model.Produtos.OrderBy(p => p.Plataforma.Nome).ThenBy(p => p.Edicao))
         {
@@ -60,11 +64,13 @@
                     @produto.PrecoAtual(hoje).ToString("C")
                     @if (produto.EmPromocao(hoje))
                     {
-                        <span class="badge bg-success">promoção</span>
+                        <span class="situacao situacao-perigo ms-1">promoção</span>
                     }
                 </td>
-                <td>@(produto.Ativo ? "À venda" : "Inativo")</td>
+                <td><span class="situacao @(produto.Ativo ? "situacao-sucesso" : "situacao-neutra")">@(produto.Ativo ? "À venda" : "Inativo")</span></td>
             </tr>
         }
     </tbody>
 </table>
+</div>
+</div>
