@@ -7,8 +7,9 @@
 <div class="row justify-content-center">
     <div class="col-sm-10 col-md-7 col-lg-5">
         <div class="painel-form">
-            <h2>Criar conta</h2>
-            <p class="text-muted">Depois de criar a conta você já entra na loja.</p>
+            <img src="~/img/logo-nuvem.png" alt="" class="marca-form" />
+            <h2 class="text-center">Criar conta</h2>
+            <p class="text-muted text-center mb-4">Depois de criar a conta você já entra na loja.</p>
             <form asp-action="Cadastro">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <div class="mb-3">
@@ -26,11 +27,11 @@
                     <input asp-for="Senha" class="form-control" autocomplete="new-password" />
                     <span asp-validation-for="Senha" class="text-danger"></span>
                 </div>
-                <div class="text-center py-2">
-                    <input type="submit" value="Criar conta" class="btn btn-primary" />
+                <div class="d-grid pt-2">
+                    <input type="submit" value="Criar conta" class="btn btn-primary btn-lg" />
                 </div>
                 <p class="text-center mt-3 mb-0">
-                    <a asp-controller="Conta" asp-action="Login">Já tem conta? Entrar</a>
+                    <a asp-controller="Conta" asp-action="Login">Já tem conta? Entre</a>
                 </p>
             </form>
         </div>

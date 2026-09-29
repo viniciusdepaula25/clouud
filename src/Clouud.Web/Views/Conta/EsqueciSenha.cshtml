@@ -7,7 +7,8 @@
 <div class="row justify-content-center">
     <div class="col-sm-10 col-md-7 col-lg-5">
         <div class="painel-form">
-            <h2>Esqueci minha senha</h2>
+            <div class="text-center"><span class="icone-status info"><i class="bi bi-key" aria-hidden="true"></i></span></div>
+            <h2 class="text-center">Esqueci minha senha</h2>
             @if (enviado != null)
             {
                 <div class="alert alert-success" id="pedidoEnviado">
@@ -18,7 +19,7 @@
             }
             else
             {
-                <p class="text-muted">Informe o e-mail da sua conta. Vamos mandar um link para você criar uma nova senha.</p>
+                <p class="text-muted text-center mb-4">Informe o e-mail da sua conta. Vamos mandar um link para você criar uma nova senha.</p>
                 <form method="post" action="/conta/esqueci-senha" asp-antiforgery="true">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                     <div class="mb-3">
@@ -26,9 +27,9 @@
                         <input asp-for="Email" class="form-control" autocomplete="email" autofocus />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 justify-content-center py-2">
-                        <a href="/conta/login" class="btn btn-secondary">Voltar</a>
-                        <input type="submit" value="Enviar link" class="btn btn-primary" />
+                    <div class="d-grid gap-2 pt-2">
+                        <input type="submit" value="Enviar link" class="btn btn-primary btn-lg" />
+                        <a href="/conta/login" class="btn btn-link link-suave">Voltar</a>
                     </div>
                 </form>
             }

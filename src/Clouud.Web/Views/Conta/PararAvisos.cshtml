@@ -15,6 +15,7 @@
             }
             else if (parou)
             {
+                <span class="icone-status sucesso"><i class="bi bi-bell-slash" aria-hidden="true"></i></span>
                 <h2>Pronto</h2>
                 <p><strong class="text-white">@Model.Email</strong> não vai mais receber os avisos da lista de desejos.
                     Os e-mails de pedidos e de senha continuam. Para voltar a receber, marque a opção em <strong>Minha conta</strong>.</p>
@@ -22,6 +23,7 @@
             }
             else
             {
+                <span class="icone-status info"><i class="bi bi-bell" aria-hidden="true"></i></span>
                 <h2>Parar de receber avisos?</h2>
                 <p>Os avisos de promoção e de volta ao estoque dos jogos da sua lista de desejos deixam de ir para
                     <strong class="text-white">@Model.Email</strong>.</p>

@@ -8,284 +8,321 @@
     var pagina = $"/jogo/{jogo.Slug}";
     var capa = string.IsNullOrEmpty(jogo.Capa) ? Url.Content("~/img/sem-capa.svg") : Url.Content("~/uploads/" + jogo.Capa);
     var total = Model.Avaliacoes.Count;
+    var desejoTexto = Model.NaListaDesejos ? "Tirar da lista de desejos" : "Pôr na lista de desejos";
+    var aPartirDe = Model.Produtos.Where(p => !p.Esgotado).Select(p => (decimal?)p.PrecoAtual).Min();
 }
 
-<style>
-    .pagina-jogo .card { background: #282828; border: 0; }
-    .pagina-jogo .muted { color: #adafae; }
-    .distribuicao .progress { height: .6rem; background: #3a3a3a; }
-    .distribuicao .progress-bar { background: #2a9fd6; }
-    .nota-opcoes input { position: absolute; opacity: 0; }
-    .nota-opcoes label { cursor: pointer; font-size: 1.75rem; color: #555; padding: 0 .1rem; }
-    .nota-opcoes label.acesa { color: #f80; }
-    .nota-opcoes input:focus-visible + label { outline: 2px solid #2a9fd6; border-radius: 4px; }
-    .miniatura img { opacity: .55; outline: 2px solid transparent; }
-    .miniatura.ativa img, .miniatura:hover img, .miniatura:focus-visible img { opacity: 1; outline-color: #2a9fd6; }
-</style>
-
 <div class="pagina-jogo mb-4">
-    @if (TempData["Mensagem"] is string mensagem)
-    {
-        <div class="alert alert-success">@mensagem</div>
-    }
-    @if (TempData["Erro"] is string erro)
-    {
-        <div class="alert alert-danger">@erro</div>
-    }
+    <partial name="_Alertas" />
+
+    <nav class="migalhas" aria-label="Você está em">
+        <a href="/">Início</a> <span aria-hidden="true">/</span> <a href="/loja">Loja</a> <span aria-hidden="true">/</span>
+        <span class="text-white" aria-current="page">@jogo.Titulo</span>
+    </nav>
+
+    @* Topo: capa, título, nota, categorias e coração, sobre a própria capa desfocada *@
+    <section class="topo-jogo mb-4">
+        <div class="fundo-topo" style="background-image: url('@capa')"></div>
+        <div class="conteudo-topo">
+            <div class="row g-4 align-items-center">
+                <div class="col-md-5 col-lg-4">
+                    <img src="@capa" alt="Capa de @jogo.Titulo" class="capa-jogo" data-fallback="@Url.Content("~/img/sem-capa.svg")" />
+                </div>
+                <div class="col-md-7 col-lg-8">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <h1>@jogo.Titulo</h1>
+                        @if (Model.Logado)
+                        {
+                            <form asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Alternar" method="post" class="m-0">
+                                <input type="hidden" name="jogoId" value="@jogo.Id" />
+                                <input type="hidden" name="voltarPara" value="@pagina" />
+                                <button type="submit" class="botao-desejo desejo-jogo desejo"
+                                        aria-pressed="@(Model.NaListaDesejos ? "true" : "false")" title="@desejoTexto" aria-label="@desejoTexto">@(Model.NaListaDesejos ? "♥" : "♡")</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina" class="botao-desejo desejo-jogo"
+                               title="Entre para usar a lista de desejos" aria-label="Entre para usar a lista de desejos">♡</a>
+                        }
+                    </div>
+                    <div class="my-2" id="resumoNotas">
+                        @if (Model.Media.HasValue)
+                        {
+                            <partial name="_Estrelas" model="Model.Media.Value" />
+                            <strong class="text-white ms-1">@Model.Media.Value.ToString("0.0")</strong>
+                            <a href="#avaliacoes" class="link-suave ms-1">(@total @(total == 1 ? "avaliação" : "avaliações"))</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Ainda sem avaliações</span>
+                        }
+                    </div>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        @foreach (var categoria in jogo.Categorias.OrderBy(c => c.Nome))
+                        {
+                            <a href="/loja?categoria=@categoria.Slug" class="chip-categoria">@categoria.Nome</a>
+                        }
+                    </div>
+                    @if (aPartirDe.HasValue)
+                    {
+                        <p class="mb-0 text-white-50">a partir de <strong class="text-white fs-4 ms-1">@aPartirDe.Value.ToString("C")</strong></p>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
 
     <div class="row g-4">
-        <div class="col-md-4">
-            <img src="@capa" alt="Capa de @jogo.Titulo" class="img-fluid rounded w-100" style="object-fit: cover"
-                 data-fallback="@Url.Content("~/img/sem-capa.svg")" />
-        </div>
-        <div class="col-md-8">
-            <div class="d-flex justify-content-between align-items-start gap-2">
-                <h1 class="mb-1">@jogo.Titulo</h1>
-                @if (Model.Logado)
-                {
-                    <form asp-area="Cliente" asp-controller="ListaDesejos" asp-action="Alternar" method="post">
-                        <input type="hidden" name="jogoId" value="@jogo.Id" />
-                        <input type="hidden" name="voltarPara" value="@pagina" />
-                        <button type="submit" class="btn btn-link text-danger fs-2 p-0 text-decoration-none desejo"
-                                aria-pressed="@(Model.NaListaDesejos ? "true" : "false")"
-                                title="@(Model.NaListaDesejos ? "Tirar da lista de desejos" : "Pôr na lista de desejos")"
-                                aria-label="@(Model.NaListaDesejos ? "Tirar da lista de desejos" : "Pôr na lista de desejos")">@(Model.NaListaDesejos ? "♥" : "♡")</button>
-                    </form>
-                }
-            </div>
-            <div class="mb-2" id="resumoNotas">
-                @if (Model.Media.HasValue)
-                {
-                    <partial name="_Estrelas" model="Model.Media.Value" />
-                    <strong class="text-white ms-1">@Model.Media.Value.ToString("0.0")</strong>
-                    <a href="#avaliacoes" class="muted ms-1">(@total @(total == 1 ? "avaliação" : "avaliações"))</a>
-                }
-                else
-                {
-                    <span class="muted">Ainda sem avaliações</span>
-                }
-            </div>
-            <div class="mb-3">
-                @foreach (var categoria in jogo.Categorias.OrderBy(c => c.Nome))
-                {
-                    <a href="/?categoria=@categoria.Slug" class="badge bg-secondary text-decoration-none me-1">@categoria.Nome</a>
-                }
-            </div>
-            <dl class="row small mb-3">
-                @if (jogo.Desenvolvedora != null)
-                {
-                    <dt class="col-sm-3 muted">Desenvolvedora</dt>
-                    <dd class="col-sm-9">@jogo.Desenvolvedora.Nome</dd>
-                }
-                @if (jogo.Publicadora != null)
-                {
-                    <dt class="col-sm-3 muted">Publicadora</dt>
-                    <dd class="col-sm-9">@jogo.Publicadora.Nome</dd>
-                }
-                @if (jogo.DataLancamento.HasValue)
-                {
-                    <dt class="col-sm-3 muted">Lançamento</dt>
-                    <dd class="col-sm-9">@jogo.DataLancamento.Value.ToString("dd/MM/yyyy")</dd>
-                }
-                @if (jogo.ClassificacaoIndicativa != null)
-                {
-                    <dt class="col-sm-3 muted">Classificação</dt>
-                    <dd class="col-sm-9">@(jogo.ClassificacaoIndicativa == "L" ? "Livre" : jogo.ClassificacaoIndicativa + " anos")</dd>
-                }
-            </dl>
-
-            <div class="card"><div class="card-body">
-                <h5>Onde comprar</h5>
-                @if (Model.Produtos.Count == 0)
-                {
-                    <p class="muted mb-0">No momento este jogo não está à venda.</p>
-                }
-                else
-                {
-                    <table class="table table-sm align-middle mb-0" id="produtos">
-                        <tbody>
+        @* Coluna lateral: onde comprar e ficha técnica (no celular vem primeiro) *@
+        <aside class="col-lg-4 order-lg-2">
+            <div class="onde-comprar">
+                <section class="painel mb-3" aria-labelledby="tituloOndeComprar">
+                    <h2 class="painel-titulo" id="tituloOndeComprar"><i class="bi bi-bag" aria-hidden="true"></i>Onde comprar</h2>
+                    @if (Model.Produtos.Count == 0)
+                    {
+                        <p class="text-muted mb-0">No momento este jogo não está à venda.</p>
+                    }
+                    else
+                    {
+                        <div id="produtos">
                             @foreach (var produto in Model.Produtos)
                             {
-                                <tr>
-                                    <td>@produto.Plataforma@(produto.Edicao != "Standard" ? $" · {produto.Edicao}" : "")</td>
-                                    <td class="text-end">
-                                        @if (produto.EmPromocao)
-                                        {
-                                            <span class="badge bg-danger">-@produto.PercentualDesconto%</span>
-                                            <s class="muted small ms-1">@produto.Preco.ToString("C")</s>
-                                        }
-                                        <strong class="ms-1 text-white">@produto.PrecoAtual.ToString("C")</strong>
-                                    </td>
-                                    <td class="text-end" style="width: 130px">
+                                <div class="oferta">
+                                    <div class="plataforma-oferta">
+                                        <strong>@produto.Plataforma</strong>
+                                        <span class="small text-muted">@produto.Edicao</span>
                                         @if (produto.Esgotado)
                                         {
-                                            <button class="btn btn-outline-secondary btn-sm" type="button" disabled>Esgotado</button>
+                                            <span class="estoque d-block text-muted">Sem chaves no momento</span>
                                         }
-                                        else if (Model.Logado)
+                                        else if (produto.Disponiveis <= 3)
                                         {
-                                            <form asp-area="Cliente" asp-controller="Carrinho" asp-action="Adicionar" method="post">
-                                                <input type="hidden" name="produtoId" value="@produto.ProdutoId" />
-                                                <input type="hidden" name="voltarPara" value="@pagina" />
-                                                <button type="submit" class="btn btn-danger btn-sm">Comprar</button>
-                                            </form>
+                                            <span class="estoque d-block estoque-baixo">Últimas chaves</span>
                                         }
                                         else
                                         {
-                                            <a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina" class="btn btn-danger btn-sm">Comprar</a>
+                                            <span class="estoque d-block estoque-ok"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Entrega imediata</span>
                                         }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
-            </div></div>
-        </div>
-    </div>
-
-    @if (Model.Imagens.Count > 0)
-    {
-        <h4 class="mt-4">Imagens</h4>
-        <div id="galeria" class="carousel slide galeria" data-bs-ride="false" aria-label="Galeria de imagens de @jogo.Titulo">
-            <div class="carousel-inner rounded" style="background: #111">
-                @for (var i = 0; i < Model.Imagens.Count; i++)
-                {
-                    var imagem = Model.Imagens[i];
-                    <div class="carousel-item @(i == 0 ? "active" : "")">
-                        <img src="@GaleriaService.Url(imagem)" alt="@(imagem.Legenda ?? $"{jogo.Titulo}: imagem {i + 1} de {Model.Imagens.Count}")"
-                             class="d-block w-100" style="height: 460px; object-fit: contain" />
-                        @if (imagem.Legenda != null)
-                        {
-                            <div class="carousel-caption d-none d-md-block"><p class="mb-0 px-2 rounded" style="background: rgba(0,0,0,.6)">@imagem.Legenda</p></div>
-                        }
-                    </div>
-                }
-            </div>
-            @if (Model.Imagens.Count > 1)
-            {
-                <button class="carousel-control-prev" type="button" data-bs-target="#galeria" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Imagem anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#galeria" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Próxima imagem</span>
-                </button>
-            }
-        </div>
-        @if (Model.Imagens.Count > 1)
-        {
-            <div class="d-flex flex-wrap gap-2 mt-2 miniaturas" role="group" aria-label="Escolher imagem">
-                @for (var i = 0; i < Model.Imagens.Count; i++)
-                {
-                    <button type="button" class="p-0 border-0 bg-transparent miniatura @(i == 0 ? "ativa" : "")" data-bs-target="#galeria" data-bs-slide-to="@i"
-                            aria-label="Mostrar imagem @(i + 1)" aria-current="@(i == 0 ? "true" : null)">
-                        <img src="@GaleriaService.Url(Model.Imagens[i])" alt="" style="width: 96px; height: 54px; object-fit: cover" class="rounded" />
-                    </button>
-                }
-            </div>
-        }
-    }
-
-    @if (!string.IsNullOrWhiteSpace(jogo.Descricao))
-    {
-        <h4 class="mt-4">Sobre o jogo</h4>
-        <p style="white-space: pre-line">@jogo.Descricao</p>
-    }
-
-    <h4 class="mt-4" id="avaliacoes">Avaliações</h4>
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card"><div class="card-body">
-                @if (Model.Media.HasValue)
-                {
-                    <div class="d-flex align-items-baseline gap-2">
-                        <span class="text-white" style="font-size: 3rem; font-weight: 600; line-height: 1">@Model.Media.Value.ToString("0.0")</span>
-                        <span class="muted">de 5</span>
-                    </div>
-                    <partial name="_Estrelas" model="Model.Media.Value" />
-                    <div class="muted small mb-3">@total @(total == 1 ? "avaliação" : "avaliações") de quem comprou</div>
-                    <div class="distribuicao">
-                        @for (var nota = 5; nota >= 1; nota--)
-                        {
-                            var quantidade = Model.QuantidadeComNota(nota);
-                            var porcento = total == 0 ? 0 : quantidade * 100 / total;
-                            <div class="d-flex align-items-center gap-2 small mb-1">
-                                <span class="muted" style="width: 2.5rem">@nota ★</span>
-                                <div class="progress flex-grow-1" role="progressbar" aria-label="@nota estrelas"
-                                     aria-valuenow="@porcento" aria-valuemin="0" aria-valuemax="100">
-                                    <div class="progress-bar" style="width: @porcento%"></div>
+                                    </div>
+                                    <div class="preco">
+                                        @if (produto.EmPromocao)
+                                        {
+                                            <span><span class="badge bg-danger">-@produto.PercentualDesconto%</span> <s>@produto.Preco.ToString("C")</s></span>
+                                        }
+                                        <strong>@produto.PrecoAtual.ToString("C")</strong>
+                                    </div>
+                                    @if (produto.Esgotado)
+                                    {
+                                        <button class="btn btn-outline-secondary" type="button" disabled>Esgotado</button>
+                                    }
+                                    else if (Model.Logado)
+                                    {
+                                        <form asp-area="Cliente" asp-controller="Carrinho" asp-action="Adicionar" method="post">
+                                            <input type="hidden" name="produtoId" value="@produto.ProdutoId" />
+                                            <input type="hidden" name="voltarPara" value="@pagina" />
+                                            <button type="submit" class="btn btn-danger"><i class="bi bi-cart-plus" aria-hidden="true"></i>Comprar</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina" class="btn btn-danger"><i class="bi bi-cart-plus" aria-hidden="true"></i>Comprar</a>
+                                    }
                                 </div>
-                                <span class="text-end" style="width: 2rem">@quantidade</span>
-                            </div>
+                            }
+                        </div>
+                    }
+                </section>
+
+                <section class="painel" aria-labelledby="tituloFicha">
+                    <h2 class="painel-titulo" id="tituloFicha"><i class="bi bi-info-circle" aria-hidden="true"></i>Ficha técnica</h2>
+                    <dl class="ficha-tecnica">
+                        @if (jogo.Desenvolvedora != null)
+                        {
+                            <dt>Desenvolvedora</dt>
+                            <dd>@jogo.Desenvolvedora.Nome</dd>
+                        }
+                        @if (jogo.Publicadora != null)
+                        {
+                            <dt>Publicadora</dt>
+                            <dd>@jogo.Publicadora.Nome</dd>
+                        }
+                        @if (jogo.DataLancamento.HasValue)
+                        {
+                            <dt>Lançamento</dt>
+                            <dd>@jogo.DataLancamento.Value.ToString("dd/MM/yyyy")</dd>
+                        }
+                        @if (jogo.ClassificacaoIndicativa != null)
+                        {
+                            <dt>Classificação</dt>
+                            <dd>@(jogo.ClassificacaoIndicativa == "L" ? "Livre" : jogo.ClassificacaoIndicativa + " anos")</dd>
+                        }
+                        @if (jogo.Categorias.Count > 0)
+                        {
+                            <dt>Categorias</dt>
+                            <dd>@string.Join(", ", jogo.Categorias.OrderBy(c => c.Nome).Select(c => c.Nome))</dd>
+                        }
+                    </dl>
+                </section>
+            </div>
+        </aside>
+
+        <div class="col-lg-8 order-lg-1">
+            @if (Model.Imagens.Count > 0)
+            {
+                <section class="mb-5" aria-labelledby="tituloImagens">
+                    <h2 class="titulo-secao mb-3" id="tituloImagens">Imagens</h2>
+                    <div id="galeria" class="carousel slide galeria" data-bs-ride="false" aria-label="Galeria de imagens de @jogo.Titulo">
+                        <div class="carousel-inner">
+                            @for (var i = 0; i < Model.Imagens.Count; i++)
+                            {
+                                var imagem = Model.Imagens[i];
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <img src="@GaleriaService.Url(imagem)" alt="@(imagem.Legenda ?? $"{jogo.Titulo}: imagem {i + 1} de {Model.Imagens.Count}")"
+                                         class="d-block w-100 imagem-slide" />
+                                    @if (imagem.Legenda != null)
+                                    {
+                                        <div class="carousel-caption d-none d-md-block"><p class="mb-0 legenda-slide">@imagem.Legenda</p></div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        @if (Model.Imagens.Count > 1)
+                        {
+                            <button class="carousel-control-prev" type="button" data-bs-target="#galeria" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Imagem anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#galeria" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Próxima imagem</span>
+                            </button>
                         }
                     </div>
-                }
-                else
-                {
-                    <p class="muted mb-0">Este jogo ainda não tem avaliações.</p>
-                }
-            </div></div>
-        </div>
-
-        <div class="col-md-8">
-            <div class="card mb-3" id="avaliar"><div class="card-body">
-                @if (!Model.Logado)
-                {
-                    <p class="mb-0"><a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina">Entre</a> para avaliar este jogo. Só quem comprou pode avaliar.</p>
-                }
-                else if (!Model.PodeAvaliar)
-                {
-                    <p class="muted mb-0">Só quem comprou este jogo pode avaliar. Depois do pagamento aprovado, volte aqui para dar a sua nota.</p>
-                }
-                else
-                {
-                    var minha = Model.MinhaAvaliacao;
-                    <h5>@(minha == null ? "Avalie este jogo" : "Sua avaliação")</h5>
-                    <form action="@pagina/avaliar" method="post" id="formAvaliar">
-                        @Html.AntiForgeryToken()
-                        <fieldset class="nota-opcoes mb-2" id="notaOpcoes">
-                            <legend class="small muted mb-0">Sua nota</legend>
-                            @for (var nota = 1; nota <= 5; nota++)
+                    @if (Model.Imagens.Count > 1)
+                    {
+                        <div class="d-flex flex-wrap gap-2 mt-2 miniaturas" role="group" aria-label="Escolher imagem">
+                            @for (var i = 0; i < Model.Imagens.Count; i++)
                             {
-                                <input type="radio" name="Nota" id="nota-@nota" value="@nota" checked="@(minha?.Nota == nota)" required />
-                                <label for="nota-@nota" title="@nota de 5" aria-label="@nota de 5 estrelas" class="@(minha != null && nota <= minha.Nota ? "acesa" : "")">★</label>
+                                <button type="button" class="p-0 border-0 bg-transparent miniatura @(i == 0 ? "ativa" : "")" data-bs-target="#galeria" data-bs-slide-to="@i"
+                                        aria-label="Mostrar imagem @(i + 1)" aria-current="@(i == 0 ? "true" : null)">
+                                    <img src="@GaleriaService.Url(Model.Imagens[i])" alt="" />
+                                </button>
                             }
-                        </fieldset>
-                        <textarea name="Comentario" class="form-control" rows="3" maxlength="@Avaliacao.TamanhoComentario"
-                                  placeholder="O que você achou? (opcional)" aria-label="Comentário">@minha?.Comentario</textarea>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <input type="submit" value="@(minha == null ? "Enviar avaliação" : "Atualizar avaliação")" class="btn btn-primary btn-sm" />
-                            <small class="muted">até @Avaliacao.TamanhoComentario caracteres</small>
                         </div>
-                    </form>
-                    @if (minha != null)
-                    {
-                        <form action="@pagina/avaliacao/excluir" method="post" class="mt-2"
-                              data-confirmar="Excluir a sua avaliação?">
-                            @Html.AntiForgeryToken()
-                            <input type="submit" value="Excluir minha avaliação" class="btn btn-link btn-sm text-danger p-0" />
-                        </form>
                     }
-                }
-            </div></div>
-
-            @foreach (var avaliacao in Model.Avaliacoes)
-            {
-                <div class="card mb-2 avaliacao"><div class="card-body py-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <img src="@FotoPerfilService.Url(avaliacao.Foto)" alt="" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover"
-                             data-fallback="@FotoPerfilService.FotoPadrao" />
-                        <strong class="text-white">@avaliacao.Nome</strong>
-                        <partial name="_Estrelas" model="(double)avaliacao.Nota" />
-                        <small class="muted ms-auto">@avaliacao.Data.ToLocalTime().ToString("dd/MM/yyyy")@(avaliacao.Editada ? " (editada)" : "")</small>
-                    </div>
-                    @if (avaliacao.Comentario != null)
-                    {
-                        <p class="mb-0 mt-2" style="white-space: pre-line">@avaliacao.Comentario</p>
-                    }
-                </div></div>
+                </section>
             }
+
+            @if (!string.IsNullOrWhiteSpace(jogo.Descricao))
+            {
+                <section class="mb-5" aria-labelledby="tituloSobre">
+                    <h2 class="titulo-secao mb-3" id="tituloSobre">Sobre o jogo</h2>
+                    <div class="painel">
+                        <p class="descricao-jogo">@jogo.Descricao</p>
+                    </div>
+                </section>
+            }
+
+            <section aria-labelledby="avaliacoes">
+                <h2 class="titulo-secao mb-3" id="avaliacoes">Avaliações</h2>
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <div class="painel h-100">
+                            @if (Model.Media.HasValue)
+                            {
+                                <div class="d-flex align-items-baseline gap-2">
+                                    <span class="media-grande">@Model.Media.Value.ToString("0.0")</span>
+                                    <span class="text-muted">de 5</span>
+                                </div>
+                                <partial name="_Estrelas" model="Model.Media.Value" />
+                                <div class="text-muted small mb-3">@total @(total == 1 ? "avaliação" : "avaliações") de quem comprou</div>
+                                <div class="distribuicao">
+                                    @for (var nota = 5; nota >= 1; nota--)
+                                    {
+                                        var quantidade = Model.QuantidadeComNota(nota);
+                                        var porcento = total == 0 ? 0 : quantidade * 100 / total;
+                                        <div class="d-flex align-items-center gap-2 small mb-1">
+                                            <span class="text-muted" style="width: 2.5rem">@nota ★</span>
+                                            <div class="progress flex-grow-1" role="progressbar" aria-label="@nota estrelas"
+                                                 aria-valuenow="@porcento" aria-valuemin="0" aria-valuemax="100">
+                                                <div class="progress-bar" style="width: @porcento%"></div>
+                                            </div>
+                                            <span class="text-end" style="width: 2rem">@quantidade</span>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted mb-0">Este jogo ainda não tem avaliações.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="painel h-100" id="avaliar">
+                            @if (!Model.Logado)
+                            {
+                                <p class="mb-0"><i class="bi bi-chat-square-text me-2 text-muted" aria-hidden="true"></i><a asp-controller="Conta" asp-action="Login" asp-route-returnUrl="@pagina">Entre</a> para avaliar este jogo. Só quem comprou pode avaliar.</p>
+                            }
+                            else if (!Model.PodeAvaliar)
+                            {
+                                <p class="text-muted mb-0"><i class="bi bi-lock me-2" aria-hidden="true"></i>Só quem comprou este jogo pode avaliar. Depois do pagamento aprovado, volte aqui para dar a sua nota.</p>
+                            }
+                            else
+                            {
+                                var minha = Model.MinhaAvaliacao;
+                                <h3 class="h5">@(minha == null ? "Avalie este jogo" : "Sua avaliação")</h3>
+                                <form action="@pagina/avaliar" method="post" id="formAvaliar">
+                                    @Html.AntiForgeryToken()
+                                    <fieldset class="nota-opcoes mb-2" id="notaOpcoes">
+                                        <legend class="small text-muted mb-0">Sua nota</legend>
+                                        @for (var nota = 1; nota <= 5; nota++)
+                                        {
+                                            <input type="radio" name="Nota" id="nota-@nota" value="@nota" checked="@(minha?.Nota == nota)" required />
+                                            <label for="nota-@nota" title="@nota de 5" aria-label="@nota de 5 estrelas" class="@(minha != null && nota <= minha.Nota ? "acesa" : "")">★</label>
+                                        }
+                                    </fieldset>
+                                    <textarea name="Comentario" class="form-control" rows="3" maxlength="@Avaliacao.TamanhoComentario"
+                                              placeholder="O que você achou? (opcional)" aria-label="Comentário">@minha?.Comentario</textarea>
+                                    <div class="d-flex justify-content-between align-items-center gap-2 mt-2">
+                                        <input type="submit" value="@(minha == null ? "Enviar avaliação" : "Atualizar avaliação")" class="btn btn-primary" />
+                                        <small class="text-muted">até @Avaliacao.TamanhoComentario caracteres</small>
+                                    </div>
+                                </form>
+                                @if (minha != null)
+                                {
+                                    <form action="@pagina/avaliacao/excluir" method="post" class="mt-2"
+                                          data-confirmar="Excluir a sua avaliação?">
+                                        @Html.AntiForgeryToken()
+                                        <input type="submit" value="Excluir minha avaliação" class="btn btn-link btn-sm text-danger p-0" />
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    @foreach (var avaliacao in Model.Avaliacoes)
+                    {
+                        <article class="card mb-2 avaliacao"><div class="card-body">
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <img src="@FotoPerfilService.Url(avaliacao.Foto)" alt="" class="rounded-circle foto-avaliacao"
+                                     data-fallback="@FotoPerfilService.FotoPadrao" />
+                                <strong class="text-white">@avaliacao.Nome</strong>
+                                <partial name="_Estrelas" model="(double)avaliacao.Nota" />
+                                <small class="text-muted ms-auto">@avaliacao.Data.ToLocalTime().ToString("dd/MM/yyyy")@(avaliacao.Editada ? " (editada)" : "")</small>
+                            </div>
+                            @if (avaliacao.Comentario != null)
+                            {
+                                <p class="mb-0 mt-2 comentario">@avaliacao.Comentario</p>
+                            }
+                        </div></article>
+                    }
+                </div>
+            </section>
         </div>
     </div>
 </div>

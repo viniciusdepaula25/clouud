@@ -8,19 +8,24 @@
         400 => ("Não foi possível concluir", "O formulário expirou ou veio incompleto. Volte, recarregue a página e tente de novo."),
         _ => ("Algo deu errado", "Não conseguimos concluir agora. Tente de novo em instantes.")
     };
+    var icone = codigo switch { 404 => "bi-signpost-split", 429 => "bi-hourglass-split", 403 => "bi-shield-lock", _ => "bi-exclamation-triangle" };
     ViewData["Title"] = titulo;
 }
 
 <div class="row justify-content-center">
     <div class="col-sm-10 col-md-7 col-lg-5">
         <div class="painel-form text-center" id="paginaErro" data-codigo="@codigo">
+            <span class="icone-status"><i class="bi @icone" aria-hidden="true"></i></span>
             <h2>@titulo</h2>
             <p>@texto</p>
             @if (codigo == 429 && Context.Response.Headers.RetryAfter.FirstOrDefault() is string espera)
             {
                 <p class="text-muted small">Tente de novo em cerca de @espera segundos.</p>
             }
-            <a href="/" class="btn btn-primary">Ir para a loja</a>
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                <a href="/loja" class="btn btn-secondary">Ver os jogos</a>
+                <a href="/" class="btn btn-primary">Ir para a loja</a>
+            </div>
         </div>
     </div>
 </div>

@@ -2,11 +2,11 @@
 @* Uma prateleira da página inicial: título, link "ver todos" e uma linha de cards *@
 @if (Model.Produtos.Count > 0)
 {
-    <section class="prateleira mb-4" id="@Model.Id" aria-labelledby="titulo-@Model.Id">
-        <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-2">
+    <section class="prateleira" id="@Model.Id" aria-labelledby="titulo-@Model.Id">
+        <div class="cabecalho-prateleira">
             <div>
-                <h2 class="h4 titulo-secao mb-0" id="titulo-@Model.Id">@Model.Titulo</h2>
-                <small class="text-muted">@Model.Descricao</small>
+                <h2 class="titulo-secao" id="titulo-@Model.Id">@Model.Titulo</h2>
+                <small class="subtitulo-secao">@Model.Descricao</small>
             </div>
             <a href="@Model.LinkTodos" class="ver-todos">@Model.TextoTodos →</a>
         </div>

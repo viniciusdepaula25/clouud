@@ -27,75 +27,90 @@
         valor.HasValue ? Dinheiro.ParaCampo(valor.Value) : Context.Request.Query[nome].FirstOrDefault();
 }
 
-<form class="filtros-loja row g-2 align-items-end my-3" method="get" action="/loja" id="filtrosLoja">
-    <div class="col-12 col-md-6 col-lg-4">
-        <label class="form-label small mb-1" for="txtBusca">Buscar</label>
-        <input class="form-control" type="search" id="txtBusca" name="busca" value="@filtro.Busca" placeholder="Ex: Tekken 8">
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small mb-1" for="filtroPlataforma">Plataforma</label>
-        <select class="form-select" name="plataforma" id="filtroPlataforma">
-            <option value="">Todas</option>
-            @foreach (var p in Model.Plataformas)
-            {
-                <option value="@p.Slug" selected="@(p.Slug == filtro.Plataforma)">@p.Nome</option>
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small mb-1" for="filtroCategoria">Categoria</label>
-        <select class="form-select" name="categoria" id="filtroCategoria">
-            <option value="">Todas</option>
-            @foreach (var c in Model.Categorias)
-            {
-                <option value="@c.Slug" selected="@(c.Slug == filtro.Categoria)">@c.Nome</option>
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small mb-1" for="precoMin">Preço de (R$)</label>
-        <input class="form-control" type="text" inputmode="decimal" id="precoMin" name="precoMin" value="@ValorPreco("precoMin", filtro.PrecoMin)" placeholder="0,00">
-    </div>
-    <div class="col-6 col-md-3 col-lg-2">
-        <label class="form-label small mb-1" for="precoMax">até (R$)</label>
-        <input class="form-control" type="text" inputmode="decimal" id="precoMax" name="precoMax" value="@ValorPreco("precoMax", filtro.PrecoMax)" placeholder="sem limite">
-    </div>
-    <div class="col-12 col-md-6 col-lg-4 d-flex align-items-center gap-3 flex-wrap">
-        <div class="form-check mb-0">
-            <input class="form-check-input" type="checkbox" id="promocoes" name="promocoes" value="true" checked="@filtro.Promocoes">
-            <label class="form-check-label" for="promocoes">Só promoções</label>
+<button class="btn btn-secondary botao-filtros d-md-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#painelFiltros"
+        aria-expanded="@(filtro.TemFiltro ? "true" : "false")" aria-controls="painelFiltros">
+    <i class="bi bi-funnel" aria-hidden="true"></i>Filtros@(filtro.TemFiltro ? " (ativos)" : "")
+</button>
+<div class="collapse d-md-block @(filtro.TemFiltro ? "show" : null)" id="painelFiltros">
+    <form class="filtros-loja row g-3 align-items-end" method="get" action="/loja" id="filtrosLoja" role="search" aria-label="Filtros da loja">
+        <div class="col-12 col-lg-4">
+            <label class="form-label" for="txtBusca">Buscar</label>
+            <input class="form-control" type="search" id="txtBusca" name="busca" value="@filtro.Busca" placeholder="Nome do jogo">
         </div>
-        <input type="submit" value="Buscar" class="btn btn-secondary" />
-        @if (filtro.TemFiltro)
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label" for="filtroPlataforma">Plataforma</label>
+            <select class="form-select" name="plataforma" id="filtroPlataforma">
+                <option value="">Todas</option>
+                @foreach (var p in Model.Plataformas)
+                {
+                    <option value="@p.Slug" selected="@(p.Slug == filtro.Plataforma)">@p.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label" for="filtroCategoria">Categoria</label>
+            <select class="form-select" name="categoria" id="filtroCategoria">
+                <option value="">Todas</option>
+                @foreach (var c in Model.Categorias)
+                {
+                    <option value="@c.Slug" selected="@(c.Slug == filtro.Categoria)">@c.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label" for="precoMin">Preço de (R$)</label>
+            <input class="form-control" type="text" inputmode="decimal" id="precoMin" name="precoMin" value="@ValorPreco("precoMin", filtro.PrecoMin)" placeholder="0,00">
+        </div>
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label" for="precoMax">até (R$)</label>
+            <input class="form-control" type="text" inputmode="decimal" id="precoMax" name="precoMax" value="@ValorPreco("precoMax", filtro.PrecoMax)" placeholder="sem limite">
+        </div>
+        <div class="col-12 d-flex align-items-center gap-3 flex-wrap">
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input" type="checkbox" role="switch" id="promocoes" name="promocoes" value="true" checked="@filtro.Promocoes">
+                <label class="form-check-label" for="promocoes">Só promoções</label>
+            </div>
+            <div class="ms-md-auto d-flex align-items-center gap-3">
+                @if (filtro.TemFiltro)
+                {
+                    <a href="/loja@(filtro.OrdemEfetiva != "destaques" ? $"?ordem={filtro.OrdemEfetiva}" : "")" class="link-suave small"><i class="bi bi-x-circle me-1" aria-hidden="true"></i>Limpar filtros</a>
+                }
+                <input type="submit" value="Buscar" class="btn btn-primary px-4" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="barra-resultados">
+    <p class="text-muted small" id="resumoLoja" aria-live="polite">
+        @if (Model.TotalProdutos > 0)
         {
-            <a href="/loja@(filtro.OrdemEfetiva != "destaques" ? $"?ordem={filtro.OrdemEfetiva}" : "")" class="small">Limpar filtros</a>
+            @($"{Model.TotalProdutos} {(Model.TotalProdutos == 1 ? "produto encontrado" : "produtos encontrados")}")
+            @if (Model.TotalPaginas > 1)
+            {
+                @($" · mostrando {Model.PrimeiroDaPagina}–{Model.UltimoDaPagina}")
+            }
         }
-    </div>
-    <div class="col-12 col-md-6 col-lg-3 ms-lg-auto">
-        <label class="form-label small mb-1" for="ordem">Ordenar por</label>
-        <select class="form-select" name="ordem" id="ordem" data-enviar-ao-mudar>
+    </p>
+    <div class="ordem">
+        <label class="form-label small" for="ordem">Ordenar por</label>
+        <select class="form-select form-select-sm" name="ordem" id="ordem" form="filtrosLoja" data-enviar-ao-mudar>
             @foreach (var (valor, texto) in FiltroVitrine.Ordens)
             {
                 <option value="@valor" selected="@(valor == filtro.OrdemEfetiva)">@texto</option>
             }
         </select>
     </div>
-</form>
-
-<p class="text-muted small mb-3" id="resumoLoja">
-    @if (Model.TotalProdutos > 0)
-    {
-        @($"{Model.TotalProdutos} {(Model.TotalProdutos == 1 ? "produto encontrado" : "produtos encontrados")}")
-        @if (Model.TotalPaginas > 1)
-        {
-            @($" · mostrando {Model.PrimeiroDaPagina}–{Model.UltimoDaPagina}")
-        }
-    }
-</p>
+</div>
 
 @if (Model.Produtos.Count == 0)
 {
-    <p class="text-muted my-5 text-center">Nenhum jogo encontrado.</p>
+    <div class="estado-vazio my-4">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <p class="titulo-vazio">Nenhum jogo encontrado.</p>
+        <p>Tente outro nome ou tire alguns filtros.</p>
+        <a href="/loja" class="btn btn-danger">Ver todos os jogos</a>
+    </div>
 }
 
 <div class="row g-3">
@@ -111,10 +126,10 @@
 {
     var inicio = Math.Max(1, Model.Pagina - 2);
     var fim = Math.Min(Model.TotalPaginas, Model.Pagina + 2);
-    <nav aria-label="Páginas da loja" class="my-4">
+    <nav aria-label="Páginas da loja" class="my-5">
         <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item @(Model.Pagina == 1 ? "disabled" : null)">
-                <a class="page-link" href="@UrlPagina(Model.Pagina - 1)" aria-label="Página anterior">‹ Anterior</a>
+                <a class="page-link" href="@UrlPagina(Model.Pagina - 1)" aria-label="Página anterior"><i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior</a>
             </li>
             @if (inicio > 1)
             {
@@ -139,7 +154,7 @@
                 <li class="page-item"><a class="page-link" href="@UrlPagina(Model.TotalPaginas)">@Model.TotalPaginas</a></li>
             }
             <li class="page-item @(Model.Pagina == Model.TotalPaginas ? "disabled" : null)">
-                <a class="page-link" href="@UrlPagina(Model.Pagina + 1)" aria-label="Próxima página">Próxima ›</a>
+                <a class="page-link" href="@UrlPagina(Model.Pagina + 1)" aria-label="Próxima página">Próxima <i class="bi bi-chevron-right" aria-hidden="true"></i></a>
             </li>
         </ul>
     </nav>
