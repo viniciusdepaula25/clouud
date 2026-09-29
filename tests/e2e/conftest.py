@@ -7,7 +7,7 @@ Cada execução:
   3. abre um Chromium (Playwright) e roda os testes contra http://127.0.0.1:5095;
   4. no fim, para a aplicação e apaga os arquivos que os testes enviaram para wwwroot/uploads.
 
-Antes de rodar: dotnet build (ver o README, seção "Testes").
+Antes de rodar: dotnet build (ver docs/testes.md).
 """
 import os
 import base64

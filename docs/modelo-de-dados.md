@@ -312,4 +312,23 @@ Depois das quatro etapas:
 
 - ✅ **E-mails** (migrations `Emails`, `RedefinicaoSenha` e `AvisosListaDesejos`): fila `emails`, confirmação do e-mail no cadastro (`usuarios.email_confirmado_em`), "esqueci minha senha" (`redefinicoes_senha`), e-mail do pedido pago com as chaves e avisos da lista de desejos (`usuarios.receber_avisos` e a situação guardada em `lista_desejos`).
 
+- ✅ **Segurança** (migrations `CriptografaChaves`, `ProtecaoLogin` e `SeloSeguranca`): códigos das chaves cifrados (`chaves.codigo_cifrado` e `chaves.codigo_hash`), bloqueio do login (`usuarios.falhas_login` e `usuarios.bloqueado_ate`) e selo de segurança da sessão (`usuarios.selo_seguranca`).
+
 Entre as etapas 3 e 4, a migration `NomesSnakeCase` renomeou tudo no banco para minúsculo snake_case, sem alterar nenhum dado.
+
+## 5. Convenções e migrations
+
+Tabelas e colunas ficam em minúsculo snake_case, então o SQL escrito à mão não precisa de aspas:
+
+```sql
+SELECT j.titulo, p.edicao, p.preco FROM produtos p JOIN jogos j ON j.id = p.jogo_id;
+```
+
+No C# as classes continuam em PascalCase (`PedidoItem.PrecoUnitario` vira a coluna `pedido_itens.preco_unitario`); a conversão é feita em `Data/NomesSnakeCase.cs`. Check constraints e SQL escrito à mão (`migrationBuilder.Sql`, `FromSql`) devem usar os nomes em snake_case.
+
+Depois de alterar alguma classe em `Models/`, gere uma nova migration e aplique:
+
+```bash
+dotnet ef migrations add NomeDaAlteracao --project src/Clouud.Web --output-dir Data/Migrations
+dotnet ef database update --project src/Clouud.Web
+```

@@ -12,7 +12,7 @@ Este documento resume o que protege a loja hoje, o que conferir antes de colocá
 | Senhas | Hash PBKDF2 do ASP.NET; senhas antigas em texto puro viram hash ao iniciar e o login nunca compara texto puro | `Services/SenhaService.cs` |
 | Links de "esqueci minha senha" | No banco fica só o SHA-256 do código; vale 1 hora e uma vez só | `Services/Emails/RedefinicaoSenhaService.cs` |
 | Conteúdo dos e-mails | Apagado depois do envio (e quando a loja desiste de enviar), para links e chaves não ficarem na tabela `emails` | `Services/Emails/EnvioEmails.cs` |
-| Segredos (senha do banco, do admin, chave de criptografia, SMTP) | Nunca nos `appsettings*.json`: variáveis de ambiente ou *user-secrets* | `Infraestrutura/Segredos.cs`, README |
+| Segredos (senha do banco, do admin, chave de criptografia, SMTP) | Nunca nos `appsettings*.json`: variáveis de ambiente ou *user-secrets* | `Infraestrutura/Segredos.cs`, [configuracao.md](configuracao.md) |
 
 ### Contas e login
 
@@ -22,6 +22,7 @@ Este documento resume o que protege a loja hoje, o que conferir antes de colocá
   - login: 10 por minuto por IP;
   - cadastro, "esqueci minha senha" e reenvio de confirmação: 10 a cada 15 minutos por IP;
   - cupom e finalização da compra: 30 por minuto por cliente.
+  - passou do limite, aparece a página "Muitas tentativas". Os números ficam na seção `Seguranca` do `appsettings.json`.
 - **Sem descobrir quem é cliente:** o login com e-mail inexistente leva o mesmo tempo, e o "esqueci minha senha" responde igual e demora o mesmo com ou sem conta.
 - **Sessão:**
   - o cookie é `HttpOnly`, `SameSite=Lax` e `Secure` com HTTPS, e expira após 30 minutos sem uso;
@@ -41,7 +42,7 @@ Este documento resume o que protege a loja hoje, o que conferir antes de colocá
   - `X-Content-Type-Options: nosniff`;
   - `Referrer-Policy`, `Permissions-Policy` e `Cross-Origin-Opener-Policy`;
   - o servidor não se identifica.
-- **Sem JavaScript inline:** as views não usam `onclick`, `onerror` nem `onsubmit`; um teste falha se aparecer algum.
+- **Sem JavaScript inline:** as views não usam `onclick`, `onerror` nem `onsubmit`; um teste falha se aparecer algum. Em vez deles, use `data-confirmar`, `data-fallback` e `data-enviar-ao-mudar`, tratados pelo `wwwroot/js/site.js`; os `<script>` das páginas recebem o nonce sozinhos.
 - **Cache:** páginas com chaves mandam `Cache-Control: no-store` e não ficam no cache do navegador.
 - **Erros:** as páginas de erro não mostram detalhes técnicos fora do desenvolvimento.
 
