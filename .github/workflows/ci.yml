@@ -43,7 +43,7 @@ jobs:
       CLOUUD_PG_SENHA: postgres
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Instalar .NET (versão do global.json)
         uses: actions/setup-dotnet@v4
