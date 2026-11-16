@@ -1,7 +1,7 @@
 # Imagem da aplicação CLOUUD (usada pelo docker-compose.yml).
 # Etapa 1: compila e publica com o SDK. Etapa 2: roda só com o runtime do ASP.NET, bem menor.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 
 # Restaura primeiro só com o .csproj: enquanto os pacotes não mudam, o Docker reaproveita esta camada
